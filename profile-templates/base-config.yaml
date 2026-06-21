@@ -1,0 +1,25 @@
+# ── Base Profile Config — Standard Department ──
+# Generated from profile-templates/base-config.yaml
+# Override model by running: python3 scripts/switch-profile.py <name> --model <preset>
+
+model:
+  default: deepseek-v4-flash
+  provider: custom
+  base_url: https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+  api_key: ${DASHSCOPE_API_KEY}
+  api_mode: chat_completions
+
+fallback_providers:
+  - provider: openrouter
+    model: deepseek/deepseek-v4-flash
+
+auxiliary: google/gemma-4-31b-it:free
+
+providers: {}
+
+# MCP servers are auto-synced by: python3 scripts/switch-profile.py mcp-sync
+mcp_servers:
+  gbrain:
+    command: gbrain
+    args: [mcp]
+  # Profile-specific MCP servers go here

@@ -1,0 +1,24 @@
+# ── Coding Agent Profile Config ──
+# Optimized for code generation tasks
+# Generated from profile-templates/coding-config.yaml
+
+model:
+  default: ~anthropic/claude-sonnet-4-20250514
+  provider: openrouter
+
+fallback_providers:
+  - provider: custom
+    model: deepseek-v4-flash
+    base_url: https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+    api_key: ${DASHSCOPE_API_KEY}
+    api_mode: chat_completions
+
+providers: {}
+
+mcp_servers:
+  gbrain:
+    command: gbrain
+    args: [mcp]
+  stock-scanner:
+    command: npx
+    args: [-y, stock-scanner-mcp]
