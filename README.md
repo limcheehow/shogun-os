@@ -47,7 +47,8 @@ Company OS is a reference architecture for running an entire organization throug
 | [`RECIPE_INDEX.md`](RECIPE_INDEX.md) | All recipes with dependencies and setup order |
 | `profile-templates/` | YAML config presets (base, coding) |
 | `recipes/` | Self-contained integration recipes |
-| `scripts/` | Utility tooling (profile switching) |
+| `skills/` | Cross-department scrum workflow + other shared skills |
+| `scripts/` | Utility tooling (profile switching, scrum DM sending) |
 | `schema/` | Data schemas (task management) |
 
 ## Quick Start
@@ -129,11 +130,44 @@ Every profile reaches into `skills/shared/` (symlinked):
 
 | Skill | Purpose |
 |-------|---------|
+| `department-scrum` | Cross-department 3-tier scrum workflow (9am/11am/5pm) |
 | `profile-enrichment` | Company/contact research |
 | `staff-lookup` | Employee directory |
 | `task-management` | Unified task schema |
 | `brain-compliance` | Brain page validation |
 | `slack-formatting` | Message formatting |
+
+## Scrum Workflow
+
+Every department (except Coding) runs a **3-tier daily scrum** using a single shared framework:
+
+```
+9:00 AM ── send-scrum-dms.py (no_agent script)
+               → Reads scrum.yaml for team roster
+               → Opens Slack DMs with each member
+               → Saves state to scrum-states/{profile}/{date}.json
+
+REALTIME ── Gateway agent (Option B, no daemon)
+               → SOUL.md routes: scrum reply → save + post to channel
+                              non-scrum → answer with domain knowledge
+
+11:00 AM ── check-scrum-replies.py warn (LLM agent)
+               → Cross-references replies against gbrain
+               → Warns non-responders via Slack DM
+
+5:00 PM  ── check-scrum-replies.py report (LLM agent)
+               → Full compliance report
+               → SMART quality gates per domain
+               → Logs to gbrain _scrum/{profile}/{date}
+```
+
+Key design principles:
+- **One script, all departments** — parameterized via per-profile `scrum.yaml`
+- **Option B gateway** — no socket daemons, no polling
+- **Holiday-aware** — KL public holidays via offline Hijri algorithm
+- **Cross-ref against gbrain** — task IDs, domain terms matched per department
+
+See `skills/shared/department-scrum/SKILL.md` for full documentation, cron templates, and migration path.
 
 ## Task Management
 

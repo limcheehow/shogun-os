@@ -1,0 +1,75 @@
+# ── Project Manager (Gorobei) Scrum Config ──
+# Generated from department-scrum skill schema v2.0.0
+profile: project-manager
+app_name: Gorobei
+
+# ── Slack Channels ──
+channel_updates: "C09SR9B5WJU"       # #project-scrum-updates
+channel_leadership: "C0B4792J3AP"     # #project-leadership
+
+# ── State ──
+state_dir: "~/.hermes/scrum-states/project-manager"
+
+# ── Team Roster ──
+team:
+  - name: "Sheikh Syazwan"
+    slack_id: "U060MSDBQMQ"
+    role: "Head of Project"
+  - name: "Mohd Fitri Abdullah"
+    slack_id: "U07CDEPTDH8"
+    role: "Technical PM"
+  - name: "Hairul Izam"
+    slack_id: "U06E47F7WJ1"
+    role: "Project Coordinator"
+  - name: "Ashraf Razanen"
+    slack_id: "U056M5Q0AMR"
+    role: "Sr Tech Support"
+  - name: "Pavethren"
+    slack_id: "U0A1X6YJGQ7"
+    role: "Sr Tech Support"
+  - name: "Iskandar Zulkarnain"
+    slack_id: "U07LPFVTWNN"
+    role: "Project Engineer"
+  - name: "Farhan Ikhwan"
+    slack_id: "U095L89F0JE"
+    role: "Jr Tech Support"
+  - name: "Pavindran Chettiar"
+    slack_id: "U08UA8HJZ1Q"
+    role: "Jr Tech Support"
+  - name: "Aidiel Rozamal"
+    slack_id: "U0A9W1Q9R97"
+    role: "Tech Support"
+
+# ── Brain Cross-Reference ──
+brain:
+  source: "projects"
+  task_id_patterns:
+    - pattern: "TS-20\\d{2}-\\d{3}"
+      label: "Support Ticket"
+      brain_path: "~/brain/projects/support_tickets/INDEX.md"
+  domain_terms:
+    - "Alam Flora"
+    - "Forestias"
+    - "Kossan"
+    - "Petronas"
+    - "MRCSB"
+    - "Vitrox"
+    - "Vinda"
+    - "Bank Tabungan"
+    - "BTN"
+    - "Canon"
+    - "Capitol"
+    - "IOI"
+    - "U Mobile"
+    - "PaviKL"
+    - "RPG"
+    - "Casebang"
+    - "Pandora"
+    - "Midvalley"
+    - "Mitr Pohl"
+    - "Bukit Mertajam"
+    - "Samsam"
+    - "Samsung"
+  custom_ref:
+    project_dir: "~/brain/projects/active_projects/"
+    ticket_index: "~/brain/projects/support_tickets/INDEX.md"

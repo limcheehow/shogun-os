@@ -195,15 +195,52 @@ hermes cron create --name "Token Utilization Report" \
   --schedule "0 8 * * 1" --script token-util-report.sh --no-agent
 ```
 
-### 5.2 Department Daily Standups
+### 5.2 Department Scrum (3-Tier Workflow)
 
-Each department profile has one daily standup cron (9AM weekdays):
+Each department profile uses the **3-tier scrum workflow** from `skills/shared/department-scrum/`.
+
+#### Prerequisites
+
+Before wiring crons, you need:
+
+1. **SOUL.md "Scrum DM Handling" section** — copy from `skills/shared/department-scrum/references/soul-snippet.md`
+2. **scrum.yaml** — create `~/.hermes/profiles/<profile>/scrum.yaml` (see `examples/scrum-configs/` and `skills/shared/department-scrum/references/scrum-config-schema.md`)
+3. **Generic scripts** — `send-scrum-dms.py` and `check-scrum-replies.py` at `~/.hermes/scripts/scrum/`
+
+#### Wire 3 Crons Per Profile
 
 ```bash
-hermes cron create --name "<Dept> Daily Standup" \
+# 9am — Send DMs (no_agent)
+hermes cron create --name "<profile>-scrum-9am" \
   --schedule "0 9 * * 1-5" \
-  --prompt "...department-specific standup prompt..." \
-  --skills "task-management" --enabled-toolsets "terminal,file,search"
+  --script "send-scrum-dms.py --profile <profile>" \
+  --no-agent \
+  --deliver "slack:<channel_updates>"
+
+# 11am — Warn non-responders (agent)
+hermes cron create --name "<profile>-scrum-11am" \
+  --schedule "0 11 * * 1-5" \
+  --prompt "Loaded skills: department-scrum, task-management, staff-lookup. STEP 1: Run check-scrum-replies.py warn --profile <profile>. STEP 2: Cross-ref against gbrain source: <source>. STEP 3: Post summary to slack:<channel_updates>." \
+  --skills "department-scrum,task-management,staff-lookup" \
+  --enabled-toolsets "terminal,file,web,search" \
+  --deliver "slack:<channel_updates>"
+
+# 5pm — Compliance report (agent)
+hermes cron create --name "<profile>-scrum-5pm" \
+  --schedule "0 17 * * 1-5" \
+  --prompt "Loaded skills: department-scrum, task-management, staff-lookup. STEP 1: Run check-scrum-replies.py report --profile <profile>. STEP 2: Full brain cross-ref + SMART gates. STEP 3: Post enriched report." \
+  --skills "department-scrum,task-management,staff-lookup" \
+  --enabled-toolsets "terminal,file,web,search" \
+  --deliver "slack:<channel_updates>"
+```
+
+See `skills/shared/department-scrum/templates/` for full cron prompt templates with placeholders.
+
+#### Verify
+
+```bash
+python3 ~/.hermes/scripts/scrum/test-scrum-cross-dept.py
+# Expected: 48/48 tests passing, covering Projects, Products, HR, Finance
 ```
 
 ### 5.3 Extra Department Crons

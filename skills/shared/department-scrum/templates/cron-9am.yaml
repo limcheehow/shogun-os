@@ -1,0 +1,12 @@
+# ── 9AM Scrum Send Template ──
+# no_agent script sends DMs to team, saves state
+#
+# Usage: Copy into profile's cron/jobs.json or create via `hermes cron create`
+# Replace {{profile}}, {{channel}}, {{source}} with actual values
+
+name: "{{profile}}-scrum-9am"
+schedule: "0 9 * * 1-5"
+script: "send-scrum-dms.py --profile {{profile}}"
+no_agent: true
+deliver: "slack:{{channel}}"
+profile: "{{profile}}"

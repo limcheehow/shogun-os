@@ -14,6 +14,7 @@ google-dwd (auth)
 
 token-utilization (standalone — no deps)
 jibble-time-tracking (standalone — no deps)
+department-scrum (standalone — no deps, requires Hermes + Slack)
 ```
 
 ## Recipe Details
@@ -114,6 +115,20 @@ MCP bridge + skill + cron templates for Jibble time tracking. Query time entries
 
 Slides API skill for creating decks, replacing placeholder text, adding slides, exporting as PDF. Used by marketing-manager (Haiku) for client decks.
 
+### 9. `department-scrum` — Cross-Department Scrum Workflow
+
+| Field | Value |
+|-------|-------|
+| Category | workflow |
+| Setup time | 15 min per profile |
+| Cost | $0 |
+| Depends on | — (requires Hermes Agent + Slack bot per profile) |
+| Crons | 3 per profile: 9am (no_agent) + 11am (agent) + 5pm (agent) |
+
+Unified 3-tier daily scrum for ANY department profile. One generic script (`send-scrum-dms.py` + `check-scrum-replies.py`), per-profile config (`scrum.yaml`). Includes Option B gateway DM handling, SMART quality gates, gbrain cross-ref, and KL holiday gate.
+
+See `skills/shared/department-scrum/SKILL.md` for full docs.
+
 ## Installation Order
 
 ```
@@ -125,4 +140,5 @@ Slides API skill for creating decks, replacing placeholder text, adding slides, 
 6. drive-to-brain          # Requires DWD
 7. jibble-time-tracking    # Standalone — for hr-manager
 8. slides-deck-gen         # Requires DWD — for marketing-manager
+9. department-scrum        # Standalone — add after profile basics are set up
 ```

@@ -1,0 +1,50 @@
+# ── 5PM Scrum Report Template ──
+# LLM agent: full compliance report + quality gates + brain + gbrain log
+#
+# Replace {{profile}}, {{channel}}, {{channel_leadership}}, {{source}} with actual values
+
+name: "{{profile}}-scrum-5pm"
+schedule: "0 17 * * 1-5"
+prompt: |
+  You are in {{profile}} profile. The department-scrum and task-management skills are loaded.
+
+  CRITICAL: Execute real code, not intent.
+
+  STEP 1 — Check holiday gate:
+    If today is a KL public holiday → report "scrum paused" and EXIT.
+
+  STEP 2 — Run report script:
+    Execute: python3 ~/.hermes/scripts/scrum/check-scrum-replies.py report --profile {{profile}}
+    Report the actual stdout.
+
+  STEP 3 — Read final state:
+    Load ~/.hermes/scrum-states/{{profile}}/{date}.json
+    Get replied count, compliance stats, any errors.
+
+  STEP 4 — Full brain cross-ref on ALL replies:
+    - Extract task IDs and domain terms per scrum.yaml
+    - Match against gbrain source: {{source}}
+    - Build table: member | items mentioned | matched? | brain status
+
+  STEP 5 — Quality scan (SMART gates):
+    - Specific? Named concrete deliverable?
+    - Measurable? Has outcome?
+    - Flag vague replies
+
+  STEP 6 — Post enriched summary to slack:{{channel_leadership}}:
+    - Compliance rate from script
+    - Brain cross-ref results
+    - Quality flags
+    - Overdue alerts
+    - Do NOT re-post what the script already sent
+skills:
+  - department-scrum
+  - task-management
+  - staff-lookup
+deliver: "slack:{{channel}}"
+profile: "{{profile}}"
+enabled_toolsets:
+  - terminal
+  - file
+  - web
+  - search

@@ -187,4 +187,33 @@ Two-tier cron system:
 - Uses LLM tokens but on a limited schedule (3x/day, not every 30min).
 - Examples: email enrichment, attendee enrichment, drive enrichment
 
+## Scrum Architecture
+
+### Option B: Gateway-Based DM Handling
+
+Every profile's scrum runs without socket daemons. The Hermes gateway handles all Slack DMs:
+
+```
+Slack Events API
+  ↓
+Hermes Gateway (per profile)
+  ↓
+SOUL.md instruction: "Is sender in today's scrum team?"
+  ├─ Yes, scrum reply → check-scrum-replies.py report --profile <p>
+  │                    → save state → post to #scrum-channel
+  └─ No → answer with domain knowledge using gbrain
+```
+
+### 3-Tier Cron Cadence
+
+Every department runs the same 3-tier scrum pattern (weekdays):
+
+| Time | Type | Script | What it does |
+|---|---|---|---|
+| 9:00 AM | `no_agent` | `send-scrum-dms.py --profile <p>` | Sends DMs, saves state, logs to gbrain |
+| 11:00 AM | Agent | `check-scrum-replies.py warn --profile <p>` | Cross-ref against gbrain, warn non-responders |
+| 5:00 PM | Agent | `check-scrum-replies.py report --profile <p>` | Compliance + SMART gates + brain + gbrain |
+
+Each profile has its own `scrum.yaml` config (team roster, task ID patterns, domain terms). See `skills/shared/department-scrum/`.
+
 This split follows the **code for data, LLMs for judgment** pattern — adopted from gbrain's recipe philosophy.

@@ -1,0 +1,45 @@
+# ── 11AM Scrum Warn Template ──
+# LLM agent: check replies, warn non-responders, brain cross-ref
+#
+# Replace {{profile}}, {{channel}}, {{source}} with actual values
+
+name: "{{profile}}-scrum-11am"
+schedule: "0 11 * * 1-5"
+prompt: |
+  You are in {{profile}} profile. The department-scrum and task-management skills are loaded.
+
+  CRITICAL: Execute real code, not intent.
+
+  STEP 1 — Check holiday gate:
+    Check if today is a KL public holiday. If holiday → report "scrum paused for <holiday>" and EXIT.
+
+  STEP 2 — Run warn script:
+    Execute: python3 ~/.hermes/scripts/scrum/check-scrum-replies.py warn --profile {{profile}}
+    Report the actual stdout from the script.
+
+  STEP 3 — Read state:
+    Load ~/.hermes/scrum-states/{{profile}}/{date}.json
+    Count replied vs non-responded.
+
+  STEP 4 — Brain cross-ref (per profile domain):
+    For each member who replied, extract:
+    - Task IDs (using {{profile}}'s scrum.yaml patterns)
+    - Domain terms (project names, feature names, etc.)
+    Cross-ref against gbrain source: {{source}}
+
+  STEP 5 — Post summary to slack:{{channel}}:
+    - How many replied / how many total
+    - Cross-ref results (matched vs missing)
+    - Non-responders warned
+    - Do NOT re-DM — script handles that
+skills:
+  - department-scrum
+  - task-management
+  - staff-lookup
+deliver: "slack:{{channel}}"
+profile: "{{profile}}"
+enabled_toolsets:
+  - terminal
+  - file
+  - web
+  - search

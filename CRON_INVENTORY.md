@@ -15,87 +15,50 @@ Every scheduled job across all profiles.
 | Token Utilization | `0 8 * * 1` | deterministic | ✅ | — | Weekly AI spend report via Tokscale |
 | DWD Token Watchdog | `0 6 * * *` | deterministic | ✅ | — | (Optional) Proactive DWD token refresh |
 
-## Department Crons
+## Department Scrum Crons
 
-### HR Manager (Jinzai)
+Every department profile uses the **3-tier scrum pattern** from `skills/shared/department-scrum/`. Weekdays only.
 
-| Name | Schedule | Type | Skills | Purpose |
-|------|----------|------|--------|---------|
-| Daily Standup | `0 9 * * 1-5` | agent | task-management | Team standup |
-| Candidate Pipeline | `0 10 * * 1` | agent | — | Review open roles, candidates |
-| Recruitment GDrive Sync | `0 6 * * *` | deterministic | — | Sync CVs from Drive → brain |
-| Jibble Attendance | `30 9 * * 1-5` | agent | jibble-time-tracking | Check late arrivals |
-| Jibble Timesheet | `0 10 * * 1` | agent | jibble-time-tracking | Weekly hours roundup |
+| Profile | 9am | 11am | 5pm | Holiday Gate |
+|---|---|---|---|---|
+| **All** | `send-scrum-dms.py --profile <profile>` (no_agent) | `check-scrum-replies.py warn --profile <profile>` (agent) | `check-scrum-replies.py report --profile <profile>` (agent) | `0 0 * * *` (agent) |
 
-### Finance Manager (Koku)
+Cron templates at `skills/shared/department-scrum/templates/` — copy and fill placeholders for each profile.
 
-| Name | Schedule | Skills | Purpose |
-|------|----------|--------|---------|
-| Daily Standup | `0 9 * * 1-5` | task-management | Team standup |
-| Daily Burn Rate | `0 8 * * *` | — | Track daily spend vs budget |
-| Invoice Aging | `0 8 * * 1` | — | Review overdue invoices |
-| Monthly P&L | `0 8 1 * *` | — | End-of-month profit & loss |
-| Weekly Budget | `0 8 * * 1` | — | Weekly budget vs actuals |
+## Extra Department Crons (beyond scrum)
 
-### Project Manager (Gorobei)
-
-| Name | Schedule | Skills | Purpose |
-|------|----------|--------|---------|
-| Daily Standup | `0 9 * * 1-5` | task-management | Team standup |
-
-### Procurement Manager (Kura)
-
-| Name | Schedule | Skills | Purpose |
-|------|----------|--------|---------|
-| Daily Standup | `0 9 * * 1-5` | task-management | Team standup |
-| Contract Expiry | `0 9 * * 1` | — | Review expiring vendor contracts |
-
-### Product Manager (Shi)
-
-| Name | Schedule | Skills | Purpose |
-|------|----------|--------|---------|
-| Daily Standup | `0 9 * * 1-5` | task-management | Team standup |
-| Sprint Cycle | `0 9 * * 1` | task-management | Bi-weekly sprint review & planning |
-
-### CRM Manager (Kizuna)
-
-| Name | Schedule | Skills | Purpose |
-|------|----------|--------|---------|
-| Daily Standup | `0 9 * * 1-5` | task-management | Team standup |
-| Deal Activity Sync | `0 9-18 * * 1-5` | crm-deal-pipeline | Hourly deal check |
-| Sales Pipeline | `0 9 * * 1` | crm-deal-pipeline | Weekly pipeline review |
-| Weekly Summary | `0 17 * * 5` | — | End-of-week deal roundup |
-
-### Marketing Manager (Haiku)
-
-| Name | Schedule | Skills | Purpose |
-|------|----------|--------|---------|
-| Daily Standup | `0 9 * * 1-5` | task-management | Team standup |
-
-### Compliance Manager (Kata)
-
-| Name | Schedule | Skills | Purpose |
-|------|----------|--------|---------|
-| Daily Standup | `0 9 * * 1-5` | task-management | Team standup |
-
-### Customer Support (Bōei)
-
-| Name | Schedule | Skills | Purpose |
-|------|----------|--------|---------|
-| Daily Standup | `0 9 * * 1-5` | task-management | Team standup |
+| Profile | Extra Cron | Schedule |
+|---------|-----------|----------|
+| hr-manager | Candidate Pipeline | Mon 10AM |
+| hr-manager | Recruitment GDrive Sync | Daily 6AM |
+| crm-manager | Deal Activity Sync | Hourly 9-18 weekdays |
+| crm-manager | Sales Pipeline | Mon 9AM |
+| crm-manager | Weekly Summary | Fri 5PM |
+| finance-manager | Daily Burn Rate | Daily 8AM |
+| finance-manager | Invoice Aging | Mon 8AM |
+| finance-manager | Monthly P&L | 1st of month 8AM |
+| finance-manager | Weekly Budget | Mon 8AM |
+| procurement-manager | Contract Expiry | Mon 9AM |
+| product-manager | Sprint Cycle | Bi-weekly Mon |
+| hr-manager | Jibble Attendance | Weekdays 9:30AM |
+| hr-manager | Jibble Timesheet | Weekly Mon 10AM |
 
 ## Cron Count Summary
 
 | Profile | Deterministic (no_agent) | Agent (LLM) | Total |
 |---------|-------------------------|-------------|-------|
 | default | 5 | 2 | 7 |
-| hr-manager | 1 | 4 | 5 |
-| finance-manager | — | 5 | 5 |
-| project-manager | — | 1 | 1 |
-| procurement-manager | — | 2 | 2 |
-| product-manager | — | 2 | 2 |
-| crm-manager | — | 4 | 4 |
-| marketing-manager | — | 1 | 1 |
-| compliance-manager | — | 1 | 1 |
-| customer-support | — | 1 | 1 |
-| **Total** | **6** | **23** | **29** |
+| hr-manager | **2** (1 scrum + 1 extra) | **5** (3 scrum + 2 extra) | **7** |
+| finance-manager | **1** (1 scrum) | **6** (3 scrum + 3 extra) | **7** |
+| project-manager | **1** (1 scrum) | **3** (3 scrum) | **4** |
+| procurement-manager | **1** (1 scrum) | **4** (3 scrum + 1 extra) | **5** |
+| product-manager | **1** (1 scrum) | **4** (3 scrum + 1 extra) | **5** |
+| crm-manager | **1** (1 scrum) | **6** (3 scrum + 3 extra) | **7** |
+| marketing-manager | **1** (1 scrum) | **3** (3 scrum) | **4** |
+| compliance-manager | **1** (1 scrum) | **3** (3 scrum) | **4** |
+| customer-support | **1** (1 scrum) | **3** (3 scrum) | **4** |
+| **Total** | **15** | **38** | **53** |
+
+> **Note:** 3-tier scrum = 9am (no_agent) + 11am (agent) + 5pm (agent). Holiday gate ++optional via midnight cron.
+>
+> Scrum crons count above includes 9am + 11am + 5pm but not holiday gate (optional per profile).

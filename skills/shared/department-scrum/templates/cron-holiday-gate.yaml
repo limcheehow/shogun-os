@@ -1,0 +1,29 @@
+# ── Holiday Gate Template ──
+# Midnight job: check KL holidays, pause/resume 3 scrum jobs
+#
+# Replace {{profile}} and list of scrum job IDs
+
+name: "{{profile}}-scrum-holiday-gate"
+schedule: "0 0 * * *"
+prompt: |
+  You are in {{profile}} profile with department-scrum loaded.
+  This is the midnight holiday gate check.
+
+  Check if today is a KL/Malaysia public holiday using the offline Hijri algorithm.
+
+  IF holiday:
+    - Pause these scrum jobs: <job-9am-id>, <job-11am-id>, <job-5pm-id>
+    - Report which holiday and what was paused
+
+  IF NOT holiday but jobs are paused:
+    - Resume <job-9am-id>, <job-11am-id>, <job-5pm-id>
+    - Report "scrum jobs resumed"
+
+  IF weekend or normal working day with nothing to do: respond "[SILENT]"
+skills:
+  - department-scrum
+profile: "{{profile}}"
+deliver: "origin"
+enabled_toolsets:
+  - terminal
+  - web
