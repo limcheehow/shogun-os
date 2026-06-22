@@ -28,7 +28,7 @@ See [`recipes/google-dwd.md`](recipes/google-dwd.md) for the full playbook.
 **Summary:**
 1. Create service account in Google Cloud Console
 2. Enable Domain-Wide Delegation in Google Workspace Admin Console
-3. Download service account key to `~/.hermes/secrets/google-dwd-sa.json`
+3. Download service account key to `~/.hermes/secrets/google-dwd-sa.json` (the brain ingest pipeline scripts also look for this at `~/.hermes/service-account-key.json` via symlink — create with `ln -sf ~/.hermes/secrets/google-dwd-sa.json ~/.hermes/service-account-key.json`)
 4. Verify token generation
 
 **Depends on:** Google Workspace admin access.

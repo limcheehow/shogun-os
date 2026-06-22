@@ -129,16 +129,29 @@ Unified 3-tier daily scrum for ANY department profile. One generic script (`send
 
 See `skills/shared/department-scrum/SKILL.md` for full docs.
 
+### 10. `brain-ingest-pipeline` — Unified Brain Ingest Pipeline
+
+| Field | Value |
+|-------|-------|
+| Category | ingest |
+| Setup time | 10 min |
+| Cost | $0 |
+| Depends on | google-dwd (for SA-DWD key) |
+| Crons | 3: gmail triage (*/30min, no_agent) + calendar collect (daily 6AM, no_agent) + pipeline agent (9/13/17 weekdays) |
+
+Unified COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE flow for all data sources. Replaces old single-source email-collector, calendar-sync, email-enrichment, and calendar-enrichment crons. Runs as a Hermes plugin.
+
+See `plugins/brain-ingest-pipeline/skills/brain-ingest-pipeline/SKILL.md` for full docs.
+
 ## Installation Order
 
 ```
 1. google-dwd              # Foundation — everything needs auth
 2. token-utilization       # Standalone — can do anytime
 3. token-watchdog          # Optional — only if caching tokens
-4. email-to-brain          # Requires DWD
-5. calendar-to-brain       # Requires DWD
-6. drive-to-brain          # Requires DWD
-7. jibble-time-tracking    # Standalone — for hr-manager
-8. slides-deck-gen         # Requires DWD — for marketing-manager
-9. department-scrum        # Standalone — add after profile basics are set up
+4. brain-ingest-pipeline   # Requires DWD — replaces old email/calendar collectors
+5. drive-to-brain          # Requires DWD
+6. jibble-time-tracking    # Standalone — for hr-manager
+7. slides-deck-gen         # Requires DWD — for marketing-manager
+8. department-scrum        # Standalone — add after profile basics are set up
 ```

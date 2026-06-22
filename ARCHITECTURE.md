@@ -217,3 +217,44 @@ Every department runs the same 3-tier scrum pattern (weekdays):
 Each profile has its own `scrum.yaml` config (team roster, task ID patterns, domain terms). See `skills/shared/department-scrum/`.
 
 This split follows the **code for data, LLMs for judgment** pattern — adopted from gbrain's recipe philosophy.
+
+## Brain Ingest Pipeline
+
+Unified **COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE** pipeline for all data sources. Replaces the old per-source collector + enrichment crons.
+
+### Data Flow
+
+```
+E-mail (Gmail API, SA-DWD)
+  ↓
+gmail-triage.py (no_agent, */30min)
+  ↓ Labels inbox, priority scores, batch rotation (3 batches of 3-4 accounts)
+  ↓ State: ~/.hermes/cache/gmail-triage-state.json
+  ↓
+
+Calendar (Google Calendar API, SA-DWD)
+  ↓
+collect-calendar.py (no_agent, daily 6AM)
+  ↓ Events → ~/brain/data/calendar/ as gbrain-indexable markdown
+  ↓ 10 accounts, 7d lookback + 14d lookahead
+  ↓
+
+ROUTE → BRIDGE → ENRICH → VALIDATE (agent, 9/13/17 weekdays)
+  ↓
+mcp_gbrain_* tools:
+  └─ ROUTE: mcp_gbrain_query to find matching pages → classify signals
+  └─ BRIDGE: mcp_gbrain_add_link + mcp_gbrain_add_timeline_entry
+  └─ ENRICH: profile-enrichment skill → web search for missing data
+  └─ VALIDATE: validate-brain-page.py → orphan detection → link coverage
+```
+
+### Key Design Decisions
+
+| Decision | Why |
+|---|---|
+| **SA-DWD over OAuth** | No token refresh, never expires, covers all team members with one key |
+| **Batch rotation for Gmail** | Avoids memory spikes — processes 3 accounts per 30min run |
+| **Config-driven account list** | `config/gmail-batches.json` — edit one file, no script changes |
+| **5-phase pipeline** | Every source follows the same flow, no exceptions |
+| **VALIDATE as a phase** | Brain compliance is non-negotiable — every page gets validated |
+| **Plugin packaging** | First-class Hermes plugin: installable, registerable, versioned |

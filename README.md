@@ -47,6 +47,7 @@ Company OS is a reference architecture for running an entire organization throug
 | [`RECIPE_INDEX.md`](RECIPE_INDEX.md) | All recipes with dependencies and setup order |
 | `profile-templates/` | YAML config presets (base, coding) |
 | `recipes/` | Self-contained integration recipes |
+| `plugins/` | Brain ingest pipeline plugin (COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE) |
 | `skills/` | Cross-department scrum workflow + other shared skills |
 | `scripts/` | Utility tooling (profile switching, scrum DM sending) |
 | `schema/` | Data schemas (task management) |
@@ -101,13 +102,48 @@ Every profile embodies a **Samurai** persona — a character from Akira Kurosawa
 
 The `default` profile runs shared resource crons:
 
-| Cron | Schedule | Purpose |
-|------|----------|---------|
-| Email Collector | Every 30 min | Deterministic Gmail → brain |
-| Calendar Sync | Daily 6AM | Calendar events → brain pages |
-| Drive Sync | Weekdays 12/16/20 | Google Docs → brain |
-| Token Utilization | Weekly Monday 8AM | AI spend report |
-| DWD Token Watchdog | Daily 6AM (optional) | Auth belt-and-suspenders |
+| Cron | Schedule | Type | Purpose |
+|------|----------|------|---------|
+| **brain-ingest-gmail** | `*/30 * * * *` | no_agent | Gmail triage via SA-DWD — labels inbox, priority scoring, batch rotation (3 batches of 3-4 accounts) |
+| **brain-ingest-calendar** | `0 6 * * *` | no_agent | Collect all 10 team members' calendar events via SA-DWD |
+| **brain-ingest-pipeline** | `0 9,13,17 * * 1-5` | agent | 5-phase pipeline: ROUTE → BRIDGE → ENRICH → VALIDATE |
+| Drive Sync | Weekdays 12/16/20 | no_agent | Google Docs → brain |
+| Drive Enrichment | Weekdays 13/17 | agent | Entity extraction from new docs |
+| Token Utilization | Weekly Monday 8AM | no_agent | AI spend report |
+| DWD Token Watchdog | Daily 6AM (optional) | no_agent | Auth belt-and-suspenders |
+
+Old email digest, calendar sync, and OAuth token refresh crons are **removed** — the brain ingest pipeline replaces them.
+
+### Brain Ingest Pipeline
+
+Unified **COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE** flow for all data sources. Runs as a Hermes plugin.
+
+```
+COLLECT ──→ gmail-triage.py (email, 30min)
+         ──→ collect-calendar.py (calendar, daily 6AM)
+         ──→ collect-meetings.py (meetings, upcoming)
+
+ROUTE ──→ Classify signals (Sales/CRM, Projects, HR, Finance)
+         ──→ Find matching brain pages via gbrain query
+         ──→ Flag unmatched as brain_missing
+
+BRIDGE ──→ Extract entities → create typed links (contact_for, works_at, emailed_about)
+         ──→ Add timeline entries → detect risks (stalled deals, overdue projects)
+
+ENRICH ──→ Load profile-enrichment → fill missing person/company data
+
+VALIDATE ──→ Run validate-brain-page.py on every modified page
+           ──→ Orphan detection → link coverage check
+```
+
+Key improvements over old per-source collectors:
+- **SA-DWD** — service account replaces OAuth; no token refresh needed
+- **Batch rotation** — processes 3 accounts per Gmail run, state file tracks position
+- **Config-driven** — `config/gmail-batches.json` externalizes account lists
+- **Structured pipeline** — every source follows the same 5 phases, no exceptions
+- **Compliance gate** — VALIDATE phase runs `validate-brain-page.py` on EVERY page
+
+See `plugins/brain-ingest-pipeline/skills/brain-ingest-pipeline/SKILL.md` for the full pipeline specification and cron setup.
 
 ### Recipes
 

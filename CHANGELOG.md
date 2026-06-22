@@ -24,3 +24,27 @@ New shared skill `skills/shared/department-scrum/` — a unified 3-tier daily sc
 ### Examples
 
 - `examples/scrum-configs/project-manager.yaml` — complete scrum.yaml for Gorobei (9 members, 22 domain terms, TS ticket patterns)
+
+## [1.2.0] — 2026-06-22
+
+### Added: Brain Ingest Pipeline
+
+New unified **COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE** pipeline as a Hermes plugin:
+
+- **Plugin** at `plugins/brain-ingest-pipeline/` — first-class Hermes plugin with registerable skill
+- **Gmail triage** — `gmail-triage.py` replaces old IMAP email collector: labels inbox via Gmail API (Sales, Projects, HR, Finance, etc.), priority scoring (high/medium/low), promotion detection, batch rotation
+- **Calendar collector** — `collect-calendar.py` replaces old single-user OAuth: SA-DWD, all 10 team members' calendars, 7d lookback + 14d lookahead, PII scrubbing
+- **5-phase skill** — `brain-ingest-pipeline` skill defines the unified flow for all data sources
+- **Batch config** — `examples/brain-ingest-configs/gmail-batches.json` — 3 batches of 3-4 accounts
+
+### Removed
+
+- Old `email-collector`, `calendar-sync`, `email-enrichment`, `calendar-enrichment` crons — replaced by pipeline
+- OAuth token refresh cron — not needed with SA-DWD
+
+### Updated
+
+- `ARCHITECTURE.md` — added Brain Ingest Pipeline section with data flow diagram and key design decisions
+- `CRON_INVENTORY.md` — replaced old email/calendar crons with the 3 new pipeline crons
+- `README.md` — updated infrastructure table, added Brain Ingest Pipeline section with flow diagram
+- `SETUP.md` — added SA-DWD key setup note in Phase 2
