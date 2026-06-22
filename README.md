@@ -45,15 +45,14 @@ Company OS is a reference architecture for running an entire organization throug
 | [`PROFILE_CATALOG.md`](PROFILE_CATALOG.md) | All 10 department profiles with personas, sources, skills, crons |
 | [`CRON_INVENTORY.md`](CRON_INVENTORY.md) | Every cron job across all profiles |
 | [`RECIPE_INDEX.md`](RECIPE_INDEX.md) | All recipes with dependencies and setup order |
+| [`docs/`](docs/) | Phase-by-phase development docs (profile gen, cron wiring, verification) |
 | `templates/` | Profile configs, scrum config templates |
 | `recipes/` | Self-contained integration recipes |
 | `skills/` | Installable Hermes skills (department-scrum, brain-ingest-pipeline, task-management) |
-| `scripts/` | Utility tooling (profile switching, scrum automation) |
+| `scripts/` | Utility tooling (install, profile generator, cron wirer, verify-install) |
 | `schema/` | Data schemas (task management) |
-| `tests/` | Install verification + cross-department scrum tests |
 
 ## Quick Start
-
 ```bash
 # Prerequisites
 which hermes        # Hermes Agent installed

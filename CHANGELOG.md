@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.2.0] — 2026-06-23
+
+### Added: Phases 4–8 (Profile Generator, Cron Wirer, Verification, Docs, Hub)
+
+Complete Company OS tooling and documentation suite:
+
+#### New Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/generate-profile.py` | Generate new Hermes profiles from templates with SOUL.md, config.yaml, scrum config |
+| `scripts/wire-crons.py` | Generate and optionally apply cron jobs per profile type (--list, --apply, --output) |
+| `scripts/verify-install.sh` | Full install verification with --quick and --fix modes; checks skills, scripts, configs, symlinks |
+
+#### New Docs Structure
+
+- `docs/README.md` — Phase index and quick reference
+- `docs/phase-01-restructure.md` through `docs/phase-08-hub-publishing.md` — Phase-by-phase development docs with design decisions
+
+#### Hub Publishing
+
+- Created `HUB.md` — Hermes skill tap manifest. Usage: `hermes skills tap add limcheehow/company-os`
+
+#### Docs Updated
+
+- `README.md` — Contents table now includes `docs/` reference
+
 ## [1.1.0] — 2026-06-22
 
 ### Added: Cross-Department Scrum Workflow
