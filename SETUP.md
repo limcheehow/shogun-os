@@ -197,14 +197,14 @@ hermes cron create --name "Token Utilization Report" \
 
 ### 5.2 Department Scrum (3-Tier Workflow)
 
-Each department profile uses the **3-tier scrum workflow** from `skills/shared/department-scrum/`.
+Each department profile uses the **3-tier scrum workflow** from `skills/department-scrum/`.
 
 #### Prerequisites
 
 Before wiring crons, you need:
 
-1. **SOUL.md "Scrum DM Handling" section** — copy from `skills/shared/department-scrum/references/soul-snippet.md`
-2. **scrum.yaml** — create `~/.hermes/profiles/<profile>/scrum.yaml` (see `examples/scrum-configs/` and `skills/shared/department-scrum/references/scrum-config-schema.md`)
+1. **SOUL.md "Scrum DM Handling" section** — copy from `skills/department-scrum/references/soul-snippet.md`
+2. **scrum.yaml** — create `~/.hermes/profiles/<profile>/scrum.yaml` (see `examples/scrum-configs/` and `skills/department-scrum/references/scrum-config-schema.md`)
 3. **Generic scripts** — `send-scrum-dms.py` and `check-scrum-replies.py` at `~/.hermes/scripts/scrum/`
 
 #### Wire 3 Crons Per Profile
@@ -234,7 +234,7 @@ hermes cron create --name "<profile>-scrum-5pm" \
   --deliver "slack:<channel_updates>"
 ```
 
-See `skills/shared/department-scrum/templates/` for full cron prompt templates with placeholders.
+See `skills/department-scrum/templates/` for full cron prompt templates with placeholders.
 
 #### Verify
 

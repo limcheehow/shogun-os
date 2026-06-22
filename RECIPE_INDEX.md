@@ -7,8 +7,7 @@ Self-contained integration packages (gbrain recipe style). Each has YAML frontma
 ```
 google-dwd (auth)
   ├── token-watchdog (optional belt-and-suspenders)
-  ├── email-to-brain
-  ├── calendar-to-brain
+  ├── brain-ingest-pipeline (replaces old email/calendar collectors)
   ├── drive-to-brain
   └── slides-deck-gen
 
@@ -43,31 +42,23 @@ Sets up Google Domain-Wide Delegation — a service account impersonating `cheeh
 
 Proactively refreshes DWD credentials. Only needed if scripts cache raw access tokens. If all scripts use `google-auth` properly (which the recipes do), skip this.
 
-### 3. `email-to-brain` — Gmail → Knowledge Base
+### 3. `brain-ingest-pipeline` — Unified Brain Ingest Pipeline
 
 | Field | Value |
 |-------|-------|
 | Category | ingest |
-| Setup time | 20 min |
+| Setup time | 10 min |
 | Cost | $0 |
-| Depends on | google-dwd |
-| Crons | Collector every 30min (no_agent) + Enrichment 9/13/17 (agent) |
+| Depends on | google-dwd (for SA-DWD key) |
+| Crons | 3: gmail triage (*/30min, no_agent) + calendar collect (daily 6AM, no_agent) + pipeline agent (9/13/17 weekdays) |
 
-Deterministic collector pulls Gmail inbox, filters noise, generates Gmail links in code. Agent reads digest and updates person/company brain pages.
+Unified **COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE** flow for all data sources. Replaces the old per-source email and calendar collectors with a single 5-phase pipeline using SA-DWD, batch rotation, and gbrain linking.
 
-### 4. `calendar-to-brain` — Calendar → Brain Pages
+See `skills/brain-ingest-pipeline/SKILL.md` for full docs.
 
-| Field | Value |
-|-------|-------|
-| Category | ingest |
-| Setup time | 20 min |
-| Cost | $0 |
-| Depends on | google-dwd |
-| Crons | Daily sync 6AM (no_agent) + Attendee enrichment 8AM (agent) |
+**Supersedes:** `email-to-brain` and `calendar-to-brain` (removed — use this instead).
 
-Paginated sync pulls events, writes daily markdown files with attendees and locations. Agent extracts attendees and creates/updates person pages.
-
-### 5. `drive-to-brain` — Google Drive → Knowledge Base
+### 4. `drive-to-brain` — Google Drive → Knowledge Base
 
 | Field | Value |
 |-------|-------|
@@ -79,7 +70,7 @@ Paginated sync pulls events, writes daily markdown files with attendees and loca
 
 Monitors Drive folders for documents (meeting notes, proposals, reports), syncs to brain pages with entity extraction.
 
-### 6. `token-utilization` — AI Spend Monitoring
+### 5. `token-utilization` — AI Spend Monitoring
 
 | Field | Value |
 |-------|-------|
@@ -91,7 +82,7 @@ Monitors Drive folders for documents (meeting notes, proposals, reports), syncs 
 
 Runs `tokscale monthly --json` and generates a formatted markdown report showing cost, tokens, cache efficiency per model per month.
 
-### 7. `jibble-time-tracking` — HR Time Tracking
+### 6. `jibble-time-tracking` — HR Time Tracking
 
 | Field | Value |
 |-------|-------|
@@ -103,7 +94,7 @@ Runs `tokscale monthly --json` and generates a formatted markdown report showing
 
 MCP bridge + skill + cron templates for Jibble time tracking. Query time entries, detect late arrivals, compile weekly timesheets.
 
-### 8. `slides-deck-gen` — Google Slides Integration
+### 7. `slides-deck-gen` — Google Slides Integration
 
 | Field | Value |
 |-------|-------|
@@ -115,7 +106,7 @@ MCP bridge + skill + cron templates for Jibble time tracking. Query time entries
 
 Slides API skill for creating decks, replacing placeholder text, adding slides, exporting as PDF. Used by marketing-manager (Haiku) for client decks.
 
-### 9. `department-scrum` — Cross-Department Scrum Workflow
+### 8. `department-scrum` — Cross-Department Scrum Workflow
 
 | Field | Value |
 |-------|-------|
@@ -127,21 +118,7 @@ Slides API skill for creating decks, replacing placeholder text, adding slides, 
 
 Unified 3-tier daily scrum for ANY department profile. One generic script (`send-scrum-dms.py` + `check-scrum-replies.py`), per-profile config (`scrum.yaml`). Includes Option B gateway DM handling, SMART quality gates, gbrain cross-ref, and KL holiday gate.
 
-See `skills/shared/department-scrum/SKILL.md` for full docs.
-
-### 10. `brain-ingest-pipeline` — Unified Brain Ingest Pipeline
-
-| Field | Value |
-|-------|-------|
-| Category | ingest |
-| Setup time | 10 min |
-| Cost | $0 |
-| Depends on | google-dwd (for SA-DWD key) |
-| Crons | 3: gmail triage (*/30min, no_agent) + calendar collect (daily 6AM, no_agent) + pipeline agent (9/13/17 weekdays) |
-
-Unified COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE flow for all data sources. Replaces old single-source email-collector, calendar-sync, email-enrichment, and calendar-enrichment crons. Runs as a Hermes plugin.
-
-See `plugins/brain-ingest-pipeline/skills/brain-ingest-pipeline/SKILL.md` for full docs.
+See `skills/department-scrum/SKILL.md` for full docs.
 
 ## Installation Order
 

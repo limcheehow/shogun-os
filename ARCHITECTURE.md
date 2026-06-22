@@ -214,7 +214,7 @@ Every department runs the same 3-tier scrum pattern (weekdays):
 | 11:00 AM | Agent | `check-scrum-replies.py warn --profile <p>` | Cross-ref against gbrain, warn non-responders |
 | 5:00 PM | Agent | `check-scrum-replies.py report --profile <p>` | Compliance + SMART gates + brain + gbrain |
 
-Each profile has its own `scrum.yaml` config (team roster, task ID patterns, domain terms). See `skills/shared/department-scrum/`.
+Each profile has its own `scrum.yaml` config (team roster, task ID patterns, domain terms). See `skills/department-scrum/`.
 
 This split follows the **code for data, LLMs for judgment** pattern — adopted from gbrain's recipe philosophy.
 

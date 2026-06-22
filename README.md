@@ -45,12 +45,12 @@ Company OS is a reference architecture for running an entire organization throug
 | [`PROFILE_CATALOG.md`](PROFILE_CATALOG.md) | All 10 department profiles with personas, sources, skills, crons |
 | [`CRON_INVENTORY.md`](CRON_INVENTORY.md) | Every cron job across all profiles |
 | [`RECIPE_INDEX.md`](RECIPE_INDEX.md) | All recipes with dependencies and setup order |
-| `profile-templates/` | YAML config presets (base, coding) |
+| `templates/` | Profile configs, scrum config templates |
 | `recipes/` | Self-contained integration recipes |
-| `plugins/` | Brain ingest pipeline plugin (COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE) |
-| `skills/` | Cross-department scrum workflow + other shared skills |
-| `scripts/` | Utility tooling (profile switching, scrum DM sending) |
+| `skills/` | Installable Hermes skills (department-scrum, brain-ingest-pipeline, task-management) |
+| `scripts/` | Utility tooling (profile switching, scrum automation) |
 | `schema/` | Data schemas (task management) |
+| `tests/` | Install verification + cross-department scrum tests |
 
 ## Quick Start
 
@@ -143,18 +143,15 @@ Key improvements over old per-source collectors:
 - **Structured pipeline** — every source follows the same 5 phases, no exceptions
 - **Compliance gate** — VALIDATE phase runs `validate-brain-page.py` on EVERY page
 
-See `plugins/brain-ingest-pipeline/skills/brain-ingest-pipeline/SKILL.md` for the full pipeline specification and cron setup.
+See `skills/brain-ingest-pipeline/SKILL.md` for the full pipeline specification and cron setup.
 
 ### Recipes
-
-Eight self-contained integration packages (gbrain recipe style):
 
 | Recipe | Category | Depends On |
 |--------|----------|-----------|
 | `google-dwd` | auth | — |
 | `token-watchdog` | auth | google-dwd |
-| `email-to-brain` | ingest | google-dwd |
-| `calendar-to-brain` | ingest | google-dwd |
+| `brain-ingest-pipeline` | ingest | google-dwd |
 | `drive-to-brain` | ingest | google-dwd |
 | `token-utilization` | monitor | — |
 | `jibble-time-tracking` | connector | — |
@@ -162,7 +159,7 @@ Eight self-contained integration packages (gbrain recipe style):
 
 ## Shared Skills
 
-Every profile reaches into `skills/shared/` (symlinked):
+Every profile loads shared Hermes skills (installed via `hermes skills install` or copied from `skills/`):
 
 | Skill | Purpose |
 |-------|---------|
@@ -203,7 +200,7 @@ Key design principles:
 - **Holiday-aware** — KL public holidays via offline Hijri algorithm
 - **Cross-ref against gbrain** — task IDs, domain terms matched per department
 
-See `skills/shared/department-scrum/SKILL.md` for full documentation, cron templates, and migration path.
+See `skills/department-scrum/SKILL.md` for full documentation, cron templates, and migration path.
 
 ## Task Management
 

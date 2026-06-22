@@ -1,4 +1,0 @@
-name: brain-ingest-pipeline
-version: "1.0.0"
-description: "Unified brain ingest pipeline — email, calendar, and meetings all follow the same COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE flow. Includes SA-DWD calendar collector, gmail batch triage, and meeting ingestion."
-license: MIT

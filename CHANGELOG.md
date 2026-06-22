@@ -25,6 +25,26 @@ New shared skill `skills/shared/department-scrum/` — a unified 3-tier daily sc
 
 - `examples/scrum-configs/project-manager.yaml` — complete scrum.yaml for Gorobei (9 members, 22 domain terms, TS ticket patterns)
 
+## [2.0.0] — 2026-06-22
+
+### Repo Restructure
+
+Complete overhaul for Hermes compliance and new-user experience:
+
+- **Flattened layout** — `skills/`, `templates/`, `scripts/`, `tests/` at repo root (removed `skills/shared/`, `plugins/`, `profile-templates/`)
+- **Removed non-compliant plugin shell** — `plugins/brain-ingest-pipeline/` stripped of non-functional `plugin.yaml`/`__init__.py` `ctx.register_skill()` pattern; SKILL.md and scripts moved to `skills/brain-ingest-pipeline/`
+- **Removed superseded recipes** — `email-to-brain.md` and `calendar-to-brain.md` deleted; replaced by `brain-ingest-pipeline` skill
+- **All doc paths updated** — README, SETUP, ARCHITECTURE, CRON_INVENTORY, PROFILE_CATALOG, RECIPE_INDEX now reference new locations
+
+### Path Changes
+
+| Old Path | New Path |
+|---|---|
+| `skills/shared/department-scrum/` | `skills/department-scrum/` |
+| `plugins/.../skills/brain-ingest-pipeline/` | `skills/brain-ingest-pipeline/` |
+| `profile-templates/` | `templates/profiles/` |
+| `plugins/brain-ingest-pipeline/scripts/` | `skills/brain-ingest-pipeline/scripts/` |
+
 ## [1.2.0] — 2026-06-22
 
 ### Added: Brain Ingest Pipeline

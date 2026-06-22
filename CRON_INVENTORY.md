@@ -19,13 +19,13 @@ Every scheduled job across all profiles.
 
 ## Department Scrum Crons
 
-Every department profile uses the **3-tier scrum pattern** from `skills/shared/department-scrum/`. Weekdays only.
+Every department profile uses the **3-tier scrum pattern** from `skills/department-scrum/`. Weekdays only.
 
 | Profile | 9am | 11am | 5pm | Holiday Gate |
 |---|---|---|---|---|
 | **All** | `send-scrum-dms.py --profile <profile>` (no_agent) | `check-scrum-replies.py warn --profile <profile>` (agent) | `check-scrum-replies.py report --profile <profile>` (agent) | `0 0 * * *` (agent) |
 
-Cron templates at `skills/shared/department-scrum/templates/` — copy and fill placeholders for each profile.
+Cron templates at `skills/department-scrum/templates/` — copy and fill placeholders for each profile.
 
 ## Extra Department Crons (beyond scrum)
 

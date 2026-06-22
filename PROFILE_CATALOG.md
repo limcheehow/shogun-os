@@ -1,6 +1,6 @@
 # Profile Catalog
 
-All 10 department profiles with personas, gbrain sources, skills, and cron jobs. Every profile uses the **3-tier scrum workflow** from `skills/shared/department-scrum/` — see [CRON_INVENTORY.md](CRON_INVENTORY.md) for scrum cron details.
+All 10 department profiles with personas, gbrain sources, skills, and cron jobs. Every profile uses the **3-tier scrum workflow** from `skills/department-scrum/` — see [CRON_INVENTORY.md](CRON_INVENTORY.md) for scrum cron details.
 
 ---
 
