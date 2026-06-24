@@ -26,6 +26,10 @@ hermes skills install limcheehow/company-os/brain-ingest-pipeline
 |-------|-------------|
 | `department-scrum` | Cross-department 3-tier daily scrum workflow (9am/11am/5pm) |
 | `brain-ingest-pipeline` | Unified COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE data pipeline |
+| `slack-formatting` | Format output for Slack — mrkdwn text and Block Kit JSON |
+| `brain-compliance` | Standards and validation for Gbrain-compliant brain pages |
+| `profile-enrichment` | Enrich company and contact profiles via web research + gbrain |
+| `gbrain-operations` | GBrain operations: sync, embed, doctor, dream cycle, MCP setup |
 
 ## Repository Structure
 

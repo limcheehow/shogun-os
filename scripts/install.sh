@@ -23,6 +23,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null || ec
 DRY_RUN=false
 FORCE=false
 PROFILE=""
+DEPLOY=""
 BACKUP_DIR=""
 
 # ── Color helpers ──────────────────────────────────────────────────────
@@ -49,12 +50,16 @@ USAGE:
   ./install.sh --dry-run          Preview without making changes
   ./install.sh --force            Overwrite existing files without backup prompt
   ./install.sh --profile <name>   Install assets relevant to one profile
+  ./install.sh --deploy <type>    Full deploy: install + generate-profile + wire-crons for all profiles
+  ./install.sh --deploy-profile <name>  Deploy a single profile
   ./install.sh --help             This message
 
 EXAMPLES:
   ./install.sh
   ./install.sh --dry-run --profile project-manager
   ./install.sh --force
+  ./install.sh --deploy all
+  ./install.sh --deploy-profile hr-manager --type hr
 EOF
   exit 0
 }
@@ -65,6 +70,8 @@ while [[ $# -gt 0 ]]; do
     --dry-run) DRY_RUN=true; shift ;;
     --force)   FORCE=true; shift ;;
     --profile) PROFILE="$2"; shift 2 ;;
+    --deploy)   DEPLOY="all"; shift ;;
+    --deploy-profile) DEPLOY="$2"; shift 2 ;;
     --help|-h) usage ;;
     *) err "Unknown option: $1"; echo "  Use --help for usage"; exit 1 ;;
   esac
@@ -280,6 +287,99 @@ section_symlink() {
 }
 
 # ═══════════════════════════════════════════════════════════════════════
+#  GBRAIN VERSION CHECK
+# ═══════════════════════════════════════════════════════════════════════
+section_gbrain() {
+  echo -e "${CYAN}━━━ GBrain ━━━${NC}"
+
+  if ! command -v gbrain &> /dev/null; then
+    warn "gbrain CLI not found in PATH"
+    info "Install gbrain:  bun install -g github:garrytan/gbrain"
+    info "Or install via curl:  curl -fsSL https://bun.sh/install | bash && bun install -g github:garrytan/gbrain"
+    return
+  fi
+
+  local version
+  version=$(gbrain --version 2>&1 | head -1)
+  ok "gbrain installed: $version"
+
+  # Extract version number for comparison
+  local ver_num
+  ver_num=$(echo "$version" | grep -oP 'v?[\d]+\.[\d]+\.?[\d]*' | head -1)
+  if [[ -z "$ver_num" ]]; then
+    info "Could not parse gbrain version (expected format: v0.x.y)"
+  fi
+
+  info "Recommended: gbrain v0.42.x or later (latest stable)"
+  info "If gbrain is outdated, run:  bun install -g github:garrytan/gbrain"
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+#  DEPLOY ORCHESTRATION
+# ═══════════════════════════════════════════════════════════════════════
+section_deploy() {
+  local deploy_target="$1"
+  echo -e "${CYAN}━━━ Deploy ━━━${NC}"
+
+  if [[ "$DRY_RUN" == true ]]; then
+    ok "[DRY-RUN] Would deploy profiles"
+    return
+  fi
+
+  if [[ "$deploy_target" == "all" ]]; then
+    # Deploy all 10 department profiles
+    local profiles="coding-agent hr-manager finance-manager project-manager procurement-manager product-manager crm-manager marketing-manager compliance-manager customer-support"
+    local types="coding hr finance project-manager procurement product crm marketing compliance support"
+
+    local i=0
+    local p_arr=($profiles)
+    local t_arr=($types)
+
+    info "Deploying ${#p_arr[@]} profiles..."
+    for ((i=0; i<${#p_arr[@]}; i++)); do
+      local pname="${p_arr[$i]}"
+      local ptype="${t_arr[$i]}"
+
+      echo ""
+      info "Deploying profile: $pname ($ptype)..."
+
+      # Step 1: Create Hermes profile
+      if command -v hermes &> /dev/null; then
+        hermes profile create "$pname" 2>/dev/null || warn "Profile $pname may already exist"
+      else
+        warn "hermes CLI not found — skipping profile creation"
+      fi
+
+      # Step 2: Generate profile config
+      if [[ -f "$REPO_ROOT/scripts/generate-profile.py" ]]; then
+        python3 "$REPO_ROOT/scripts/generate-profile.py" "$pname" --type "$ptype" --force 2>&1 || warn "Profile generation failed for $pname"
+      fi
+    done
+
+    echo ""
+    ok "All profiles deployed"
+
+  elif [[ -n "$deploy_target" ]]; then
+    # Deploy single profile — format: profile-name:type
+    local pname="$deploy_target"
+    local ptype="${2:-base}"
+
+    echo ""
+    info "Deploying profile: $pname ($ptype)..."
+
+    if command -v hermes &> /dev/null; then
+      hermes profile create "$pname" 2>/dev/null || warn "Profile $pname may already exist"
+    fi
+
+    if [[ -f "$REPO_ROOT/scripts/generate-profile.py" ]]; then
+      python3 "$REPO_ROOT/scripts/generate-profile.py" "$pname" --type "$ptype" --force 2>&1 || warn "Profile generation failed"
+    fi
+
+    info "Next: set up Slack bot and wire crons for $pname"
+  fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════
 #  SUMMARY
 # ═══════════════════════════════════════════════════════════════════════
 print_summary() {
@@ -295,11 +395,12 @@ print_summary() {
   echo -e "    Configs: $COUNT_CONFIGS installed"
   echo ""
   echo -e "${GREEN}  Next Steps:${NC}"
-  echo -e "    1. Create a profile:  ${CYAN}hermes profile create <name>${NC}"
-  echo -e "    2. Add scrum config:  ${CYAN}cp templates/scrum/scrum.yaml ~/.hermes/profiles/<name>/${NC}"
-  echo -e "    3. Edit scrum.yaml with your team roster"
-  echo -e "    4. Wire scrum crons:  ${CYAN}hermes cron create ...${NC}  (see SETUP.md)"
-  echo -e "    5. Verify install:    ${CYAN}./verify-install.sh${NC}"
+  echo -e "    1. Set up Google DWD:  ${CYAN}see recipes/google-dwd.md${NC}"
+  echo -e "    2. Init gbrain:         ${CYAN}scripts/init-gbrain.sh${NC}"
+  echo -e "    3. Deploy profiles:     ${CYAN}./install.sh --deploy all${NC}"
+  echo -e "    4. Wire scrum crons:    ${CYAN}python3 scripts/wire-crons.py <profile> --apply${NC}"
+  echo -e "    5. Set up Slack bots:   ${CYAN}see SETUP.md Phase 4${NC}"
+  echo -e "    6. Verify install:      ${CYAN}./scripts/verify-install.sh${NC}"
   if [[ -n "$BACKUP_DIR" ]]; then
     echo ""
     info "Backups saved to: $BACKUP_DIR"
@@ -318,9 +419,17 @@ main() {
   echo ""
   section_configs
   echo ""
+  section_gbrain
+  echo ""
   section_symlink
   echo ""
   print_summary
+  echo ""
+
+  # Deploy mode: install + generate profiles
+  if [[ -n "$DEPLOY" ]]; then
+    section_deploy "$DEPLOY"
+  fi
 }
 
 main

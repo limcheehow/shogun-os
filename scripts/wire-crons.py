@@ -105,7 +105,7 @@ PROFILE_EXTRA_CRONS = {
                 "the HR channel with who's on leave today, who returns today, "
                 "and any pending MC applications that need attention."
             ),
-            "skills": ["hr-leave-management"],
+            "skills": [],
             "deliver": "local",
         },
     ],
@@ -119,7 +119,7 @@ PROFILE_EXTRA_CRONS = {
                 "spending against budget, flag any departments approaching "
                 "their limits, and summarise to the finance channel."
             ),
-            "skills": ["finance-budget-tracker"],
+            "skills": [],
             "deliver": "local",
         },
     ],
@@ -133,7 +133,7 @@ PROFILE_EXTRA_CRONS = {
                 "tasks, flag overdue items and approaching deadlines, and "
                 "post a concise status to the PM channel."
             ),
-            "skills": ["project-task-management"],
+            "skills": [],
             "deliver": "local",
         },
     ],
@@ -147,7 +147,7 @@ PROFILE_EXTRA_CRONS = {
                 "stale opportunities and upcoming follow-ups, and post "
                 "a pipeline health summary to the CRM channel."
             ),
-            "skills": ["crm-assistant"],
+            "skills": [],
             "deliver": "local",
         },
     ],

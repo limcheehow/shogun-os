@@ -176,7 +176,7 @@ if command -v hermes &> /dev/null; then
   if [[ "$QUICK" != true ]]; then
     local skills_output
     skills_output=$(hermes skills list 2>&1 || true)
-    for skill in "department-scrum" "brain-ingest-pipeline"; do
+    for skill in "department-scrum" "brain-ingest-pipeline" "slack-formatting" "brain-compliance" "profile-enrichment" "gbrain-operations"; do
       if echo "$skills_output" | grep -qi "$skill"; then
         ok "  └─ Hermes recognizes skill: $skill"
       else
@@ -190,7 +190,49 @@ fi
 
 echo ""
 
-# ── 6. Repo Integrity ───────────────────────────────────────────────────
+# ── 6. GBrain Connectivity ─────────────────────────────────────────────
+echo -e "${CYAN}━━━ GBrain MCP Connectivity ━━━${NC}"
+
+if command -v hermes &> /dev/null; then
+  if hermes mcp list 2>&1 | grep -qi "gbrain"; then
+    ok "GBrain MCP server is configured"
+
+    # Test: can we query gbrain (if Hermes is running)
+    if [[ "$QUICK" != true ]]; then
+      local gbrain_test
+      gbrain_test=$(hermes chat -q "mcp_gbrain_get_health" --quiet 2>&1 || true)
+      if echo "$gbrain_test" | grep -qi "page_count\|brain_score\|version"; then
+        ok "  └─ gbrain MCP responds: connected"
+      else
+        warn "  └─ gbrain MCP configured but query failed (gateway may not be running)"
+      fi
+    fi
+  else
+    warn "GBrain MCP server not configured — run gbrain serve and add to hermes mcp"
+  fi
+
+  # Check stock-scanner MCP
+  if hermes mcp list 2>&1 | grep -qi "stock-scanner"; then
+    ok "stock-scanner MCP server is configured"
+    if [[ "$QUICK" != true ]]; then
+      local stock_test
+      stock_test=$(hermes chat -q "mcp_stock_scanner_tradingview_market_indices" --quiet 2>&1 || true)
+      if echo "$stock_test" | grep -qi "VIX\|S&P\|NASDAQ"; then
+        ok "  └─ stock-scanner MCP responds: connected"
+      else
+        warn "  └─ stock-scanner MCP configured but query failed"
+      fi
+    fi
+  else
+    info "stock-scanner MCP is optional — skip if not needed"
+  fi
+else
+  warn "Hermes CLI not found — cannot test MCP connectivity"
+fi
+
+echo ""
+
+# ── 7. Repo Integrity ───────────────────────────────────────────────────
 echo -e "${CYAN}━━━ Repo Integrity ━━━${NC}"
 
 # Verify no old paths remain

@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.3.0] — 2026-06-25
+
+### Deployment Readiness Update
+
+Comprehensive audit and fix pass to make Company OS deployable to a fresh Hermes copy with zero errors. Full analysis at `docs/deployment-readiness-review.md`.
+
+#### Fixed: Deployment Blockers
+
+- **Fixed phantom skill references in wire-crons.py:** Replaced 4 non-existent skills (`hr-leave-management`, `finance-budget-tracker`, `project-task-management`, `crm-assistant`) with empty skill arrays so cron creation doesn't fail
+- **Added 10 Samurai SOUL snippets to generate-profile.py:** Takumi (coding), Jinzai (hr), Koku (finance), Gorobei (projects), Kura (procurement), Shi (product), Kizuna (crm), Haiku (marketing), Kata (compliance), Bōei (support) — each with persona, responsibilities, boundaries, communication style, and sources
+- **Added support profile type** to PROFILE_META (was missing from the profile generator)
+- **Added 4 reusable skills:** `slack-formatting`, `brain-compliance`, `profile-enrichment` (gbrain-native shared version), `gbrain-operations`
+
+#### New: Deployment Tooling
+
+- **install.sh:** Added `--deploy` flag (chains install → profile creation → generate-profile for all 10 departments), `--deploy-profile` flag for single-profile deploy
+- **install.sh:** Added `section_gbrain()` — checks gbrain is installed, warns if older than v0.42.x, provides install instructions
+- **scripts/init-gbrain.sh:** New standalone script — initializes gbrain, creates all 11 sources (shared + 10 departments), configures federated read, verifies connectivity
+- **verify-install.sh:** Added MCP connectivity probe — tests gbrain MCP and stock-scanner MCP actually respond
+- **verify-install.sh:** Extended skill check from 2 to 6 skills
+
+#### Documentation
+
+- **docs/deployment-readiness-review.md:** Full gap analysis, execution plan, skills audit, profile mapping, closure criteria
+- **HUB.md:** Updated skill table with 4 new skills
+
+---
+
 ## [2.2.0] — 2026-06-23
 
 ### Added: Phases 4–8 (Profile Generator, Cron Wirer, Verification, Docs, Hub)
