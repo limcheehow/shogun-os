@@ -163,11 +163,11 @@ Every profile loads shared Hermes skills (installed via `hermes skills install` 
 | Skill | Purpose |
 |-------|---------|
 | `department-scrum` | Cross-department 3-tier scrum workflow (9am/11am/5pm) |
-| `profile-enrichment` | Company/contact research |
-| `staff-lookup` | Employee directory |
-| `task-management` | Unified task schema |
-| `brain-compliance` | Brain page validation |
-| `slack-formatting` | Message formatting |
+| `brain-ingest-pipeline` | Unified 5-phase COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE data pipeline |
+| `slack-formatting` | Slack-optimized formatting (mrkdwn + Block Kit) |
+| `brain-compliance` | Gbrain-compliant brain page standards & validator |
+| `profile-enrichment` | Company/contact research via web + gbrain-native writes |
+| `gbrain-operations` | GBrain CLI operations (sync, embed, doctor, dream, MCP) |
 
 ## Scrum Workflow
 
