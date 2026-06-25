@@ -1,28 +1,49 @@
 ---
 id: jibble-time-tracking
 name: Jibble Time Tracking
-version: 1.0.0
-description: Jibble time tracking integration via MCP connector. Query time entries, track attendance, sync to gbrain for HR oversight.
+version: 2.0.0
+description: >
+  ⚠ SUPERSEDED by Provider Abstraction. See recipes/time-tracking/ instead.
+  Jibble is now a reference bridge at recipes/time-tracking/bridges/tt-bridge-jibble.py.
+  The generic time tracking skill at recipes/time-tracking/GENERIC_SKILL.md works
+  with any provider that implements the CONTRACT.md standard tools.
 category: connector
 requires: []
-secrets:
-  - name: JIBBLE_API_KEY
-    description: Jibble API key for programmatic access
-    where: Jibble dashboard → Integrations → API Keys
-  - name: JIBBLE_GROUP_ID
-    description: Jibble group/company ID for Tapway
-    where: Jibble dashboard → Settings → Organization
-health_checks:
-  - type: script
-    command: "python3 -c \"import os; assert os.environ.get('JIBBLE_API_KEY'), 'missing key'; print('ENV_OK')\""
-    label: "Jibble API key set"
-setup_time: 15 min
+secrets: []
+health_checks: []
+setup_time: 5 min
 cost_estimate: "$0 (included with Jibble subscription)"
 ---
 
 # Jibble Time Tracking
 
-HR time tracking via Jibble MCP. Track who's clocked in, compile timesheets, detect attendance anomalies.
+> **⚠ DEPRECATED — This recipe is superseded by the [Provider Abstraction](../time-tracking/CONTRACT.md).**
+
+Instead of a Jibble-specific recipe, use the new **generic** approach:
+
+1. Read [`CONTRACT.md`](../time-tracking/CONTRACT.md) — standard tool interface
+2. Configure the Jibble bridge as MCP server (see below)  
+3. Read [`GENERIC_SKILL.md`](../time-tracking/GENERIC_SKILL.md) — works with any provider
+
+## Quick Migration
+
+Configure Jibble via the new bridge:
+
+```yaml
+mcp_servers:
+  time-tracking:
+    command: python3
+    args: [~/.hermes/scripts/tt-bridge-jibble.py]
+    env:
+      TT_API_KEY: "${TT_API_KEY}"
+```
+
+```bash
+# Symlink the reference bridge into ~/.hermes/scripts/
+ln -sf ~/company-os/recipes/time-tracking/bridges/tt-bridge-jibble.py ~/.hermes/scripts/tt-bridge-jibble.py
+```
+
+> See [`bridges/tt-bridge-jibble.py`](../time-tracking/bridges/tt-bridge-jibble.py) for the reference implementation.
 
 ## IMPORTANT: Instructions for the Agent
 

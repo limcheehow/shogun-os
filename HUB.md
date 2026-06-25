@@ -50,3 +50,7 @@ skills/
 Company OS is a reference architecture for running an organization through Hermes Agent. Each department gets a dedicated AI agent with role-specific tools, memory, and autonomy.
 
 See the [full repo](https://github.com/limcheehow/company-os) for profiles, templates, install scripts, and documentation.
+
+## Architecture
+
+- [Provider Abstraction](docs/architecture/PROVIDER_ABSTRACTION.md) — Bring your own backends to agent profiles via standard MCP contracts

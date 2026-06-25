@@ -41,6 +41,9 @@ Comprehensive audit and fix pass to make Company OS deployable to a fresh Hermes
 - **docs/tutorials/getting-started.md:** New tutorial — from zero to first department agent in 30 minutes (10 steps, covers prerequisites through verification)
 - **docs/tutorials/add-new-department.md:** New tutorial — how to create a new department agent beyond the 10 defaults (gbrain source → PROFILE_META → SOUL → cron → scrum → deploy), using Legal/Hōritsu as a worked example
 - **docs/architecture/OVERVIEW.md:** New architecture docs — three layers, profile architecture, MCP wiring, scrum architecture, data flow, cron architecture, security model
+- **docs/architecture/PROVIDER_ABSTRACTION.md:** New architecture — bring-your-own-backend pattern for agent profiles. Standard MCP contract interface with pluggable provider bridges. Three layers: generic skill → provider bridge → external API. Covers time tracking, HR leave, and expense contracts.
+- **recipes/time-tracking/ (new):** Provider abstraction directory with CONTRACT.md (9 standard tt_* tools, response shapes), GENERIC_SKILL.md (provider-agnostic agent workflows), bridges/tt-bridge-jibble.py (reference Jibble implementation), providers/kami.md (Kami setup guide)
+- **recipes/jibble-time-tracking.md (updated):** Marked as SUPERSEDED — points to new time-tracking abstraction
 
 ---
 
