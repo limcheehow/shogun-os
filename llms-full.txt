@@ -1,0 +1,1391 @@
+# Company OS — Full Context
+
+> Company OS is a reference architecture for running an entire organization through
+> Hermes Agent. Each department gets a dedicated AI operator with role-specific
+> tools, memory, and autonomy. Built on Hermes Agent + GBrain.
+
+This file concatenates core Company OS documentation for single-fetch ingestion.
+For the link-only index, see `llms.txt`. Source of truth: https://github.com/limcheehow/company-os.
+
+
+---
+# AGENTS.md
+
+Source: https://raw.githubusercontent.com/limcheehow/company-os/main/AGENTS.md
+
+# Agents working on Company OS
+
+This is your install + operating protocol. Start here if you're an AI agent tasked with deploying or operating Company OS.
+
+## Read this order
+
+1. `./AGENTS.md` (this file) — orientation + install protocol
+2. `./ARCHITECTURE.md` — system design, three-layer architecture, gbrain sources
+3. `./PROFILE_CATALOG.md` — all 10 department profiles with personas and responsibilities
+4. `./CRON_INVENTORY.md` — every cron job across all profiles
+5. `./INSTALL_FOR_AGENTS.md` — full 8-phase install protocol
+6. `./recipes/` — integration patterns (google-dwd, department-scrum, etc.)
+
+## What Company OS is
+
+Company OS is NOT a single piece of software. It is a **reference architecture** with provisioning tooling. It deploys 10 independent Hermes Agent profiles, each connected to its own gbrain source and a dedicated Slack bot. The three layers:
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| Profiles | Hermes Agent | Department-specific AI operators (10 profiles) |
+| Knowledge | GBrain (MCP) | Hybrid search across 11 isolated sources |
+| Comms | Slack (per-profile bot) | DMs, channel messages, cron delivery |
+
+## Quick Install (paste this into your agent)
+
+```
+Retrieve and follow the instructions at:
+https://raw.githubusercontent.com/limcheehow/company-os/main/INSTALL_FOR_AGENTS.md
+```
+
+The full protocol covers: prerequisites, Google DWD, gbrain init, profile creation, Slack bot setup, cron wiring, model configuration, and verification.
+
+## File Layout
+
+```
+company-os/
+├── ARCHITECTURE.md         # System design (read after this)
+├── SETUP.md                # Human-readable setup playbook
+├── PROFILE_CATALOG.md      # All 10 profiles
+├── CRON_INVENTORY.md       # All 54 cron jobs
+├── RECIPE_INDEX.md         # Recipe dependency graph
+├── HUB.md                  # Hermes skill tap manifest
+├── INSTALL_FOR_AGENTS.md   # Agent install protocol
+├── AGENTS.md               # This file
+├── scripts/                # 7 provisioning scripts
+│   ├── install.sh              # Install skills + scripts + gbrain check
+│   ├── generate-profile.py     # Generate profile from template
+│   ├── wire-crons.py           # Generate/apply cron jobs
+│   ├── init-gbrain.sh          # Init gbrain + 11 sources
+│   ├── verify-install.sh       # Full verification suite
+│   ├── backup-crons.py         # Export cron jobs to JSON
+│   └── restore-crons.py        # Restore cron jobs from backup
+├── skills/                 # 6 reusable Hermes skills
+├── recipes/                # 8 integration recipes
+├── templates/              # Profile config templates
+│   └── profiles/
+│       ├── base-config.yaml       # Standard department config
+│       └── coding-config.yaml     # Coding agent config (Claude)
+└── examples/
+    └── scrum-configs/      # 9 scrum.yaml templates
+```
+
+## Common Tasks
+
+### Deploy a new department
+
+```bash
+# 1. Create gbrain source
+gbrain init-source <dept> --dir ~/brain/<dept>
+
+# 2. Create Hermes profile
+hermes profile create <dept>-manager
+
+# 3. Generate profile with SOUL.md
+python3 scripts/generate-profile.py <dept>-manager --type <type>
+
+# 4. Wire cron jobs
+python3 scripts/wire-crons.py <dept>-manager --type <type> --apply
+
+# 5. Set up Slack bot (create in api.slack.com, add tokens to .env)
+# 6. Enable federated read
+export GBRAIN_FEDERATED_READ=true
+
+# 7. Verify
+hermes -p <dept>-manager --exec "mcp_gbrain_whoami"
+```
+
+### Add a new shared skill to all profiles
+
+```bash
+# 1. Copy skill to repo's skills/ directory
+# 2. Add to install.sh's full-install loop (auto-picked up by for loop)
+# 3. Add to verify-install.sh's skill check list
+# 4. Re-run install.sh
+./scripts/install.sh
+```
+
+### Backup and restore cron jobs
+
+```bash
+# Backup all cron jobs (on current machine)
+python3 scripts/backup-crons.py ~/company-os-cron-backup.json
+
+# Restore on fresh machine
+python3 scripts/restore-crons.py ~/company-os-cron-backup.json
+```
+
+## Trust Boundary
+
+Each Hermes Agent profile is **isolated by design**:
+
+- **Physical isolation**: Profiles share no config files, no skills directory, no memory, no cron jobs. They share only the `~/.hermes` home directory as a parent path.
+- **Knowledge isolation**: Each profile writes to its own gbrain source. No profile can modify another department's source. Federated read allows querying `shared/` (staff directory, policies) but not other departments' sources.
+- **Communication isolation**: Each profile has its own Slack bot token. Bot A cannot read channels belonging to Bot B.
+- **Infrastructure sharing**: The `default` profile runs shared resource crons (email ingest, calendar sync, brain sync) that all departments benefit from.
+
+## Before Shipping
+
+Run the verification suite after any change:
+
+```bash
+./scripts/verify-install.sh --quick
+```
+
+For full verification (includes MCP connectivity tests):
+```bash
+./scripts/verify-install.sh
+```
+
+## Privacy
+
+- Profile SOUL.md files define a persona — they should reference real team roles and responsibilities. Do NOT include real employee names, Slack IDs, or channel IDs in the templates.
+- Scrum config templates use placeholder values (`C0XXXXXXX`, `U0XXXXXXX`). Real values go into per-instance copies, not the repo.
+- The `.env` files contain API keys and are NEVER committed to the repo.
+- Google service account keys go in `~/.hermes/secrets/` — never in the repo.
+
+---
+# INSTALL_FOR_AGENTS.md
+
+Source: https://raw.githubusercontent.com/limcheehow/company-os/main/INSTALL_FOR_AGENTS.md
+
+# Company OS — Install Protocol for AI Agents
+
+> **An AI agent should be able to read this file and deploy Company OS on a fresh Hermes install without human intervention, except where API keys or Slack tokens must be provided.**
+
+## Prerequisites
+
+Before starting, verify:
+
+```bash
+which hermes          # Hermes Agent v0.x+ installed
+hermes --version
+which gbrain          # GBrain v0.42.x+ installed
+gbrain --version
+```
+
+If either is missing, install:
+```bash
+# Hermes Agent
+curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+
+# GBrain (via Bun)
+curl -fsSL https://bun.sh/install | bash
+export PATH="$HOME/.bun/bin:$PATH"
+bun install -g github:garrytan/gbrain
+```
+
+**STOP** if either command fails. The installer will need the user's system password for Hermes installation.
+
+---
+
+## Phase 1: Clone and Install
+
+```bash
+git clone https://github.com/limcheehow/company-os.git
+cd company-os
+./scripts/install.sh
+```
+
+Install.sh will:
+1. Copy all 6 skills to `~/.hermes/skills/`
+2. Copy all scripts to `~/.hermes/scripts/`
+3. Copy config files (gmail-batches.json, scrum config example)
+4. Check gbrain version (recommends v0.42.x+)
+5. Create SA-DWD symlink if service account key exists
+
+Show the summary to the user.
+
+---
+
+## Phase 2: Ask for API Keys
+
+Company OS needs these secrets. Collect them from the user before proceeding:
+
+| Key | Where to get it |
+|-----|----------------|
+| `DASHSCOPE_API_KEY` | Alibaba Cloud DashScope console (for deepseek-v4-flash) |
+| `OPENROUTER_API_KEY` | OpenRouter dashboard (fallback provider) |
+| `SUPABASE_URL` | Supabase project settings (for gbrain) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase project settings |
+| `TELEGRAM_BOT_TOKEN` | BotFather on Telegram (if using Telegram gateway) |
+
+For each Slack bot (one per department), the user needs:
+- **Bot User OAuth Token** (`xoxb-...`) — from Slack App settings → OAuth & Permissions
+- **App-Level Token** (`xapp-...`) — from Slack App settings → App-Level Tokens
+
+Write secrets to `~/.hermes/.env`:
+```bash
+cat >> ~/.hermes/.env << 'EOF'
+DASHSCOPE_API_KEY=sk-...
+OPENROUTER_API_KEY=sk-or-...
+SUPABASE_URL=https://...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+EOF
+```
+
+---
+
+## Phase 3: Initialize GBrain
+
+```bash
+./scripts/init-gbrain.sh --yes
+```
+
+This creates 11 gbrain sources:
+| Source | Purpose |
+|--------|---------|
+| `shared` | Staff directory, policies, taxonomy (federated read) |
+| `hr` | HR operations, leave, recruitment |
+| `finance` | Budgets, revenue, expenses |
+| `projects` | Project delivery, milestones |
+| `procurement` | POs, vendors, contracts |
+| `products` | PRDs, roadmaps, releases |
+| `crm` | Deals, companies, contacts |
+| `marketing` | Campaigns, content, brand |
+| `compliance` | Policies, audits, controls |
+| `engineering` | Codebases, ADRs, deployments |
+| `support` | Tickets, KB articles, customers |
+
+**STOP** — verify sources exist:
+```bash
+gbrain list-sources
+```
+
+---
+
+## Phase 4: Deploy Profiles
+
+```bash
+./scripts/install.sh --deploy all
+```
+
+This creates 10 Hermes Agent profiles with SOUL.md, config.yaml, and .env stubs:
+
+| Profile | Type | Persona | gbrain Source |
+|---------|------|---------|--------------|
+| coding-agent | coding | Takumi (匠) | engineering |
+| hr-manager | hr | Jinzai (人材) | hr |
+| finance-manager | finance | Koku (石) | finance |
+| project-manager | project-manager | Gorobei (五郎兵衛) | projects |
+| procurement-manager | procurement | Kura (蔵) | procurement |
+| product-manager | product | Shi (志) | products |
+| crm-manager | crm | Kizuna (絆) | crm |
+| marketing-manager | marketing | Haiku (俳句) | marketing |
+| compliance-manager | compliance | Kata (型) | compliance |
+| customer-support | support | Bōei (防衛) | support |
+
+**STOP** — verify profiles exist:
+```bash
+hermes profile list
+```
+
+---
+
+## Phase 5: Configure Profiles
+
+### 5.1 Add API Keys to Profile .env Files
+
+Each profile has its own `.env` at `~/.hermes/profiles/<name>/.env` — profiles DO NOT inherit from main `.env`.
+
+For each profile that needs a Slack bot, add:
+```bash
+SLACK_BOT_TOKEN=xoxb-...
+SLACK_APP_TOKEN=xapp-...
+```
+
+For all profiles, add:
+```bash
+DASHSCOPE_API_KEY=sk-...
+OPENROUTER_API_KEY=sk-or-...
+```
+
+### 5.2 Configure GBrain MCP
+
+Each profile's config.yaml should have:
+```yaml
+mcp_servers:
+  gbrain:
+    command: gbrain
+    args: [serve]
+    env:
+      GBRAIN_SOURCE: "<dept>"  # e.g., "hr" for hr-manager
+      GBRAIN_FEDERATED_READ: "true"
+```
+
+This is auto-configured by `generate-profile.py`. Verify with:
+```bash
+hermes config show --profile hr-manager mcp_servers
+```
+
+### 5.3 Set Up Slack Bots
+
+For each department that needs a Slack bot:
+
+1. Go to https://api.slack.com/apps → Create New App
+2. Choose "From an app manifest"
+3. Set bot token scopes: `chat:write`, `channels:history`, `im:history`, `users:read`, `reactions:write`
+4. Install to workspace — copy Bot User OAuth Token
+5. Enable Socket Mode
+6. Subscribe to bot events: `message.im`, `app_mention`
+7. Add tokens to profile's .env
+8. Enable Slack in profile's config.yaml:
+   ```yaml
+   slack:
+     enabled: true
+     allowed_channels: "C0B2NTXJD9U"
+   ```
+9. Invite bot to channels: `/invite @botname`
+
+---
+
+## Phase 6: Wire Cron Jobs
+
+### 6.1 Infrastructure Crons (default profile)
+
+```bash
+python3 scripts/wire-crons.py base --type base --deliver local --apply
+```
+
+### 6.2 Department Scrum Crons
+
+For each department profile, wire the 3-tier scrum workflow:
+
+```bash
+python3 scripts/wire-crons.py hr-manager --type hr --deliver "slack:<channel>" --apply
+python3 scripts/wire-crons.py finance-manager --type finance --deliver "slack:<channel>" --apply
+# ... repeat for each department
+```
+
+Options:
+- `--list` — preview commands without running
+- `--dry-run` — simulate creation
+- `--apply` — create all cron jobs
+
+### 6.3 Verify Crons
+
+```bash
+hermes cron list
+```
+
+---
+
+## Phase 7: Verification
+
+```bash
+./scripts/verify-install.sh
+```
+
+Checks performed:
+1. ✅ Skills installed (department-scrum, brain-ingest-pipeline, slack-formatting, brain-compliance, profile-enrichment, gbrain-operations)
+2. ✅ Scripts installed (send-scrum-dms.py, gmail-triage.py, etc.)
+3. ✅ Gmail batch config installed (valid JSON)
+4. ✅ SA-DWD symlink exists
+5. ✅ Hermes CLI available
+6. ✅ Hermes recognizes all 6 skills
+7. ✅ GBrain MCP configured and responding
+8. ✅ stock-scanner MCP configured (optional)
+9. ✅ Repo integrity (no old paths, no superseded recipes)
+
+---
+
+## Phase 8: Go Live
+
+### 8.1 Start Slack Gateways
+
+For each profile with a Slack bot:
+```bash
+hermes gateway start --profile <profile>
+```
+
+Verify each gateway:
+```bash
+hermes gateway status --profile <profile>
+# Expected: running
+```
+
+### 8.2 Enable Cron Jobs
+
+All cron jobs are created in `enabled: true` state. They fire on their next scheduled tick. To verify:
+```bash
+hermes cron list | grep -B 1 "enabled: false"
+# Should return no results (all enabled)
+```
+
+### 8.3 Test a Profile
+
+```bash
+hermes -p hr-manager --exec "mcp_gbrain_whoami"
+# Expected: your brain identity with hr source
+```
+
+### 8.4 Post-Install
+
+- Check brain health: `gbrain doctor`
+- Review SETUP.md for remaining configuration (Scrum configs, model switching)
+- Import initial staff directory: `mkdir -p ~/brain/shared/staff && gbrain import ~/brain/shared/staff`
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| `Profile already exists` | Use `--force` on generate-profile.py |
+| `.env` not inherited | Each profile has its own `.env` — copy keys explicitly |
+| Slack bot doesn't respond | Check `allowed_channels` in config.yaml, verify gateway is running |
+| Scrum crons not firing | Verify `scrum.yaml` exists in profile directory with real channel IDs |
+| gbrain MCP not found | Add to config.yaml: `mcp_servers.gbrain.command: gbrain` |
+| No LLM provider | Profile `.env` missing API key — copy from main `~/.hermes/.env` |
+
+---
+# ARCHITECTURE.md
+
+Source: https://raw.githubusercontent.com/limcheehow/company-os/main/ARCHITECTURE.md
+
+# Architecture
+
+## System Design
+
+Company OS runs on three layers:
+
+### Layer 1: Hermes Agent Profiles
+
+Each department gets a dedicated Hermes Agent profile. Profiles are isolated — they have their own:
+- **SOUL.md** — persona, voice, boundaries
+- **config.yaml** — model config, MCP servers, Slack connection
+- **skills/** — domain-specific skills (symlinks to shared/ for common ones)
+- **cron/** — scheduled jobs
+- **memories/** — persisted facts
+- **gbrain source** — department's own brain pages
+
+**Why one profile per department instead of one profile with channel routing:**
+- Physical isolation prevents cross-department data leaks
+- Each Slack bot has its own DMs and channel memberships
+- Each profile can have different model configs (e.g., Coding uses Claude, HR uses DeepSeek)
+- Cron jobs schedule independently per department
+
+### Layer 2: GBrain (Knowledge Layer)
+
+Every profile connects to gbrain via MCP (83 tools available). The brain architecture:
+
+```
+gbrain sources/
+├── shared/          ← Federated read, write restricted to HR
+├── hr/
+├── finance/
+├── projects/
+├── procurement/
+├── products/
+├── crm/
+├── marketing/
+├── compliance/
+├── engineering/
+└── support/
+```
+
+**Federated read:** Every profile can read from `shared/` (staff directory, company policies, taxonomy). Writes go to the profile's own source.
+
+**Hybrid search:** gbrain uses pgvector in Supabase for semantic + keyword search. All profiles share the same Supabase instance but are segmented by source.
+
+### Layer 3: Slack (Communication Layer)
+
+One Slack bot per profile. Each bot:
+- Lives in its department's Slack channels
+- Receives DMs from department members
+- Has its own app ID and bot token
+- Posts cron delivery to its home channel
+
+**Slack bot isolation is a hard requirement.** A single bot trying to serve all departments would create cross-department visibility issues (every profile sees every channel).
+
+## MCP Architecture
+
+### Standard Model Config
+
+```yaml
+model:
+  default: deepseek-v4-flash
+  provider: custom:dashscope
+  fallback:
+    - provider: openrouter
+      model: deepseek/deepseek-v4-flash
+```
+
+### Coding Model Config
+
+```yaml
+model:
+  default: claude-sonnet-4
+  provider: anthropic
+  fallback:
+    - provider: custom:dashscope
+      model: deepseek-v4-flash
+```
+
+### Shared MCP Servers (all profiles)
+
+| MCP Server | Purpose | Config Location |
+|-----------|---------|----------------|
+| `gbrain` | Brain search/read/write | Per-profile config.yaml |
+| `stock-scanner` | Market data | Per-profile config.yaml |
+
+### Per-Profile MCP Servers
+
+| Profile | Additional MCP |
+|---------|---------------|
+| hr-manager | Jibble time tracking |
+| crm-manager | (none beyond shared) |
+| marketing-manager | (none beyond shared) |
+
+## Google DWD Auth
+
+All Google API access (Gmail, Calendar, Drive, Slides) uses **Domain-Wide Delegation** — a service account impersonating `cheehow@gotapway.com`. No user-level OAuth tokens.
+
+```
+Google Cloud Console:
+  Project → Service Account (hermes-agent@...)
+  ↓ Service Account Key JSON → ~/.hermes/secrets/google-dwd-sa.json
+  ↓
+Google Workspace Admin Console:
+  Security → API Controls → Domain-Wide Delegation
+  Add Client ID + Scopes
+  ↓
+Hermes scripts (default profile):
+  service_account.Credentials.from_service_account_file(
+    SA_PATH, scopes=SCOPES, subject='cheehow@gotapway.com'
+  )
+  creds.refresh(google.auth.transport.requests.Request())
+  # creds.token ready for any Google API
+```
+
+**DWD vs Individual OAuth:**
+
+| Aspect | Individual OAuth | DWD Service Account |
+|--------|-----------------|---------------------|
+| Setup effort | User clicks consent screen every 90 days | Admin enables DWD once |
+| Token lifetime | ~7 days inactivity → dead | Never expires |
+| Refresh | Refresh token may expire | `creds.refresh()` always works |
+| Multiple profiles | Token per profile | One SA key shared |
+| Revocation | User revokes | Admin revokes |
+
+## Data Flow
+
+### Email → Brain
+
+```
+Gmail (via DWD)
+  ↓
+Email Collector (no_agent cron, every 30min)
+  ↓ Collects → filters noise → generates Gmail links
+  ↓
+~/brain/daily/email/digests/{date}.md
+  ↓
+Email Enrichment (agent cron, 3x/day)
+  ↓ Reads digest → updates person/company brain pages
+  ↓
+gbrain sync
+```
+
+### Calendar → Brain
+
+```
+Google Calendar (via DWD)
+  ↓
+Calendar Sync (no_agent cron, daily 6AM)
+  ↓ Paginated retrieval → daily markdown files
+  ↓
+~/brain/daily/calendar/{year}/{date}.md
+  ↓
+Attendee Enrichment (agent cron, daily 8AM)
+  ↓ Extracts attendees → creates/updates person pages
+  ↓
+gbrain import + embed
+```
+
+### Drive → Brain
+
+```
+Google Drive Folders (via DWD)
+  ↓
+Drive Sync (no_agent cron, weekdays 12/16/20)
+  ↓ Lists files → reads content → writes brain pages
+  ↓
+~/brain/meetings/ | proposals/ | reports/
+  ↓
+Drive Enrichment (agent cron, weekdays 13/17)
+  ↓ Extracts entities → updates person/company pages
+  ↓
+gbrain import + embed
+```
+
+## Cron Architecture
+
+Two-tier cron system:
+
+**Tier 1: Deterministic (no_agent)**
+- Runs code, produces data. No LLM involved.
+- Cheap, fast, reliable.
+- Examples: email collector, calendar sync, drive sync, token watchdog, token utilization report
+
+**Tier 2: Agent (LLM-driven)**
+- Reads output from Tier 1, makes judgment calls.
+- Uses LLM tokens but on a limited schedule (3x/day, not every 30min).
+- Examples: email enrichment, attendee enrichment, drive enrichment
+
+## Scrum Architecture
+
+### Option B: Gateway-Based DM Handling
+
+Every profile's scrum runs without socket daemons. The Hermes gateway handles all Slack DMs:
+
+```
+Slack Events API
+  ↓
+Hermes Gateway (per profile)
+  ↓
+SOUL.md instruction: "Is sender in today's scrum team?"
+  ├─ Yes, scrum reply → check-scrum-replies.py report --profile <p>
+  │                    → save state → post to #scrum-channel
+  └─ No → answer with domain knowledge using gbrain
+```
+
+### 3-Tier Cron Cadence
+
+Every department runs the same 3-tier scrum pattern (weekdays):
+
+| Time | Type | Script | What it does |
+|---|---|---|---|
+| 9:00 AM | `no_agent` | `send-scrum-dms.py --profile <p>` | Sends DMs, saves state, logs to gbrain |
+| 11:00 AM | Agent | `check-scrum-replies.py warn --profile <p>` | Cross-ref against gbrain, warn non-responders |
+| 5:00 PM | Agent | `check-scrum-replies.py report --profile <p>` | Compliance + SMART gates + brain + gbrain |
+
+Each profile has its own `scrum.yaml` config (team roster, task ID patterns, domain terms). See `skills/department-scrum/`.
+
+This split follows the **code for data, LLMs for judgment** pattern — adopted from gbrain's recipe philosophy.
+
+## Brain Ingest Pipeline
+
+Unified **COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE** pipeline for all data sources. Replaces the old per-source collector + enrichment crons.
+
+### Data Flow
+
+```
+E-mail (Gmail API, SA-DWD)
+  ↓
+gmail-triage.py (no_agent, */30min)
+  ↓ Labels inbox, priority scores, batch rotation (3 batches of 3-4 accounts)
+  ↓ State: ~/.hermes/cache/gmail-triage-state.json
+  ↓
+
+Calendar (Google Calendar API, SA-DWD)
+  ↓
+collect-calendar.py (no_agent, daily 6AM)
+  ↓ Events → ~/brain/data/calendar/ as gbrain-indexable markdown
+  ↓ 10 accounts, 7d lookback + 14d lookahead
+  ↓
+
+ROUTE → BRIDGE → ENRICH → VALIDATE (agent, 9/13/17 weekdays)
+  ↓
+mcp_gbrain_* tools:
+  └─ ROUTE: mcp_gbrain_query to find matching pages → classify signals
+  └─ BRIDGE: mcp_gbrain_add_link + mcp_gbrain_add_timeline_entry
+  └─ ENRICH: profile-enrichment skill → web search for missing data
+  └─ VALIDATE: validate-brain-page.py → orphan detection → link coverage
+```
+
+### Key Design Decisions
+
+| Decision | Why |
+|---|---|
+| **SA-DWD over OAuth** | No token refresh, never expires, covers all team members with one key |
+| **Batch rotation for Gmail** | Avoids memory spikes — processes 3 accounts per 30min run |
+| **Config-driven account list** | `config/gmail-batches.json` — edit one file, no script changes |
+| **5-phase pipeline** | Every source follows the same flow, no exceptions |
+| **VALIDATE as a phase** | Brain compliance is non-negotiable — every page gets validated |
+| **Plugin packaging** | First-class Hermes plugin: installable, registerable, versioned |
+
+---
+# SETUP.md
+
+Source: https://raw.githubusercontent.com/limcheehow/company-os/main/SETUP.md
+
+# Setup Playbook
+
+> End-to-end guide from zero to running profiles. Follow in order.
+
+## Phase 0: Prerequisites
+
+```bash
+# Hermes Agent
+pip install hermes-agent  # or your install method
+hermes --version
+
+# GBrain
+curl -fsSL https://bun.sh/install | bash
+bun install -g github:garrytan/gbrain
+gbrain --version
+
+# Tokscale (for AI spend tracking)
+npm install -g tokscale
+
+# Google Auth libraries
+pip install google-auth google-api-python-client
+```
+
+## Phase 1: Google DWD (Foundation)
+
+See [`recipes/google-dwd.md`](recipes/google-dwd.md) for the full playbook.
+
+**Summary:**
+1. Create service account in Google Cloud Console
+2. Enable Domain-Wide Delegation in Google Workspace Admin Console
+3. Download service account key to `~/.hermes/secrets/google-dwd-sa.json` (the brain ingest pipeline scripts also look for this at `~/.hermes/service-account-key.json` via symlink — create with `ln -sf ~/.hermes/secrets/google-dwd-sa.json ~/.hermes/service-account-key.json`)
+4. Verify token generation
+
+**Depends on:** Google Workspace admin access.
+
+## Phase 2: GBrain Setup
+
+### 2.1 Initialize Brain
+
+```bash
+gbrain init
+# Choose: Postgres + pgvector via Supabase (recommended for >1000 files)
+```
+
+### 2.2 Create Sources
+
+```bash
+gbrain init-source shared
+gbrain init-source hr
+gbrain init-source finance
+gbrain init-source projects
+gbrain init-source procurement
+gbrain init-source products
+gbrain init-source crm
+gbrain init-source marketing
+gbrain init-source compliance
+gbrain init-source engineering
+gbrain init-source support
+```
+
+Each source becomes its own folder under `~/brain/`.
+
+### 2.3 Configure Federated Read
+
+In each profile's `config.yaml` (except HR, which owns `shared/`):
+
+```bash
+gbrain config set federated_read true
+```
+
+Or set the environment variable:
+
+```bash
+export GBRAIN_FEDERATED_READ=true
+```
+
+### 2.4 Import Staff Directory
+
+```bash
+mkdir -p ~/brain/shared/staff
+# Create one page per employee with:
+# ---
+# type: person
+# department: engineering
+# role: Senior Developer
+# ---
+# ...person details...
+
+gbrain import ~/brain/shared/staff --no-embed
+gbrain embed --stale
+```
+
+## Phase 3: Profile Creation
+
+### 3.1 Create Each Profile
+
+For each department, create the Hermes profile:
+
+```bash
+hermes profile create <dept>-manager
+```
+
+Then apply the template:
+- `SOUL.md` — persona definition
+- `config.yaml` — model config + MCP servers + Slack connection
+- `skills/` — domain skills (symlink shared skills)
+- `cron/jobs/` — cron templates
+- `memories/` — initial persisted facts
+
+### 3.2 Symlink Shared Skills
+
+```bash
+cd ~/.hermes/profiles/<dept>-manager/skills
+ln -sf ../../../../skills/shared ./shared
+```
+
+### 3.3 Wire GBrain MCP
+
+In each profile's `config.yaml`:
+
+```yaml
+mcp_servers:
+  gbrain:
+    command: "gbrain"
+    args: ["mcp"]
+    env:
+      GBRAIN_SOURCE: "<dept>"
+      GBRAIN_FEDERATED_READ: "true"
+      SUPABASE_URL: "${SUPABASE_URL}"
+      SUPABASE_SERVICE_ROLE_KEY: "${SUPABASE_SERVICE_ROLE_KEY}"
+```
+
+## Phase 4: Slack Bot Configuration
+
+### 4.1 Create Slack Apps
+
+One Slack app per profile.
+
+1. Go to https://api.slack.com/apps → Create New App
+2. Choose "From an app manifest"
+3. Set bot token scopes: `chat:write`, `channels:history`, `im:history`, `users:read`, `reactions:write`
+4. Install to workspace — copy the Bot User OAuth Token
+5. Enable Socket Mode (for event subscriptions)
+6. Subscribe to bot events: `message.im`, `app_mention`
+
+### 4.2 Configure Profile
+
+In `config.yaml`:
+
+```yaml
+slack:
+  bot_token: "xoxb-..."
+  app_token: "xapp-..."
+  signing_secret: "..."
+```
+
+### 4.3 Invite Bots to Channels
+
+```bash
+# Invite each bot to its department's Slack channels
+# e.g., #hr-general for hr-manager, #project-alpha for project-manager
+```
+
+## Phase 5: Cron Jobs
+
+### 5.1 Default Profile Infrastructure Crons
+
+These run on the `default` profile (shared infrastructure):
+
+```bash
+# Email Collector (no_agent, every 30min)
+hermes cron create --name "Email Collector" \
+  --schedule "*/30 * * * *" --script email-collector.py --no-agent
+
+# Email Enrichment (agent, 3x/day)
+hermes cron create --name "Email Enrichment" \
+  --schedule "0 9,13,17 * * 1-5" \
+  --skills "gbrain-operations" --enabled-toolsets "terminal,file,search"
+
+# Calendar Sync (no_agent, daily 6AM)
+hermes cron create --name "Calendar Sync" \
+  --schedule "0 6 * * *" --script calendar-sync.py --no-agent
+
+# Calendar Attendee Enrichment (daily 8AM)
+hermes cron create --name "Calendar Attendee Enrichment" \
+  --schedule "0 8 * * *" \
+  --skills "gbrain-operations" --enabled-toolsets "terminal,file,search"
+
+# Drive Sync (no_agent, weekdays 12/16/20)
+hermes cron create --name "Drive Sync" \
+  --schedule "0 12,16,20 * * 1-5" --script drive-sync.py --no-agent
+
+# Token Utilization (weekly Monday 8AM, no_agent)
+hermes cron create --name "Token Utilization Report" \
+  --schedule "0 8 * * 1" --script token-util-report.sh --no-agent
+```
+
+### 5.2 Department Scrum (3-Tier Workflow)
+
+Each department profile uses the **3-tier scrum workflow** from `skills/department-scrum/`.
+
+#### Prerequisites
+
+Before wiring crons, you need:
+
+1. **SOUL.md "Scrum DM Handling" section** — copy from `skills/department-scrum/references/soul-snippet.md`
+2. **scrum.yaml** — create `~/.hermes/profiles/<profile>/scrum.yaml` (see `examples/scrum-configs/` and `skills/department-scrum/references/scrum-config-schema.md`)
+3. **Generic scripts** — `send-scrum-dms.py` and `check-scrum-replies.py` at `~/.hermes/scripts/scrum/`
+
+#### Wire 3 Crons Per Profile
+
+```bash
+# 9am — Send DMs (no_agent)
+hermes cron create --name "<profile>-scrum-9am" \
+  --schedule "0 9 * * 1-5" \
+  --script "send-scrum-dms.py --profile <profile>" \
+  --no-agent \
+  --deliver "slack:<channel_updates>"
+
+# 11am — Warn non-responders (agent)
+hermes cron create --name "<profile>-scrum-11am" \
+  --schedule "0 11 * * 1-5" \
+  --prompt "Loaded skills: department-scrum, task-management, staff-lookup. STEP 1: Run check-scrum-replies.py warn --profile <profile>. STEP 2: Cross-ref against gbrain source: <source>. STEP 3: Post summary to slack:<channel_updates>." \
+  --skills "department-scrum,task-management,staff-lookup" \
+  --enabled-toolsets "terminal,file,web,search" \
+  --deliver "slack:<channel_updates>"
+
+# 5pm — Compliance report (agent)
+hermes cron create --name "<profile>-scrum-5pm" \
+  --schedule "0 17 * * 1-5" \
+  --prompt "Loaded skills: department-scrum, task-management, staff-lookup. STEP 1: Run check-scrum-replies.py report --profile <profile>. STEP 2: Full brain cross-ref + SMART gates. STEP 3: Post enriched report." \
+  --skills "department-scrum,task-management,staff-lookup" \
+  --enabled-toolsets "terminal,file,web,search" \
+  --deliver "slack:<channel_updates>"
+```
+
+See `skills/department-scrum/templates/` for full cron prompt templates with placeholders.
+
+#### Verify
+
+```bash
+python3 ~/.hermes/scripts/scrum/test-scrum-cross-dept.py
+# Expected: 48/48 tests passing, covering Projects, Products, HR, Finance
+```
+
+### 5.3 Extra Department Crons
+
+| Profile | Extra Cron | Schedule |
+|---------|-----------|----------|
+| hr-manager | Candidate Pipeline | Mon 10AM |
+| hr-manager | Recruitment GDrive Sync | Daily 6AM |
+| crm-manager | Deal Activity Sync | Hourly 9-18 weekdays |
+| crm-manager | Sales Pipeline | Mon 9AM |
+| crm-manager | Weekly Summary | Fri 5PM |
+| finance-manager | Daily Burn Rate | Daily 8AM |
+| finance-manager | Invoice Aging | Mon 8AM |
+| finance-manager | Monthly P&L | 1st of month 8AM |
+| finance-manager | Weekly Budget | Mon 8AM |
+| procurement-manager | Contract Expiry | Mon 9AM |
+| product-manager | Sprint Cycle | Bi-weekly Mon |
+| hr-manager | Jibble Attendance | Weekdays 9:30AM |
+| hr-manager | Jibble Timesheet | Weekly Mon 10AM |
+
+## Phase 6: Model Configuration
+
+### 6.1 Set Up Model Presets
+
+Two named presets:
+
+**Standard** (most profiles):
+```yaml
+model:
+  default: deepseek-v4-flash
+  provider: custom:dashscope
+  fallback:
+    - provider: openrouter
+      model: deepseek/deepseek-v4-flash
+```
+
+**Coding** (coding-agent only):
+```yaml
+model:
+  default: claude-sonnet-4
+  provider: anthropic
+  fallback:
+    - provider: custom:dashscope
+      model: deepseek-v4-flash
+```
+
+### 6.2 Switch Profile
+
+```bash
+python3 scripts/switch-profile.py <profile-name> --model standard
+python3 scripts/switch-profile.py coding-agent --model coding
+```
+
+## Phase 7: Verification
+
+### 7.1 Health Check
+
+```bash
+# Test gbrain connectivity
+hermes -p hr-manager --exec "mcp_gbrain_get_health"
+
+# Test Slack delivery
+hermes -p hr-manager --exec "send_message('Standup agent online')"
+
+# Test cron
+hermes -p hr-manager cron run <job-id>
+```
+
+### 7.2 Verify Each Profile
+
+```bash
+# Check all profiles respond
+for p in hr-manager finance-manager project-manager procurement-manager \
+         product-manager crm-manager marketing-manager compliance-manager \
+         customer-support coding-agent; do
+  echo "$p: $(hermes -p $p --exec 'mcp_gbrain_whoami' 2>&1 | head -1)"
+done
+```
+
+## Phase 8: Go Live
+
+When ready to activate, unpause all template cron jobs:
+
+```bash
+# List template crons (from profile cron/jobs/*.md)
+# Activate each via hermes cron create or un-pause existing
+hermes cron list --profile hr-manager
+hermes cron resume <job-id>
+```
+
+## Post-Setup
+
+- Monitor token utilization weekly (cron already set up)
+- Check brain health: `gbrain doctor`
+- Review standup summaries for quality
+- Extend with new recipes as needs emerge
+
+---
+# PROFILE_CATALOG.md
+
+Source: https://raw.githubusercontent.com/limcheehow/company-os/main/PROFILE_CATALOG.md
+
+# Profile Catalog
+
+All 10 department profiles with personas, gbrain sources, skills, and cron jobs. Every profile uses the **3-tier scrum workflow** from `skills/department-scrum/` — see [CRON_INVENTORY.md](CRON_INVENTORY.md) for scrum cron details.
+
+---
+
+## 1. HR — Jinzai (人材 — "Talent")
+
+| Field | Value |
+|-------|-------|
+| Persona | Jinzai — People Operations, culture builder |
+| gbrain source | `hr/` |
+| Skills | `mc-application`, `jibble-compliance`, `leave-balance`, `leave-management`, `people-ops` |
+| Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
+| Scrum | ✅ 3-tier — `scrum.yaml` needed |
+| Extra Crons | Candidate pipeline (Mon 10AM), Recruitment GDrive sync (daily 6AM), Jibble attendance (weekdays 9:30AM), Jibble timesheet (Mon 10AM) |
+| Group type | `initiative` ("Q3 Hiring Drive") |
+| Task IDs | `HR-\d+` |
+
+### SOUL.md Essence
+
+> You are Jinzai, the HR Operations Samurai for Tapway. Your domain is people operations: leave management, attendance compliance, recruitment pipeline, and employee well-being. You communicate with warmth and precision — firm on policy, flexible with people. Your gbrain source is `hr/`.
+
+---
+
+## 2. Finance — Koku (石 — "Stone")
+
+| Field | Value |
+|-------|-------|
+| Persona | Koku — Financial stability, budget discipline |
+| gbrain source | `finance/` |
+| Skills | (none beyond shared) |
+| Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
+| Scrum | ✅ 3-tier — `scrum.yaml` needed |
+| Extra Crons | Daily burn rate (8AM), Invoice aging (Mon 8AM), Monthly P&L (1st 8AM), Weekly budget (Mon 8AM) |
+| Group type | `initiative` ("Annual Audit") |
+| Task IDs | `PO-\d+`, `INV-\d+` |
+
+---
+
+## 3. Projects — Gorobei (五郎兵衛 — "Strategist")
+
+| Field | Value |
+|-------|-------|
+| Persona | Gorobei — Project execution, delivery management |
+| gbrain source | `projects/` |
+| Skills | `risk-scorer`, `gantt-renderer`, `meeting-extractor`, `pm-interview`, `procurement-planner` |
+| Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
+| Scrum | ✅ 3-tier — `scrum.yaml` included as example |
+| Extra Crons | (none — scrum-only) |
+| Group type | `project` ("IOI Project") |
+| Task IDs | `TS-20\d{2}-\d{3}` |
+
+> **Example scrum config:** `examples/scrum-configs/project-manager.yaml`
+
+---
+
+## 4. Procurement — Kura (蔵 — "Vault")
+
+| Field | Value |
+|-------|-------|
+| Persona | Kura — Supply chain, vendor management, procurement optimization |
+| gbrain source | `procurement/` |
+| Skills | (none beyond shared) |
+| Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
+| Scrum | ✅ 3-tier — `scrum.yaml` needed |
+| Extra Crons | Contract expiry (Mon 9AM) |
+| Group type | `project` ("IOI Project") |
+| Task IDs | `PO-\d+` |
+
+---
+
+## 5. Product — Shi (士 — "Samurai")
+
+| Field | Value |
+|-------|-------|
+| Persona | Shi — Product vision, feature prioritization, stakeholder alignment |
+| gbrain source | `products/` |
+| Skills | `competitive-intel`, `roadmap`, `brainstorming` |
+| Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
+| Scrum | ✅ 3-tier — `scrum.yaml` needed |
+| Extra Crons | Sprint cycle (bi-weekly Mon) |
+| Group type | `epic` ("Dashboard v3") |
+| Task IDs | `SAM-\d{2}-\d{2}-\d{3,4}`, `INT-\d+`, `EP-\d+` |
+
+---
+
+## 6. CRM — Kizuna (絆 — "Bond")
+
+| Field | Value |
+|-------|-------|
+| Persona | Kizuna — Client relationships, deal pipeline, account management |
+| gbrain source | `crm/` |
+| Skills | `crm-assistant`, `crm-deal-pipeline` |
+| Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
+| Scrum | ✅ 3-tier — `scrum.yaml` needed |
+| Extra Crons | Deal activity sync (hourly 9-18), Sales pipeline (Mon 9AM), Weekly summary (Fri 5PM) |
+| Group type | (none — deals are tracked in CRM pipeline) |
+
+---
+
+## 7. Marketing — Haiku (俳句)
+
+| Field | Value |
+|-------|-------|
+| Persona | Haiku — Brand, narrative, campaigns, presentations |
+| gbrain source | `marketing/` |
+| Skills | `tapway-deck`, `tapway-brand`, `campaign-manager`, `haiku`, `tapway-presentations`, `competitive-intel`, `roadmap` |
+| Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
+| Scrum | ✅ 3-tier — `scrum.yaml` needed |
+| Extra Crons | (none — scrum-only) |
+| Group type | `campaign` ("Edge AI Launch") |
+
+---
+
+## 8. Compliance — Kata (型 — "Form")
+
+| Field | Value |
+|-------|-------|
+| Persona | Kata — Standards, audits, policy enforcement |
+| gbrain source | `compliance/` |
+| Skills | `compliance-policy-lifecycle` |
+| Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
+| Scrum | ✅ 3-tier — `scrum.yaml` needed |
+| Extra Crons | (none — scrum-only) |
+| Group type | `audit` ("ISO Recert") |
+
+---
+
+## 9. Customer Support — Bōei (防衛 — "Defense")
+
+| Field | Value |
+|-------|-------|
+| Persona | Bōei — Client shield, ticket resolution, escalation management |
+| gbrain source | `support/` |
+| Skills | `support-tickets` |
+| Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
+| Scrum | ✅ 3-tier — `scrum.yaml` needed |
+| Extra Crons | (none — scrum-only) |
+| Group type | `ticket` ("TS-2026-001") |
+| Task IDs | `TS-20\d{2}-\d{3}` |
+
+---
+
+## 10. Coding Agent — Takumi (匠 — "Artisan")
+
+| Field | Value |
+|-------|-------|
+| Persona | Takumi — Engineering craft, code quality, architecture |
+| gbrain source | `engineering/` |
+| Skills | `github-code-review`, `github-issues`, `simplify-code`, `code-review`, `debugging`, `skill-authoring`, `tapway-app-dev` |
+| Shared | `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
+| Scrum | ❌ (ad-hoc — no daily standup) |
+| Extra Crons | (none — ad-hoc) |
+| Group type | `epic` ("Auth Refactor") |
+
+---
+
+## 11. Default Profile (Shared Infrastructure)
+
+| Field | Value |
+|-------|-------|
+| Role | Shared resource orchestration |
+| Crons | Email collector (30min), Email enrichment (9/13/17), Calendar sync (6AM), Calendar enrichment (8AM), Drive sync (12/16/20), Drive enrichment (13/17), Token utilization (Mon 8AM) |
+| Auth | Google DWD service account |
+| Scripts | `email-collector.py`, `calendar-sync.py`, `drive-sync.py`, `token-util-report.sh` |
+
+---
+# CRON_INVENTORY.md
+
+Source: https://raw.githubusercontent.com/limcheehow/company-os/main/CRON_INVENTORY.md
+
+# Cron Inventory
+
+Every scheduled job across all profiles.
+
+## Infrastructure Crons (Default Profile)
+
+| Name | Schedule | Type | no_agent? | Skills | Purpose |
+|------|----------|------|-----------|--------|---------|
+| **brain-ingest-gmail** | `*/30 * * * *` | deterministic | ✅ | — | Gmail triage via SA-DWD — label inbox, priority score, batch rotate (3 batches) |
+| **brain-ingest-calendar** | `0 6 * * *` | deterministic | ✅ | — | Collect all 10 team members' calendar events via SA-DWD |
+| **brain-ingest-pipeline** | `0 9,13,17 * * 1-5` | agent | ❌ | brain-ingest-pipeline, profile-enrichment, gbrain-operations, brain-compliance | 5-phase pipeline: ROUTE → BRIDGE → ENRICH → VALIDATE |
+| Drive Sync | `0 12,16,20 * * 1-5` | deterministic | ✅ | — | Pull Drive docs → brain pages |
+| Drive Enrichment | `0 13,17 * * 1-5` | agent | ❌ | gbrain-operations | Extract entities from new docs |
+| Token Utilization | `0 8 * * 1` | deterministic | ✅ | — | Weekly AI spend report via Tokscale |
+| DWD Token Watchdog | `0 6 * * *` | deterministic | ✅ | — | (Optional) Proactive DWD token refresh |
+
+> **Removed:** Old `email-collector`, `calendar-sync`, `email-enrichment`, `calendar-enrichment` — replaced by the unified brain ingest pipeline.
+> **Removed:** `Google Token Auto-Refresh` — not needed with SA-DWD (service accounts don't expire like OAuth).
+
+## Department Scrum Crons
+
+Every department profile uses the **3-tier scrum pattern** from `skills/department-scrum/`. Weekdays only.
+
+| Profile | 9am | 11am | 5pm | Holiday Gate |
+|---|---|---|---|---|
+| **All** | `send-scrum-dms.py --profile <profile>` (no_agent) | `check-scrum-replies.py warn --profile <profile>` (agent) | `check-scrum-replies.py report --profile <profile>` (agent) | `0 0 * * *` (agent) |
+
+Cron templates at `skills/department-scrum/templates/` — copy and fill placeholders for each profile.
+
+## Extra Department Crons (beyond scrum)
+
+| Profile | Extra Cron | Schedule |
+|---------|-----------|----------|
+| hr-manager | Candidate Pipeline | Mon 10AM |
+| hr-manager | Recruitment GDrive Sync | Daily 6AM |
+| crm-manager | Deal Activity Sync | Hourly 9-18 weekdays |
+| crm-manager | Sales Pipeline | Mon 9AM |
+| crm-manager | Weekly Summary | Fri 5PM |
+| finance-manager | Daily Burn Rate | Daily 8AM |
+| finance-manager | Invoice Aging | Mon 8AM |
+| finance-manager | Monthly P&L | 1st of month 8AM |
+| finance-manager | Weekly Budget | Mon 8AM |
+| procurement-manager | Contract Expiry | Mon 9AM |
+| product-manager | Sprint Cycle | Bi-weekly Mon |
+| hr-manager | Jibble Attendance | Weekdays 9:30AM |
+| hr-manager | Jibble Timesheet | Weekly Mon 10AM |
+
+## Cron Count Summary
+
+| Profile | Deterministic (no_agent) | Agent (LLM) | Total |
+|---------|-------------------------|-------------|-------|
+| default | **5** (3 pipeline + drive + token) | **3** (1 pipeline + drive enrich + ???) | **8** |
+| hr-manager | **2** (1 scrum + 1 extra) | **5** (3 scrum + 2 extra) | **7** |
+| finance-manager | **1** (1 scrum) | **6** (3 scrum + 3 extra) | **7** |
+| project-manager | **1** (1 scrum) | **3** (3 scrum) | **4** |
+| procurement-manager | **1** (1 scrum) | **4** (3 scrum + 1 extra) | **5** |
+| product-manager | **1** (1 scrum) | **4** (3 scrum + 1 extra) | **5** |
+| crm-manager | **1** (1 scrum) | **6** (3 scrum + 3 extra) | **7** |
+| marketing-manager | **1** (1 scrum) | **3** (3 scrum) | **4** |
+| compliance-manager | **1** (1 scrum) | **3** (3 scrum) | **4** |
+| customer-support | **1** (1 scrum) | **3** (3 scrum) | **4** |
+| **Total** | **15** | **39** | **54** |
+
+> **Note:** 3-tier scrum = 9am (no_agent) + 11am (agent) + 5pm (agent). Holiday gate optional via midnight cron.
+>
+> Default profile counts: 3 pipeline crons (gmail, calendar, pipeline agent) + 2 drive crons + token + watchdog = 8 total.
+
+---
+# SECURITY.md
+
+Source: https://raw.githubusercontent.com/limcheehow/company-os/main/SECURITY.md
+
+# Security Policy
+
+## Threat Model
+
+Company OS is designed for an organization where multiple department agents share the same infrastructure but must not access each other's data. The primary threat is **cross-department data leakage** through shared infrastructure.
+
+## Trust Boundaries
+
+### Profile Isolation (Hard Boundary)
+
+Each Hermes Agent profile is a **hard security boundary**:
+
+| Attack Vector | Mitigation |
+|--------------|------------|
+| Profile A reads Profile B's config | Separate directories under `~/.hermes/profiles/` — no cross-reads by default |
+| Profile A reads Profile B's memory | Each profile has its own memory store — no cross-writes |
+| Profile A reads Profile B's cron jobs | Cron jobs are scoped to their creating profile |
+| Profile A reads Profile B's Slack DMs | Separate Slack bot tokens — each bot only sees its own conversations |
+| Profile A queries Profile B's gbrain data | gbrain source isolation — Profile A can only query `shared/` + its own source |
+
+### Slack Bot Isolation
+
+**Critical:** Each department MUST have its own Slack bot. A single bot serving all departments would:
+- Allow any department agent to read all Slack channels
+- Expose cross-department conversations to the wrong agent
+- Break the principle of least privilege
+
+Each Slack bot requires:
+- Its own **Slack App** (created in api.slack.com)
+- Its own **Bot User OAuth Token** (xoxb-...)
+- Its own **App-Level Token** (xapp-...)
+- Its own **bot user** (invited only to its department's channels)
+
+### GBrain Source Isolation
+
+Knowledge is segmented by gbrain source:
+
+```
+shared/  ← All profiles can READ (federated)
+hr/      ← Only HR profile can WRITE
+finance/  ← Only Finance profile can WRITE
+...       ← Each department has one write source
+```
+
+Federated read is **read-only** from `shared/`. Profiles cannot accidentally write to another department's source because each profile's `mcp_servers.gbrain.env.GBRAIN_SOURCE` is set to its own source.
+
+### Secret Management
+
+| Secret | Location | Protection |
+|--------|----------|------------|
+| LLM API keys | `~/.hermes/.env` or profile `.env` | File permissions 600; NEVER committed to git |
+| Google DWD SA key | `~/.hermes/secrets/google-dwd-sa.json` | File permissions 600; NEVER committed |
+| Slack bot tokens | Profile `.env` | NEVER committed |
+| Supabase keys | `~/.hermes/.env` | NEVER committed |
+| Profile upload keys | `~/.hermes/auth.json` | NEVER committed |
+
+## Operational Security
+
+### During Install
+
+1. Clone the repo — verify via HTTPS from `github.com/limcheehow/company-os`
+2. Inspect any script before running with `sudo` — company-os scripts use `sudo` only for systemd service installation
+3. Do NOT run as root — use the user's primary account
+
+### During Operation
+
+1. Never share profile passwords or Slack tokens via unencrypted channels
+2. Rotate tokens if a profile is compromised
+3. Audit `~/.hermes/cron/jobs.json` periodically — each cron job has a `deliver` field showing where its output goes
+4. Check `~/.hermes/logs/gateway.log` for unauthorized access attempts
+
+### Reporting a Vulnerability
+
+If you find a security issue in Company OS, please open a GitHub issue with the `security` label. Do NOT disclose via public channels.
+
+## Security Checklist
+
+Before deploying to production:
+
+- [ ] Each department has its own Slack bot with unique tokens
+- [ ] Google DWD scopes are limited to what each recipe needs (not all scopes for all profiles)
+- [ ] `.env` files are 600 permissions and never in git
+- [ ] Supabase database has row-level security enabled
+- [ ] Gateway webhook secret is set (auto-generated on install)
+- [ ] `shared/` gbrain source contains only non-sensitive data (no salaries, no private notes)
+- [ ] Each profile's `allowed_channels` is scoped to its own Slack channels

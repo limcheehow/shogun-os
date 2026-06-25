@@ -36,7 +36,10 @@ Comprehensive audit and fix pass to make Company OS deployable to a fresh Hermes
 - **CLAUDE.md:** New Claude Code entry point with orientation, key files, cross-cutting invariants
 - **CONTRIBUTING.md:** New contributor guide — what goes in/out, repo structure, skill format, PR workflow
 - **SECURITY.md:** New security policy — threat model, trust boundaries, secret management, operational security
-- **llms.txt:** New documentation map for single-fetch LLM context injection (inspired by gbrain's llms.txt)
+- **llms.txt:** New documentation map for single-fetch LLM context injection (inspired by gbrain's llms.txt) — uses raw GitHub URLs for automated fetching
+- **scripts/build-llms.sh:** New script that generates `llms-full.txt` by inlining 7 core docs (AGENTS.md, INSTALL_FOR_AGENTS.md, ARCHITECTURE.md, SETUP.md, PROFILE_CATALOG.md, CRON_INVENTORY.md, SECURITY.md) into a single 1,391-line file for single-fetch LLM context injection
+- **docs/tutorials/getting-started.md:** New tutorial — from zero to first department agent in 30 minutes (10 steps, covers prerequisites through verification)
+- **docs/tutorials/add-new-department.md:** New tutorial — how to create a new department agent beyond the 10 defaults (gbrain source → PROFILE_META → SOUL → cron → scrum → deploy), using Legal/Hōritsu as a worked example
 - **docs/architecture/OVERVIEW.md:** New architecture docs — three layers, profile architecture, MCP wiring, scrum architecture, data flow, cron architecture, security model
 
 ---
