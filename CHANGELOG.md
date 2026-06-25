@@ -30,6 +30,14 @@ Comprehensive audit and fix pass to make Company OS deployable to a fresh Hermes
 
 - **docs/deployment-readiness-review.md:** Full gap analysis, execution plan, skills audit, profile mapping, closure criteria
 - **HUB.md:** Updated skill table with 4 new skills
+- **README.md:** Complete rewrite — gbrain-inspired structure: vision statement, concrete "what this looks like" example, architecture diagram, quick start, install-by-agent pattern, contents table, skill table, troubleshooting section
+- **AGENTS.md:** New agent-first deployment guide with entry order, file layout, common tasks, trust boundary
+- **INSTALL_FOR_AGENTS.md:** New full 8-phase install protocol for AI agents (clone → API keys → gbrain init → profile deploy → Slack setup → cron wiring → verify → go live)
+- **CLAUDE.md:** New Claude Code entry point with orientation, key files, cross-cutting invariants
+- **CONTRIBUTING.md:** New contributor guide — what goes in/out, repo structure, skill format, PR workflow
+- **SECURITY.md:** New security policy — threat model, trust boundaries, secret management, operational security
+- **llms.txt:** New documentation map for single-fetch LLM context injection (inspired by gbrain's llms.txt)
+- **docs/architecture/OVERVIEW.md:** New architecture docs — three layers, profile architecture, MCP wiring, scrum architecture, data flow, cron architecture, security model
 
 ---
 

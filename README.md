@@ -1,12 +1,50 @@
 # Company OS
 
-> **Hermes Agent profile templates, recipes, and architecture for the AI-native company.**
->
-> Every department gets its own AI agent with a distinct Samurai persona, its own gbrain source, and a shared infrastructure layer. One Slack bot per profile. One unified task system. One brain.
+> **Every department gets its own AI agent with a Samurai persona, its own gbrain source, and shared infrastructure. One Slack bot per profile. One unified task system. One brain.**
 
-## Overview
+Company OS is a reference architecture for running an entire organization through AI agents. Built on [Hermes Agent](https://hermes-agent.nousresearch.com) + [GBrain](https://github.com/garrytan/gbrain), it gives each department a dedicated AI operator with role-specific tools, memory, and autonomy — isolated from every other department by design.
 
-Company OS is a reference architecture for running an entire organization through AI agents. Built on [Hermes Agent](https://hermes-agent.nousresearch.com) + [GBrain](https://github.com/garrytan/gbrain), it gives each department a dedicated AI operator with role-specific tools, memory, and autonomy.
+I built this for my own company, where I was spending too much time on ops, reporting, and keeping context across engineering, product, sales, and HR. Each department now has a 24/7 agent that knows its domain, runs its scrum, flags its risks, and enriches its knowledge base while I sleep. This repo is that architecture, generalized and packaged so any company can deploy it.
+
+> **~30 minutes to a working multi-agent setup.** Clone the repo, run the installer, wire Slack bots. Your agents handle the rest.
+
+> **Agents:** start with [`AGENTS.md`](AGENTS.md). **Humans:** start with [`SETUP.md`](SETUP.md). **LLMs:** fetch [`llms.txt`](llms.txt) for the documentation map.
+
+## What this looks like
+
+Say you're the CEO. You want to know how things are going across the company. Here's what you'd ask, and what you'd get back.
+
+**You ask:**
+> "What's the status of the IOI project, and is the team healthy?"
+
+**Most project trackers give you a dashboard to navigate and interpret yourself.** You open Jira, find the project board, scan through cards, switch to Slack for context, check the support ticket system — it's your brain doing the synthesis across 5 tools.
+
+**Company OS gives you a synthesized answer across departments:**
+
+```
+IOI Project — Gorobei (Projects)
+
+73% complete. 3 of 8 milestones delivered. Next: camera
+installation (pending vendor schedule).
+
+RISK: Support ticket TS-2026-012 is 3 days past SLA — Bōei
+      flagged it this morning. IOI customer has mentioned
+      this twice. Gorobei escalated to Kizuna (CRM).
+
+Team health — Jinzai (HR)
+- 9 team members. 0 on leave today. 1 MC yesterday (recovered).
+- Last week's SPACE Pulse: 4.2/5 (stable).
+- No overdue performance reviews.
+
+Budget — Koku (Finance)
+- Project budget: RM 240K. Spent: RM 178K (74%).
+- Cloud cost this month: RM 14.2K (within forecast).
+- Runway: 14 months at current burn rate.
+```
+
+Each sentence is a claim written by the department agent, verified against its gbrain source, and cross-referenced with the shared staff directory. You get the answer, not the dashboard.
+
+## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -32,55 +70,21 @@ Company OS is a reference architecture for running an entire organization throug
 │         ┌────▼───┐  ┌─────▼────┐  ┌────▼────┐              │
 │         │ Shared  │  │Dept Brain│  │ Shared  │              │
 │         │ Skills  │  │ Sources  │  │ Recipes │              │
-│         └─────────┘  └──────────┘  └─────────┘              │
+│         └─────────┘  └──────────┘  └──────────┘             │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-## Contents
+### Three Layers
 
-| File | What It Covers |
-|------|---------------|
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | System design, gbrain sources, MCP wiring, model config |
-| [`SETUP.md`](SETUP.md) | End-to-end setup playbook from zero to running profiles |
-| [`PROFILE_CATALOG.md`](PROFILE_CATALOG.md) | All 10 department profiles with personas, sources, skills, crons |
-| [`CRON_INVENTORY.md`](CRON_INVENTORY.md) | Every cron job across all profiles |
-| [`RECIPE_INDEX.md`](RECIPE_INDEX.md) | All recipes with dependencies and setup order |
-| [`docs/`](docs/) | Phase-by-phase development docs (profile gen, cron wiring, verification) |
-| `templates/` | Profile configs, scrum config templates |
-| `recipes/` | Self-contained integration recipes |
-| `skills/` | Installable Hermes skills (department-scrum, brain-ingest-pipeline, task-management) |
-| `scripts/` | Utility tooling (install, profile generator, cron wirer, verify-install) |
-| `schema/` | Data schemas (task management) |
+**Layer 1: Hermes Agent Profiles** — Each department gets a dedicated Hermes profile with its own SOUL.md (persona), config.yaml (model config + MCP servers + Slack connection), skills, cron jobs, and gbrain source. Physical isolation prevents cross-dept data leaks.
 
-## Quick Start
-```bash
-# Prerequisites
-which hermes        # Hermes Agent installed
-which gbrain        # GBrain installed
-gh auth status      # GitHub authenticated
+**Layer 2: GBrain (Knowledge Layer)** — Every profile connects to gbrain via MCP. Hybrid search across 11 department sources (`hr/`, `finance/`, `projects/`, etc.) with federated read of `shared/`. One Supabase instance, segmented by source.
 
-# 1. Clone this repo
-git clone https://github.com/limcheehow/company-os.git
-cd company-os
+**Layer 3: Slack (Communication Layer)** — One Slack bot per profile. Each bot lives in its department's channels, receives DMs from team members, and posts cron deliveries to its home channel. Slack bot isolation is a hard requirement — a single bot serving all departments creates cross-dept visibility issues.
 
-# 2. Set up Google DWD (foundation for all Google integrations)
-# See recipes/google-dwd.md
+### Samurai Personas
 
-# 3. Create a profile
-hermes profile create hr-manager
-# Then apply the template from this repo
-
-# 4. Set up gbrain source
-gbrain init
-gbrain init-source hr
-
-# 5. Wire Slack bot
-# Follow SETUP.md → Slack Bot Configuration
-```
-
-## Personas
-
-Every profile embodies a **Samurai** persona — a character from Akira Kurosawa's *Seven Samurai* (plus extras), chosen for their domain:
+Every profile embodies a Samurai persona from Akira Kurosawa's *Seven Samurai* (plus extras), chosen for their domain:
 
 | Profile | Persona | Role |
 |---------|---------|------|
@@ -88,77 +92,70 @@ Every profile embodies a **Samurai** persona — a character from Akira Kurosawa
 | Finance | **Koku** (石 — "Stone") | Financial stability |
 | Projects | **Gorobei** (五郎兵衛 — "Strategist") | Project execution |
 | Procurement | **Kura** (蔵 — "Vault") | Supply chain |
-| Product | **Shi** (士 — "Samurai") | Product vision |
+| Product | **Shi** (志 — "Will") | Product vision |
 | CRM | **Kizuna** (絆 — "Bond") | Client relationships |
 | Marketing | **Haiku** (俳句) | Brand & narrative |
 | Compliance | **Kata** (型 — "Form") | Standards & audits |
 | Customer Support | **Bōei** (防衛 — "Defense") | Client shield |
-| Coding Agent | **Takumi** (匠 — "Artisan") | Engineering craft |
+| Coding | **Takumi** (匠 — "Artisan") | Engineering craft |
 
-## Infrastructure
+## Quick Start
 
-### Default Profile (Shared Infrastructure)
+```bash
+# 1. Prerequisites
+which hermes                    # Hermes Agent installed
+which gbrain                    # GBrain installed (v0.42.x+)
 
-The `default` profile runs shared resource crons:
+# 2. Clone this repo
+git clone https://github.com/limcheehow/company-os.git
+cd company-os
 
-| Cron | Schedule | Type | Purpose |
-|------|----------|------|---------|
-| **brain-ingest-gmail** | `*/30 * * * *` | no_agent | Gmail triage via SA-DWD — labels inbox, priority scoring, batch rotation (3 batches of 3-4 accounts) |
-| **brain-ingest-calendar** | `0 6 * * *` | no_agent | Collect all 10 team members' calendar events via SA-DWD |
-| **brain-ingest-pipeline** | `0 9,13,17 * * 1-5` | agent | 5-phase pipeline: ROUTE → BRIDGE → ENRICH → VALIDATE |
-| Drive Sync | Weekdays 12/16/20 | no_agent | Google Docs → brain |
-| Drive Enrichment | Weekdays 13/17 | agent | Entity extraction from new docs |
-| Token Utilization | Weekly Monday 8AM | no_agent | AI spend report |
-| DWD Token Watchdog | Daily 6AM (optional) | no_agent | Auth belt-and-suspenders |
+# 3. Install skills, scripts, and templates
+./scripts/install.sh
 
-Old email digest, calendar sync, and OAuth token refresh crons are **removed** — the brain ingest pipeline replaces them.
+# 4. Initialize gbrain with department sources
+./scripts/init-gbrain.sh --yes
 
-### Brain Ingest Pipeline
+# 5. Deploy all 10 department profiles
+./scripts/install.sh --deploy all
 
-Unified **COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE** flow for all data sources. Runs as a Hermes plugin.
-
-```
-COLLECT ──→ gmail-triage.py (email, 30min)
-         ──→ collect-calendar.py (calendar, daily 6AM)
-         ──→ collect-meetings.py (meetings, upcoming)
-
-ROUTE ──→ Classify signals (Sales/CRM, Projects, HR, Finance)
-         ──→ Find matching brain pages via gbrain query
-         ──→ Flag unmatched as brain_missing
-
-BRIDGE ──→ Extract entities → create typed links (contact_for, works_at, emailed_about)
-         ──→ Add timeline entries → detect risks (stalled deals, overdue projects)
-
-ENRICH ──→ Load profile-enrichment → fill missing person/company data
-
-VALIDATE ──→ Run validate-brain-page.py on every modified page
-           ──→ Orphan detection → link coverage check
+# 6. Verify everything is in place
+./scripts/verify-install.sh
 ```
 
-Key improvements over old per-source collectors:
-- **SA-DWD** — service account replaces OAuth; no token refresh needed
-- **Batch rotation** — processes 3 accounts per Gmail run, state file tracks position
-- **Config-driven** — `config/gmail-batches.json` externalizes account lists
-- **Structured pipeline** — every source follows the same 5 phases, no exceptions
-- **Compliance gate** — VALIDATE phase runs `validate-brain-page.py` on EVERY page
+The full end-to-end setup playbook (Google DWD, Slack bot configuration, cron wiring) lives in [`SETUP.md`](SETUP.md).
 
-See `skills/brain-ingest-pipeline/SKILL.md` for the full pipeline specification and cron setup.
+## Install by AI Agent (recommended)
 
-### Recipes
+If you have an AI agent running (Hermes, OpenClaw, Codex, Claude Code), paste this:
 
-| Recipe | Category | Depends On |
-|--------|----------|-----------|
-| `google-dwd` | auth | — |
-| `token-watchdog` | auth | google-dwd |
-| `brain-ingest-pipeline` | ingest | google-dwd |
-| `drive-to-brain` | ingest | google-dwd |
-| `token-utilization` | monitor | — |
-| `jibble-time-tracking` | connector | — |
-| `slides-deck-gen` | connector | google-dwd |
+```
+Retrieve and follow the instructions at:
+https://raw.githubusercontent.com/limcheehow/company-os/main/INSTALL_FOR_AGENTS.md
+```
+
+The agent installs Company OS, creates profiles, sets up gbrain sources, configures Slack bots, wires scrum crons, and verifies the install end-to-end. ~30 minutes. You answer questions about Slack tokens and channel IDs.
+
+## Contents
+
+| File | What It Covers |
+|------|----------------|
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | System design, gbrain sources, MCP wiring, model config |
+| [`SETUP.md`](SETUP.md) | End-to-end setup playbook from zero to running profiles |
+| [`PROFILE_CATALOG.md`](PROFILE_CATALOG.md) | All 10 department profiles with personas, sources, skills, crons |
+| [`CRON_INVENTORY.md`](CRON_INVENTORY.md) | Every cron job across all profiles (54 total) |
+| [`RECIPE_INDEX.md`](RECIPE_INDEX.md) | All 8 integration recipes with dependencies and setup order |
+| [`AGENTS.md`](AGENTS.md) | Agent-first deployment guide (paste this into your agent) |
+| [`INSTALL_FOR_AGENTS.md`](INSTALL_FOR_AGENTS.md) | Full install protocol for AI agents |
+| `templates/` | Profile configs, scrum config templates |
+| `recipes/` | Self-contained integration recipes (DWD, ingest, scrum, etc.) |
+| `skills/` | 6 reusable Hermes skills for any company |
+| `scripts/` | 7 provisioning scripts (install, profile gen, cron wire, etc.) |
+| `examples/` | 9 scrum config templates with placeholders |
 
 ## Shared Skills
 
-Every profile loads shared Hermes skills (installed via `hermes skills install` or copied from `skills/`):
+Every profile loads shared Hermes skills shipped with this repo:
 
 | Skill | Purpose |
 |-------|---------|
@@ -169,54 +166,77 @@ Every profile loads shared Hermes skills (installed via `hermes skills install` 
 | `profile-enrichment` | Company/contact research via web + gbrain-native writes |
 | `gbrain-operations` | GBrain CLI operations (sync, embed, doctor, dream, MCP) |
 
-## Scrum Workflow
+## What You Get
 
-Every department (except Coding) runs a **3-tier daily scrum** using a single shared framework:
+### 10 Department Agents
 
+Each runs as an isolated Hermes Agent profile with:
+- **SOUL.md** — persona definition with voice, boundaries, and domain knowledge
+- **config.yaml** — model config (deepseek-v4-flash by default), gbrain MCP, Slack connection
+- **Skills** — domain-specific + shared skills
+- **Cron jobs** — 3-tier daily scrum + department-specific extras
+- **gbrain source** — isolated knowledge store with federated read of `shared/`
+
+### 54 Automated Cron Jobs
+
+| Category | Jobs | Type |
+|----------|------|------|
+| Daily scrum (9 departments × 3 tiers) | 27 | 9 no_agent + 18 agent |
+| Infrastructure (brain ingest, gmail, calendar, drive) | 8 | Mixed |
+| Department-specific (pipeline, budget, leave, etc.) | 15 | Agent |
+| Health & monitoring | 4 | no_agent |
+
+### 6 Reusable Skills
+
+Shipped in this repo, installable via Hermes skill tap:
+```bash
+hermes skills tap add limcheehow/company-os
+hermes skills install company-os/department-scrum
 ```
-9:00 AM ── send-scrum-dms.py (no_agent script)
-               → Reads scrum.yaml for team roster
-               → Opens Slack DMs with each member
-               → Saves state to scrum-states/{profile}/{date}.json
 
-REALTIME ── Gateway agent (Option B, no daemon)
-               → SOUL.md routes: scrum reply → save + post to channel
-                              non-scrum → answer with domain knowledge
+### Complete Setup Tooling
 
-11:00 AM ── check-scrum-replies.py warn (LLM agent)
-               → Cross-references replies against gbrain
-               → Warns non-responders via Slack DM
+| Script | What It Does |
+|--------|-------------|
+| `install.sh` | Install skills, scripts, templates, check gbrain version, deploy profiles |
+| `generate-profile.py` | Generate a new Hermes profile with SOUL.md + config.yaml from template |
+| `wire-crons.py` | Generate and apply cron jobs per profile type |
+| `init-gbrain.sh` | Initialize gbrain with all 11 department sources |
+| `verify-install.sh` | Full install verification with MCP connectivity probe |
+| `backup-crons.py` | Export all cron jobs to portable JSON for migration |
+| `restore-crons.py` | Restore cron jobs from backup |
 
-5:00 PM  ── check-scrum-replies.py report (LLM agent)
-               → Full compliance report
-               → SMART quality gates per domain
-               → Logs to gbrain _scrum/{profile}/{date}
+## Troubleshooting
+
+### Install fails: gbrain not found
+```bash
+bun install -g github:garrytan/gbrain
+# Verify
+gbrain --version  # should be v0.42.x+
 ```
 
-Key design principles:
-- **One script, all departments** — parameterized via per-profile `scrum.yaml`
-- **Option B gateway** — no socket daemons, no polling
-- **Holiday-aware** — KL public holidays via offline Hijri algorithm
-- **Cross-ref against gbrain** — task IDs, domain terms matched per department
+### Profile creation fails: "Profile already exists"
+Use `--force` to overwrite:
+```bash
+python3 scripts/generate-profile.py hr-manager --type hr --force
+```
 
-See `skills/department-scrum/SKILL.md` for full documentation, cron templates, and migration path.
+### Scrum crons not firing
+1. Check `scrum.yaml` exists in profile directory
+2. Verify Slack channel IDs are correct
+3. Run `hermes cron list` to check job status
+4. Check gateway logs: `grep -i "scrum" ~/.hermes/logs/gateway.log | tail -10`
 
-## Task Management
+### Slack bot not responding
+1. Invite bot to channel: `/invite @botname`
+2. Check `allowed_channels` in profile's config.yaml
+3. Verify gateway is running: `systemctl --user status hermes-gateway-<profile>`
 
-Unified task schema across all departments. Core fields: `title`, `status`, `priority`, `assignee`, `due_date`, `group`, `group_type`, `department`, `custom_fields`.
+### Agent says "I don't have access to that department"
+Each agent is scoped to its own gbrain source. If it needs cross-department context, ensure:
+1. Federated read is enabled in config.yaml: `GBRAIN_FEDERATED_READ=true`
+2. The data lives in `shared/` source (visible to all profiles)
 
-`group_type` varies by department:
+## License
 
-| Profile | group_type | Example |
-|---------|-----------|---------|
-| Projects | project | "IOI Project" |
-| Product | epic | "Dashboard v3" |
-| Procurement | project | "IOI Project" |
-| Customer Support | ticket | "TS-2026-001" |
-| HR | initiative | "Q3 Hiring Drive" |
-| Finance | initiative | "Annual Audit" |
-| Marketing | campaign | "Edge AI Launch" |
-| Compliance | audit | "ISO Recert" |
-| Coding | epic | "Auth Refactor" |
-
-See [`schema/task-management.md`](schema/task-management.md) for the full specification.
+MIT. Built on [Hermes Agent](https://github.com/NousResearch/hermes-agent) by Nous Research and [GBrain](https://github.com/garrytan/gbrain) by Garry Tan / Y Combinator.

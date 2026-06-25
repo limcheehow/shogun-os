@@ -1,0 +1,50 @@
+# Company OS — Documentation Map
+
+## Agent Entry Points
+- AGENTS.md — Start here if you're an AI agent
+- INSTALL_FOR_AGENTS.md — Full 8-phase install protocol for agents
+- CLAUDE.md — Claude Code entry point
+
+## Architecture
+- ARCHITECTURE.md — Three-layer system design
+- docs/architecture/OVERVIEW.md — Detailed architecture docs
+
+## Human Entry Points
+- README.md — What this is, quick start
+- SETUP.md — 8-phase setup playbook
+- CONTRIBUTING.md — Contributor guide
+- SECURITY.md — Threat model and security checklist
+
+## Profiles & Cron
+- PROFILE_CATALOG.md — All 10 department profiles
+- CRON_INVENTORY.md — Every cron job (54 total)
+
+## Recipes (Dependency-Ordered)
+- recipes/google-dwd.md — Google Domain-Wide Delegation (auth foundation)
+- recipes/token-watchdog.md — Optional auth belt-and-suspenders
+- recipes/brain-ingest-pipeline.md — Email+calendar ingest pipeline
+- recipes/drive-to-brain.md — Google Drive → knowledge base
+- recipes/token-utilization.md — AI spend monitoring
+- recipes/jibble-time-tracking.md — HR time tracking
+
+## Templates
+- templates/profiles/base-config.yaml — Standard department config
+- templates/profiles/coding-config.yaml — Coding agent config
+- examples/scrum-configs/ — 9 scrum config templates
+
+## Skills (Hermes Skill Tap)
+- skills/department-scrum/ — 3-tier cross-dept scrum workflow
+- skills/brain-ingest-pipeline/ — 5-phase data pipeline
+- skills/slack-formatting/ — Slack-optimized delivery format
+- skills/brain-compliance/ — Gbrain page validation standards
+- skills/profile-enrichment/ — Company/contact enrichment via gbrain
+- skills/gbrain-operations/ — GBrain CLI operations reference
+
+## Scripts
+- scripts/install.sh — Main installer
+- scripts/generate-profile.py — Profile generator
+- scripts/wire-crons.py — Cron job wirer
+- scripts/init-gbrain.sh — GBrain initializer
+- scripts/verify-install.sh — Verification suite
+- scripts/backup-crons.py — Cron backup tool
+- scripts/restore-crons.py — Cron restore tool
