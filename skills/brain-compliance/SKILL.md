@@ -221,11 +221,16 @@ Every cron job that writes a brain page MUST include a "Validate Compliance" ste
 
 ```markdown
 ### Final Step: Validate Compliance
-Run the compliance check on the written file:
+Run the compliance check using gbrain MCP tools (preferred) or the local validator:
 ```bash
-python3 ~/.hermes/skills/productivity/brain-folder-organization/scripts/validate-brain-page.py ~/brain/path/to/file.md
-If any violations are reported, fix them.
+# Preferred: gbrain-native validation
+mcp_gbrain_get_health
+mcp_gbrain_schema_lint(pack="active")
+
+# Alternative: if gbrain unavailable, run the validator
+python3 ~/.hermes/skills/brain-folder-organization/scripts/validate-brain-page.py ~/brain/path/to/file.md
 ```
+If any violations are reported, fix them.
 ```
 
 ---

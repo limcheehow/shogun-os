@@ -1,0 +1,36 @@
+# ── Compliance Manager (Kata) Scrum Config ──
+# Template — replace Slack IDs with real values before deploying
+profile: compliance-manager
+app_name: Kata
+
+# ── Slack Channels ──
+channel_updates: "C0XXXXXXX"        # #compliance-scrum-updates (placeholder)
+channel_leadership: "C0XXXXXXX"     # #compliance-leadership (placeholder)
+
+# ── State ──
+state_dir: "~/.hermes/scrum-states/compliance-manager"
+
+# ── Team Roster ──
+team:
+  - name: "Compliance Lead"
+    slack_id: "U0XXXXXXX"
+    role: "Compliance Lead"
+  - name: "Compliance Officer"
+    slack_id: "U0XXXXXXX"
+    role: "Compliance Officer"
+
+# ── Brain Cross-Reference ──
+brain:
+  source: "compliance"
+  domain_terms:
+    - "audit"
+    - "policy"
+    - "control"
+    - "risk"
+    - "regulation"
+    - "compliance"
+    - "ISO"
+    - "SOP"
+    - "review"
+    - "remediation"
+    - "assessment"

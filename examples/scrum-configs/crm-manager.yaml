@@ -1,0 +1,37 @@
+# ── CRM Manager (Kizuna) Scrum Config ──
+# Template — replace Slack IDs with real values before deploying
+profile: crm-manager
+app_name: Kizuna
+
+# ── Slack Channels ──
+channel_updates: "C0XXXXXXX"        # #crm-scrum-updates (placeholder)
+channel_leadership: "C0XXXXXXX"     # #crm-leadership (placeholder)
+
+# ── State ──
+state_dir: "~/.hermes/scrum-states/crm-manager"
+
+# ── Team Roster ──
+team:
+  - name: "Sales Lead"
+    slack_id: "U0XXXXXXX"
+    role: "Sales Lead"
+  - name: "Account Manager"
+    slack_id: "U0XXXXXXX"
+    role: "Account Manager"
+
+# ── Brain Cross-Reference ──
+brain:
+  source: "crm"
+  domain_terms:
+    - "deal"
+    - "pipeline"
+    - "demo"
+    - "proposal"
+    - "negotiation"
+    - "closing"
+    - "follow-up"
+    - "meeting"
+    - "lead"
+    - "customer"
+    - "renewal"
+    - "upsell"

@@ -1,0 +1,38 @@
+# ── Customer Support (Bōei) Scrum Config ──
+# Template — replace Slack IDs with real values before deploying
+profile: customer-support
+app_name: Bōei
+
+# ── Slack Channels ──
+channel_updates: "C0XXXXXXX"        # #support-scrum-updates (placeholder)
+channel_leadership: "C0XXXXXXX"     # #support-leadership (placeholder)
+
+# ── State ──
+state_dir: "~/.hermes/scrum-states/customer-support"
+
+# ── Team Roster ──
+team:
+  - name: "Support Lead"
+    slack_id: "U0XXXXXXX"
+    role: "Support Lead"
+  - name: "Support Engineer"
+    slack_id: "U0XXXXXXX"
+    role: "Support Engineer"
+
+# ── Brain Cross-Reference ──
+brain:
+  source: "support"
+  task_id_patterns:
+    - pattern: 'TS-\d{4}-\d{3}'
+      label: "Support Ticket"
+  domain_terms:
+    - "escalation"
+    - "SLA"
+    - "resolution"
+    - "ticket"
+    - "severity"
+    - "client"
+    - "follow-up"
+    - "bug"
+    - "incident"
+    - "deployment"

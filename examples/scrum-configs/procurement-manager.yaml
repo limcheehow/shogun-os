@@ -1,0 +1,41 @@
+# ── Procurement Manager (Kura) Scrum Config ──
+# Template — replace Slack IDs with real values before deploying
+profile: procurement-manager
+app_name: Kura
+
+# ── Slack Channels ──
+channel_updates: "C0XXXXXXX"        # #procurement-scrum-updates (placeholder)
+channel_leadership: "C0XXXXXXX"     # #procurement-leadership (placeholder)
+
+# ── State ──
+state_dir: "~/.hermes/scrum-states/procurement-manager"
+
+# ── Team Roster ──
+team:
+  - name: "Procurement Lead"
+    slack_id: "U0XXXXXXX"
+    role: "Procurement Lead"
+  - name: "Procurement Associate"
+    slack_id: "U0XXXXXXX"
+    role: "Procurement Associate"
+
+# ── Brain Cross-Reference ──
+brain:
+  source: "procurement"
+  task_id_patterns:
+    - pattern: 'PO-\d+'
+      label: "Purchase Order"
+    - pattern: 'RFQ-\d+'
+      label: "Request for Quote"
+  domain_terms:
+    - "vendor"
+    - "PO"
+    - "RFQ"
+    - "contract"
+    - "supplier"
+    - "delivery"
+    - "lead time"
+    - "inventory"
+    - "quotation"
+    - "negotiation"
+    - "asset"

@@ -1,0 +1,38 @@
+# ── HR Manager (Jinzai) Scrum Config ──
+# Template — replace Slack IDs with real values before deploying
+profile: hr-manager
+app_name: Jinzai
+
+# ── Slack Channels ──
+channel_updates: "C0XXXXXXX"        # #hr-scrum-updates (placeholder)
+channel_leadership: "C0XXXXXXX"     # #hr-leadership (placeholder)
+
+# ── State ──
+state_dir: "~/.hermes/scrum-states/hr-manager"
+
+# ── Team Roster ──
+team:
+  - name: "HR Lead"
+    slack_id: "U0XXXXXXX"
+    role: "HR Lead"
+  - name: "HR Associate"
+    slack_id: "U0XXXXXXX"
+    role: "HR Associate"
+
+# ── Brain Cross-Reference ──
+brain:
+  source: "hr"
+  task_id_patterns:
+    - pattern: 'HR-\d+'
+      label: "HR Task"
+  domain_terms:
+    - "leave"
+    - "medical"
+    - "MC"
+    - "attendance"
+    - "hiring"
+    - "onboarding"
+    - "interview"
+    - "timesheet"
+    - "Jibble"
+    - "training"

@@ -20,6 +20,11 @@ Comprehensive audit and fix pass to make Company OS deployable to a fresh Hermes
 - **scripts/init-gbrain.sh:** New standalone script — initializes gbrain, creates all 11 sources (shared + 10 departments), configures federated read, verifies connectivity
 - **verify-install.sh:** Added MCP connectivity probe — tests gbrain MCP and stock-scanner MCP actually respond
 - **verify-install.sh:** Extended skill check from 2 to 6 skills
+- **examples/scrum-configs/:** Added 8 new templates (hr, finance, product, crm, support, procurement, marketing, compliance) — 9 total with existing project-manager.yaml. Each has placeholder Slack IDs, team roster, and domain terms
+- **scripts/backup-crons.py:** Export all cron jobs to portable JSON for cross-machine migration
+- **scripts/restore-crons.py:** Restore cron jobs from backup via `hermes cron create` — supports dry-run, profile filter
+- **skills/gbrain-operations:** Slimmed from 96KB to 10KB — stripped Tapway-specific content, kept generic gbrain CLI patterns (sync, embed, doctor, dream, MCP, Python wrapper, troubleshooting). Removed 12 personal references, kept 7 generic ones
+- **skills/brain-compliance:** Updated validator reference to prefer gbrain MCP tools over local validator script
 
 #### Documentation
 

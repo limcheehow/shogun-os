@@ -1,0 +1,37 @@
+# ── Marketing Manager (Haiku) Scrum Config ──
+# Template — replace Slack IDs with real values before deploying
+profile: marketing-manager
+app_name: Haiku
+
+# ── Slack Channels ──
+channel_updates: "C0XXXXXXX"        # #marketing-scrum-updates (placeholder)
+channel_leadership: "C0XXXXXXX"     # #marketing-leadership (placeholder)
+
+# ── State ──
+state_dir: "~/.hermes/scrum-states/marketing-manager"
+
+# ── Team Roster ──
+team:
+  - name: "Marketing Lead"
+    slack_id: "U0XXXXXXX"
+    role: "Marketing Lead"
+  - name: "Content Creator"
+    slack_id: "U0XXXXXXX"
+    role: "Content Creator"
+
+# ── Brain Cross-Reference ──
+brain:
+  source: "marketing"
+  domain_terms:
+    - "campaign"
+    - "content"
+    - "social media"
+    - "brand"
+    - "SEO"
+    - "landing page"
+    - "event"
+    - "webinar"
+    - "lead gen"
+    - "analytics"
+    - "PR"
+    - "press release"

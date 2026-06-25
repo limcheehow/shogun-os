@@ -1,0 +1,40 @@
+# ── Finance Manager (Koku) Scrum Config ──
+# Template — replace Slack IDs with real values before deploying
+profile: finance-manager
+app_name: Koku
+
+# ── Slack Channels ──
+channel_updates: "C0XXXXXXX"        # #finance-scrum-updates (placeholder)
+channel_leadership: "C0XXXXXXX"     # #finance-leadership (placeholder)
+
+# ── State ──
+state_dir: "~/.hermes/scrum-states/finance-manager"
+
+# ── Team Roster ──
+team:
+  - name: "Finance Lead"
+    slack_id: "U0XXXXXXX"
+    role: "Finance Lead"
+  - name: "Accountant"
+    slack_id: "U0XXXXXXX"
+    role: "Accountant"
+
+# ── Brain Cross-Reference ──
+brain:
+  source: "finance"
+  task_id_patterns:
+    - pattern: 'PO-\d+'
+      label: "Purchase Order"
+    - pattern: 'INV-\d+'
+      label: "Invoice"
+  domain_terms:
+    - "burn rate"
+    - "P&L"
+    - "budget"
+    - "invoice"
+    - "vendor"
+    - "payment"
+    - "audit"
+    - "reconciliation"
+    - "forecast"
+    - "expense"

@@ -1,0 +1,43 @@
+# ── Product Manager (Shi) Scrum Config ──
+# Template — replace Slack IDs with real values before deploying
+profile: product-manager
+app_name: Shi
+
+# ── Slack Channels ──
+channel_updates: "C0XXXXXXX"        # #product-scrum-updates (placeholder)
+channel_leadership: "C0XXXXXXX"     # #product-leadership (placeholder)
+
+# ── State ──
+state_dir: "~/.hermes/scrum-states/product-manager"
+
+# ── Team Roster ──
+team:
+  - name: "Product Manager"
+    slack_id: "U0XXXXXXX"
+    role: "Product Manager"
+  - name: "Product Owner"
+    slack_id: "U0XXXXXXX"
+    role: "Product Owner"
+
+# ── Brain Cross-Reference ──
+brain:
+  source: "products"
+  task_id_patterns:
+    - pattern: 'SAM-\d{2}-\d{2}-\d{3,4}'
+      label: "SAM Task"
+    - pattern: 'INT-\d+'
+      label: "Integration Task"
+    - pattern: 'EP-\d+'
+      label: "Epic"
+  domain_terms:
+    - "SamurAI"
+    - "roadmap"
+    - "sprint"
+    - "epic"
+    - "feature"
+    - "PRD"
+    - "backlog"
+    - "release"
+    - "MVP"
+    - "customer feedback"
+    - "competitive"
