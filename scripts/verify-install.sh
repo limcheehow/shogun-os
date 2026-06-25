@@ -176,7 +176,7 @@ if command -v hermes &> /dev/null; then
   if [[ "$QUICK" != true ]]; then
     local skills_output
     skills_output=$(hermes skills list 2>&1 || true)
-    for skill in "department-scrum" "brain-ingest-pipeline" "slack-formatting" "brain-compliance" "profile-enrichment" "gbrain-operations"; do
+    for skill in "department-scrum" "brain-ingest-pipeline" "slack-formatting" "brain-compliance" "profile-enrichment" "gbrain-operations" "lark-formatting"; do
       if echo "$skills_output" | grep -qi "$skill"; then
         ok "  └─ Hermes recognizes skill: $skill"
       else

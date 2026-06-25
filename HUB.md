@@ -30,6 +30,7 @@ hermes skills install limcheehow/company-os/brain-ingest-pipeline
 | `brain-compliance` | Standards and validation for Gbrain-compliant brain pages |
 | `profile-enrichment` | Enrich company and contact profiles via web research + gbrain |
 | `gbrain-operations` | GBrain operations: sync, embed, doctor, dream cycle, MCP setup |
+| `lark-formatting` | Format messages for Lark (Feishu) — CardKit JSON and text formatting |
 
 ## Repository Structure
 
