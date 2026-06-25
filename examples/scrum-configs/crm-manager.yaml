@@ -2,6 +2,7 @@
 # Template — replace Slack IDs with real values before deploying
 profile: crm-manager
 app_name: Kizuna
+comm_provider: slack
 
 # ── Slack Channels ──
 channel_updates: "C0XXXXXXX"        # #crm-scrum-updates (placeholder)

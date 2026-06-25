@@ -2,6 +2,7 @@
 # Template — replace Slack IDs with real values before deploying
 profile: finance-manager
 app_name: Koku
+comm_provider: slack
 
 # ── Slack Channels ──
 channel_updates: "C0XXXXXXX"        # #finance-scrum-updates (placeholder)

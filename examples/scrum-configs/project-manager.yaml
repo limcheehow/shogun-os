@@ -2,6 +2,7 @@
 # Generated from department-scrum skill schema v2.0.0
 profile: project-manager
 app_name: Gorobei
+comm_provider: slack
 
 # ── Slack Channels ──
 channel_updates: "C09SR9B5WJU"       # #project-scrum-updates

@@ -24,6 +24,7 @@ task_id_patterns:
 # ── Identity ──
 profile: "project-manager"           # Profile slug (required)
 app_name: "Gorobei"                  # Agent name for DM greetings (required)
+comm_provider: "slack"               # Comm provider: slack, telegram (default: slack)
 
 # ── Slack Channels ──
 channel_updates: "C09SR9B5WJU"      # Scrum summary channel (required)

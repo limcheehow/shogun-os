@@ -2,6 +2,7 @@
 # Template — replace Slack IDs with real values before deploying
 profile: procurement-manager
 app_name: Kura
+comm_provider: slack
 
 # ── Slack Channels ──
 channel_updates: "C0XXXXXXX"        # #procurement-scrum-updates (placeholder)

@@ -53,30 +53,18 @@ app_name = config.get("app_name", PROFILE)
 channel_updates = config.get("channel_updates", "")
 team = config.get("team", [])
 brain_source = config.get("brain", {}).get("source", PROFILE)
+comm_provider = config.get("comm_provider", "slack")
 
 if not team:
     print(f"ERROR: No team defined in {CONFIG_PATH}")
     sys.exit(1)
 
-# ── Slack token ────────────────────────────────────────────────────────
-token = os.environ.get("SLACK_BOT_TOKEN")
-if not token:
-    env_path = PROFILE_DIR / ".env"
-    if not env_path.exists():
-        env_path = HERMES_HOME / ".env"
-    if env_path.exists():
-        for line in env_path.read_text().splitlines():
-            line = line.strip()
-            if line.startswith("SLACK_BOT_TOKEN=") and not line.startswith("#"):
-                token = line.split("=", 1)[1].strip().strip('"').strip("'")
-                break
+# ── Load comm provider ──────────────────────────────────────────────────
+os.environ.setdefault("HERMES_PROFILE", PROFILE)
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from comm.provider import get_provider
 
-if not token:
-    print("ERROR: SLACK_BOT_TOKEN not found in env, profile .env, or global .env")
-    sys.exit(1)
-
-from slack_sdk import WebClient
-client = WebClient(token=token)
+provider = get_provider(comm_provider)
 
 # ── Date & questions ───────────────────────────────────────────────────
 TODAY = date.today()
@@ -112,18 +100,16 @@ print()
 
 for member in team:
     name = member["name"]
-    slack_id = member["slack_id"]
+    user_id = member.get("user_id", member.get("slack_id", ""))
     role = member.get("role", "")
     try:
-        dm = client.conversations_open(users=[slack_id])
-        dm_channel = dm["channel"]["id"]
-        msg = client.chat_postMessage(channel=dm_channel, text=QUESTIONS)
+        result = provider.send_dm(user_id, QUESTIONS)
         results.append({
             "name": name,
-            "slack_id": slack_id,
+            "user_id": user_id,
             "role": role,
-            "dm_channel": dm_channel,
-            "question_ts": msg["ts"],
+            "thread_id": result["thread_id"],
+            "conversation_id": result["conversation_id"],
             "replied": False,
             "reply_text": None,
             "replied_at": None,
@@ -136,7 +122,7 @@ for member in team:
         })
         print(f"  [OK] {name:25s} ({role:22s}) -> DM sent")
     except Exception as e:
-        errors.append({"name": name, "slack_id": slack_id, "error": str(e)})
+        errors.append({"name": name, "user_id": user_id, "error": str(e)})
         print(f"  [ERR] {name:25s}: {e}")
 
 # ── Save state ─────────────────────────────────────────────────────────

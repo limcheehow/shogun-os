@@ -2,6 +2,7 @@
 # Template — replace Slack IDs with real values before deploying
 profile: product-manager
 app_name: Shi
+comm_provider: slack
 
 # ── Slack Channels ──
 channel_updates: "C0XXXXXXX"        # #product-scrum-updates (placeholder)

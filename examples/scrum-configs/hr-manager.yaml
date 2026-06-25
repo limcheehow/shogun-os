@@ -2,6 +2,7 @@
 # Template — replace Slack IDs with real values before deploying
 profile: hr-manager
 app_name: Jinzai
+comm_provider: slack
 
 # ── Slack Channels ──
 channel_updates: "C0XXXXXXX"        # #hr-scrum-updates (placeholder)

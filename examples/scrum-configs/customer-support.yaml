@@ -1,7 +1,8 @@
 # ── Customer Support (Bōei) Scrum Config ──
 # Template — replace Slack IDs with real values before deploying
 profile: customer-support
-app_name: Bōei
+app_name: Boei
+comm_provider: slack
 
 # ── Slack Channels ──
 channel_updates: "C0XXXXXXX"        # #support-scrum-updates (placeholder)

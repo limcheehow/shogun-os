@@ -2,6 +2,7 @@
 # Template — replace Slack IDs with real values before deploying
 profile: compliance-manager
 app_name: Kata
+comm_provider: slack
 
 # ── Slack Channels ──
 channel_updates: "C0XXXXXXX"        # #compliance-scrum-updates (placeholder)

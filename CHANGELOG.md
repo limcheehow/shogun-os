@@ -44,6 +44,11 @@ Comprehensive audit and fix pass to make Company OS deployable to a fresh Hermes
 - **docs/architecture/PROVIDER_ABSTRACTION.md:** New architecture — bring-your-own-backend pattern for agent profiles. Standard MCP contract interface with pluggable provider bridges. Three layers: generic skill → provider bridge → external API. Covers time tracking, HR leave, and expense contracts.
 - **recipes/time-tracking/ (new):** Provider abstraction directory with CONTRACT.md (9 standard tt_* tools, response shapes), GENERIC_SKILL.md (provider-agnostic agent workflows), bridges/tt-bridge-jibble.py (reference Jibble implementation), providers/kami.md (Kami setup guide)
 - **recipes/jibble-time-tracking.md (updated):** Marked as SUPERSEDED — points to new time-tracking abstraction
+- **docs/architecture/COMMS_ABSTRACTION.md:** New architecture — communication provider abstraction. Standard interface (send_dm, read_replies, post_message, add_reaction) with pluggable providers (Slack, Telegram). Provider auto-discovery via `comm/provider.py`.
+- **skills/department-scrum/scripts/comm/ (new):** Provider abstraction module with `provider.py` (interface + registry + auto-discovery), `slack.py` (using slack_sdk WebClient), `telegram.py` (using direct Telegram Bot HTTP API)
+- **skills/department-scrum/scripts/send-scrum-dms.py (rewritten):** Replaced direct Slack API calls with abstract comm provider. Reads `comm_provider` from scrum.yaml (defaults to slack). Uses `user_id` field (falls back to `slack_id`). State file uses provider-agnostic `thread_id`/`conversation_id` instead of Slack-specific `dm_channel`/`question_ts`.
+- **skills/department-scrum/references/scrum-config-schema.md (updated):** Added `comm_provider` field to full schema example
+- **examples/scrum-configs/ (9 templates updated):** Added `comm_provider: slack` to all 9 templates
 
 ---
 
