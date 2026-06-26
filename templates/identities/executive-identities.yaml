@@ -1,0 +1,26 @@
+# Benkei — Identity & Access Configuration
+# Fill in the CEO details before activating this profile.
+# Benkei will serve ONLY the persons listed below.
+# Detection: name, phone, email, Slack ID, Telegram ID, Whatsapp number.
+
+master:
+  name: "Full Name"
+  title: "CEO"
+  phone: []
+  email: []
+  slack: []
+  telegram: []
+  lark: []
+  whatsapp: []
+
+family:
+  - name: ""
+    relation: ""
+    phone: []
+    email: []
+    slack: []
+    telegram: []
+    permissions:
+      - full_calendar_read
+      - request_appointment
+      - personal_info

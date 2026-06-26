@@ -164,3 +164,19 @@ All 10 department profiles with personas, gbrain sources, skills, and cron jobs.
 | Crons | Email collector (30min), Email enrichment (9/13/17), Calendar sync (6AM), Calendar enrichment (8AM), Drive sync (12/16/20), Drive enrichment (13/17), Token utilization (Mon 8AM) |
 | Auth | Google DWD service account |
 | Scripts | `email-collector.py`, `calendar-sync.py`, `drive-sync.py`, `token-util-report.sh` |
+
+---
+
+## 12. Executive Assistant — Benkei (弁慶)
+
+| Field | Value |
+|-------|-------|
+| Persona | Benkei (弁慶) — "The fiercely loyal retainer." Executive scheduling, travel, correspondence, identity-gated (serves CEO only) |
+| gbrain source | `executive/` |
+| Skills | `google-workspace` |
+| Shared | `department-scrum`, `slack-formatting`, `brain-compliance`, `profile-enrichment` |
+| Identity Config | `identities.yaml` — defines master, family, and privacy tiers |
+| Scrum | ✅ 3-tier — `scrum.yaml` needed |
+| Extra Crons | Daily briefing prep (7:30AM weekday), Weekly travel review (Mon 9AM), Expense digest (Fri 5PM) |
+| Group type | `initiative` ("Q3 Schedule") |
+| Auth | Google Calendar (via shared OAuth token)
