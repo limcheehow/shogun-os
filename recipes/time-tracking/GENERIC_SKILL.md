@@ -1,3 +1,11 @@
+---
+name: generic_skill
+category: connector
+setup_time: 0
+cost: $0
+depends_on: []
+---
+
 # Time Tracking Skill (Generic)
 
 > **Works with any time tracking provider that implements the [CONTRACT.md](CONTRACT.md) standard tools.**

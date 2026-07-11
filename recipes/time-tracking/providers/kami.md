@@ -1,3 +1,11 @@
+---
+name: kami
+category: connector
+setup_time: 15
+cost: $0
+depends_on: []
+---
+
 # Kami — Time Tracking Provider Setup
 
 > **Malaysian GPS time tracking app.** Local support, geofencing, selfie clock-in.

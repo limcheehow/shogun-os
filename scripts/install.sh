@@ -1,20 +1,23 @@
 #!/usr/bin/env bash
 # ──────────────────────────────────────────────────────────────────────────
-# Company OS — Hermes Companion Installer
+# Company OS — Hermes Companion Installer v3.1.1
 # ──────────────────────────────────────────────────────────────────────────
-# Installs skills, scripts, templates, and configs into ~/.hermes/
+# Installs skills, scripts, recipes, templates, and configs into ~/.hermes/
 #
 # Usage:
 #   ./install.sh                    # Full install
 #   ./install.sh --dry-run          # Preview only
 #   ./install.sh --force            # Overwrite without backup prompt
 #   ./install.sh --profile hr       # Install only HR-relevant assets
+#   ./install.sh --deploy all       # Install + generate all 10 department profiles
+#   ./install.sh --deploy-profile hr-manager --type hr  # Deploy one profile
+#   ./install.sh --systemd          # Install systemd template units
 #   ./install.sh --help             # Show help
 # ──────────────────────────────────────────────────────────────────────────
 
 set -euo pipefail
 
-VERSION="2.0.0"
+VERSION="3.1.1"
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR")"
@@ -24,6 +27,7 @@ DRY_RUN=false
 FORCE=false
 PROFILE=""
 DEPLOY=""
+INSTALL_SYSTEMD=false
 BACKUP_DIR=""
 
 # ── Color helpers ──────────────────────────────────────────────────────
@@ -43,15 +47,17 @@ usage() {
   cat <<EOF
 Company OS Installer v${VERSION}
 
-Installs skills, scripts, configs, and templates from this repo into ~/.hermes/
+Installs skills, scripts, recipes, configs, templates, and systemd units
+from this repo into ~/.hermes/
 
 USAGE:
   ./install.sh                    Full install
   ./install.sh --dry-run          Preview without making changes
   ./install.sh --force            Overwrite existing files without backup prompt
   ./install.sh --profile <name>   Install assets relevant to one profile
-  ./install.sh --deploy <type>    Full deploy: install + generate-profile + wire-crons for all profiles
-  ./install.sh --deploy-profile <name>  Deploy a single profile
+  ./install.sh --deploy all       Full deploy: install + generate all 10 profiles
+  ./install.sh --deploy-profile <name> --type <type>  Deploy a single profile
+  ./install.sh --systemd          Install systemd template units for gateway management
   ./install.sh --help             This message
 
 EXAMPLES:
@@ -60,6 +66,26 @@ EXAMPLES:
   ./install.sh --force
   ./install.sh --deploy all
   ./install.sh --deploy-profile hr-manager --type hr
+  ./install.sh --systemd
+
+WHAT GETS INSTALLED:
+  Skills    → ~/.hermes/skills/              (27 skills)
+  Scripts   → ~/.hermes/scripts/             (20 repo scripts + 20 skill scripts)
+  Recipes   → ~/.hermes/recipes/             (13 recipes)
+  Templates → ~/.hermes/templates/           (3 template files)
+  Configs   → ~/.hermes/config/              (gmail batches, scrum examples)
+  Systemd   → ~/.config/systemd/user/        (hermes-gateway@.service template)
+  SA Symlink→ ~/.hermes/service-account-key.json
+
+NEXT STEPS AFTER INSTALL:
+  1. Set up Google DWD:     see recipes/google-dwd.md
+  2. Init gbrain:           scripts/init-gbrain.sh --yes
+  3. Deploy profiles:       ./install.sh --deploy all
+  4. Wire scrum crons:      python3 scripts/wire-crons.py <profile> --apply
+  5. Set up Slack bots:     see SETUP.md Phase 4
+  6. Install systemd:       ./install.sh --systemd
+  7. Verify install:        ./scripts/verify-install.sh
+  8. Run tests:             python3 scripts/verify-comprehensive.py
 EOF
   exit 0
 }
@@ -67,12 +93,13 @@ EOF
 # ── Parse args ─────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --dry-run) DRY_RUN=true; shift ;;
-    --force)   FORCE=true; shift ;;
-    --profile) PROFILE="$2"; shift 2 ;;
-    --deploy)   DEPLOY="all"; shift ;;
+    --dry-run)        DRY_RUN=true; shift ;;
+    --force)          FORCE=true; shift ;;
+    --profile)        PROFILE="$2"; shift 2 ;;
+    --deploy)         DEPLOY="all"; shift ;;
     --deploy-profile) DEPLOY="$2"; shift 2 ;;
-    --help|-h) usage ;;
+    --systemd)        INSTALL_SYSTEMD=true; shift ;;
+    --help|-h)        usage ;;
     *) err "Unknown option: $1"; echo "  Use --help for usage"; exit 1 ;;
   esac
 done
@@ -152,10 +179,21 @@ install_file() {
   fi
 }
 
+# ── Make executable ────────────────────────────────────────────────────
+make_executable() {
+  local dst="$1"
+  if [[ "$DRY_RUN" != true && -f "$dst" ]]; then
+    chmod +x "$dst" 2>/dev/null || true
+  fi
+}
+
 # ── Count files to install ─────────────────────────────────────────────
 COUNT_SKILLS=0
 COUNT_SCRIPTS=0
+COUNT_RECIPES=0
+COUNT_TEMPLATES=0
 COUNT_CONFIGS=0
+COUNT_SYSTEMD=0
 
 count_dir() {
   local dir="$1"
@@ -176,12 +214,14 @@ section_skills() {
   local skills_dst="$HERMES_HOME/skills"
 
   if [[ -n "$PROFILE" ]]; then
-    # Profile-specific: only install the scrum skill (needed by all profiles)
-    if [[ -d "$skills_src/department-scrum" ]]; then
-      install_file "$skills_src/department-scrum" "$skills_dst/department-scrum" "department-scrum skill"
-      COUNT_SKILLS=$((COUNT_SKILLS + 1))
-    fi
-    # If the profile is "default" or the user explicitly wants pipeline, install it
+    # Profile-specific: install company-workflow + department-scrum (needed by all profiles)
+    for required_skill in company-workflow department-scrum; do
+      if [[ -d "$skills_src/$required_skill" ]]; then
+        install_file "$skills_src/$required_skill" "$skills_dst/$required_skill" "$required_skill skill"
+        COUNT_SKILLS=$((COUNT_SKILLS + 1))
+      fi
+    done
+    # If the profile is "default" or "pipeline", install brain-ingest-pipeline
     if [[ "$PROFILE" == "default" || "$PROFILE" == "pipeline" ]]; then
       if [[ -d "$skills_src/brain-ingest-pipeline" ]]; then
         install_file "$skills_src/brain-ingest-pipeline" "$skills_dst/brain-ingest-pipeline" "brain-ingest-pipeline skill"
@@ -194,7 +234,6 @@ section_skills() {
       local name
       name="$(basename "$skill_dir")"
       local dst="$skills_dst/$name"
-      # Remove trailing slash from src
       local src="${skill_dir%/}"
       install_file "$src" "$dst" "$name skill"
       COUNT_SKILLS=$((COUNT_SKILLS + 1))
@@ -203,33 +242,87 @@ section_skills() {
 }
 
 # ═══════════════════════════════════════════════════════════════════════
-#  INSTALL: Scripts
+#  INSTALL: Scripts (repo scripts + skill scripts)
 # ═══════════════════════════════════════════════════════════════════════
 section_scripts() {
   echo -e "${CYAN}━━━ Scripts ━━━${NC}"
 
   local scripts_dst="$HERMES_HOME/scripts"
   local skills_src="$REPO_ROOT/skills"
+  local repo_scripts="$REPO_ROOT/scripts"
 
-  # Copy all scripts from all skill directories flat to ~/.hermes/scripts/
-  # Names are unique across skills (send-scrum-dms.py, gmail-triage.py, etc.)
+  # 1. Copy all repo-level scripts (not install.sh itself, not verify-*.py test files)
   local script_path
   while IFS= read -r script_path; do
     local filename
     filename="$(basename "$script_path")"
+    [[ "$filename" == "install.sh" ]] && continue
     install_file "$script_path" "$scripts_dst/$filename" "$filename"
+    make_executable "$scripts_dst/$filename"
     COUNT_SCRIPTS=$((COUNT_SCRIPTS + 1))
-  done < <(find "$skills_src" -path '*/scripts/*' -type f)
+  done < <(find "$repo_scripts" -maxdepth 1 -type f \( -name '*.sh' -o -name '*.py' \) | sort)
 
-  # Also copy switch-profile.py
-  if [[ -f "$REPO_ROOT/scripts/switch-profile.py" ]]; then
-    install_file "$REPO_ROOT/scripts/switch-profile.py" "$scripts_dst/switch-profile.py" "switch-profile.py"
+  # 2. Copy all scripts from skill directories (flat — names are unique)
+  while IFS= read -r script_path; do
+    local filename
+    filename="$(basename "$script_path")"
+    # Skip test files
+    [[ "$filename" == test-* ]] && continue
+    [[ "$filename" == *_test.py ]] && continue
+    # Skip __pycache__
+    [[ "$script_path" == *__pycache__* ]] && continue
+    install_file "$script_path" "$scripts_dst/$filename" "$filename"
+    make_executable "$scripts_dst/$filename"
     COUNT_SCRIPTS=$((COUNT_SCRIPTS + 1))
+  done < <(find "$skills_src" -path '*/scripts/*' -type f \( -name '*.sh' -o -name '*.py' \) | sort)
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+#  INSTALL: Recipes
+# ═══════════════════════════════════════════════════════════════════════
+section_recipes() {
+  echo -e "${CYAN}━━━ Recipes ━━━${NC}"
+
+  local recipes_src="$REPO_ROOT/recipes"
+  local recipes_dst="$HERMES_HOME/recipes"
+
+  # Copy all .md recipe files
+  local recipe_path
+  while IFS= read -r recipe_path; do
+    local filename
+    filename="$(basename "$recipe_path")"
+    install_file "$recipe_path" "$recipes_dst/$filename" "$filename"
+    COUNT_RECIPES=$((COUNT_RECIPES + 1))
+  done < <(find "$recipes_src" -name '*.md' -type f | sort)
+
+  # Also copy the time-tracking provider abstraction directory
+  if [[ -d "$recipes_src/time-tracking" ]]; then
+    install_file "$recipes_src/time-tracking" "$recipes_dst/time-tracking" "time-tracking abstraction"
+    COUNT_RECIPES=$((COUNT_RECIPES + 1))
   fi
 }
 
 # ═══════════════════════════════════════════════════════════════════════
-#  INSTALL: Templates & Configs
+#  INSTALL: Templates
+# ═══════════════════════════════════════════════════════════════════════
+section_templates() {
+  echo -e "${CYAN}━━━ Templates ━━━${NC}"
+
+  local templates_src="$REPO_ROOT/templates"
+  local templates_dst="$HERMES_HOME/templates"
+
+  # Copy all template files, preserving directory structure
+  local tmpl_path
+  while IFS= read -r tmpl_path; do
+    local rel
+    rel="$(realpath --relative-to="$templates_src" "$tmpl_path")"
+    install_file "$tmpl_path" "$templates_dst/$rel" "$rel"
+    COUNT_TEMPLATES=$((COUNT_TEMPLATES + 1))
+  done < <(find "$templates_src" -type f | sort)
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+#  INSTALL: Configs & Examples
 # ═══════════════════════════════════════════════════════════════════════
 section_configs() {
   echo -e "${CYAN}━━━ Configs & Examples ━━━${NC}"
@@ -241,12 +334,138 @@ section_configs() {
     COUNT_CONFIGS=$((COUNT_CONFIGS + 1))
   fi
 
-  # Scrum config example (informational only)
-  if [[ -f "$REPO_ROOT/examples/scrum-configs/project-manager.yaml" ]]; then
+  # All scrum config examples
+  if [[ -d "$REPO_ROOT/examples/scrum-configs" ]]; then
     local scrum_dst="$HERMES_HOME/company-os-examples/scrum-configs"
-    install_file "$REPO_ROOT/examples/scrum-configs/project-manager.yaml" \
-      "$scrum_dst/project-manager.yaml" "scrum config example"
-    COUNT_CONFIGS=$((COUNT_CONFIGS + 1))
+    local scf
+    while IFS= read -r scf; do
+      local fname
+      fname="$(basename "$scf")"
+      install_file "$scf" "$scrum_dst/$fname" "scrum config: $fname"
+      COUNT_CONFIGS=$((COUNT_CONFIGS + 1))
+    done < <(find "$REPO_ROOT/examples/scrum-configs" -name '*.yaml' -type f | sort)
+  fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+#  INSTALL: Systemd Template Units
+# ═══════════════════════════════════════════════════════════════════════
+section_systemd() {
+  echo -e "${CYAN}━━━ Systemd Template Unit ━━━${NC}"
+
+  local systemd_dir="$HOME/.config/systemd/user"
+  local unit_file="$systemd_dir/hermes-gateway@.service"
+
+  if [[ ! -d "$systemd_dir" ]]; then
+    if [[ "$DRY_RUN" == true ]]; then
+      ok "[DRY-RUN] Would create $systemd_dir"
+    else
+      mkdir -p "$systemd_dir"
+      ok "Created $systemd_dir"
+    fi
+  fi
+
+  # Write the template unit file
+  local unit_content
+  unit_content='[Unit]
+Description=Hermes Agent Gateway - %i Profile
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=__HERMES_VENV__/python -m hermes_cli.main --profile %i gateway run
+WorkingDirectory=__HERMES_HOME__
+Environment="PATH=__HERMES_VENV__:__HERMES_HOME__/node/bin:__LOCAL_BIN__:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="VIRTUAL_ENV=__HERMES_VENV__"
+Environment="HERMES_HOME=__HERMES_HOME__"
+Restart=always
+RestartSec=5
+RestartForceExitStatus=75
+KillMode=mixed
+KillSignal=SIGTERM
+ExecStopPost=-__HERMES_VENV__/python -m gateway.cgroup_cleanup
+TimeoutStopSec=210
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target'
+
+  # Replace placeholders with actual paths
+  local hermes_venv="$HERMES_HOME/hermes-agent/venv"
+  local local_bin="$HOME/.local/bin"
+  unit_content="${unit_content//__HERMES_VENV__/$hermes_venv}"
+  unit_content="${unit_content//__HERMES_HOME__/$HERMES_HOME}"
+  unit_content="${unit_content//__LOCAL_BIN__/$local_bin}"
+
+  if [[ "$DRY_RUN" == true ]]; then
+    ok "[DRY-RUN] Would write hermes-gateway@.service to $systemd_dir"
+    COUNT_SYSTEMD=$((COUNT_SYSTEMD + 1))
+    return
+  fi
+
+  # Check if already exists and correct
+  if [[ -f "$unit_file" ]]; then
+    local existing
+    existing=$(cat "$unit_file" 2>/dev/null || echo "")
+    if [[ "$existing" == "$unit_content" ]]; then
+      ok "hermes-gateway@.service already up to date"
+      COUNT_SYSTEMD=$((COUNT_SYSTEMD + 1))
+      return
+    fi
+    backup_existing "$unit_file"
+  fi
+
+  echo "$unit_content" > "$unit_file"
+  ok "Installed hermes-gateway@.service"
+  COUNT_SYSTEMD=$((COUNT_SYSTEMD + 1))
+
+  # Reload systemd
+  systemctl --user daemon-reload 2>/dev/null || true
+  ok "Systemd daemon reloaded"
+
+  # Check lingering
+  if command -v loginctl &> /dev/null; then
+    local linger
+    linger=$(loginctl show-user "$USER" 2>/dev/null | grep "^Linger=" | cut -d= -f2 || echo "no")
+    if [[ "$linger" != "yes" ]]; then
+      warn "Lingering is not enabled — user services will die when you log out"
+      info "Enable with:  sudo loginctl enable-linger $USER"
+    else
+      ok "Lingering is enabled"
+    fi
+  fi
+
+  # Install restart-profile-gateway.sh if not already there
+  local restart_script="$HERMES_HOME/scripts/restart-profile-gateway.sh"
+  if [[ ! -f "$restart_script" && -f "$REPO_ROOT/scripts/restart-profile-gateway.sh" ]]; then
+    install_file "$REPO_ROOT/scripts/restart-profile-gateway.sh" "$restart_script" "restart-profile-gateway.sh"
+    make_executable "$restart_script"
+  fi
+
+  # Create symlinks for each profile that has a directory
+  if [[ -d "$HERMES_HOME/profiles" ]]; then
+    local profile_dir
+    for profile_dir in "$HERMES_HOME/profiles"/*/; do
+      [[ -d "$profile_dir" ]] || continue
+      local pname
+      pname="$(basename "$profile_dir")"
+      local scripts_dir="$profile_dir/scripts"
+      local link_path="$scripts_dir/restart-gateway.sh"
+
+      if [[ "$DRY_RUN" == true ]]; then
+        ok "[DRY-RUN] Would symlink restart-gateway.sh for $pname"
+        continue
+      fi
+
+      mkdir -p "$scripts_dir" 2>/dev/null || true
+      if [[ ! -L "$link_path" ]]; then
+        ln -sf "$restart_script" "$link_path" 2>/dev/null || true
+        ok "Symlinked restart-gateway.sh for $pname"
+      fi
+    done
   fi
 }
 
@@ -303,7 +522,6 @@ section_gbrain() {
   version=$(gbrain --version 2>&1 | head -1)
   ok "gbrain installed: $version"
 
-  # Extract version number for comparison
   local ver_num
   ver_num=$(echo "$version" | grep -oP 'v?[\d]+\.[\d]+\.?[\d]*' | head -1)
   if [[ -z "$ver_num" ]]; then
@@ -390,17 +608,22 @@ print_summary() {
     echo ""
   fi
   echo -e "${GREEN}  Summary:${NC}"
-  echo -e "    Skills : $COUNT_SKILLS installed"
-  echo -e "    Scripts: $COUNT_SCRIPTS installed"
-  echo -e "    Configs: $COUNT_CONFIGS installed"
+  echo -e "    Skills    : $COUNT_SKILLS installed"
+  echo -e "    Scripts   : $COUNT_SCRIPTS installed"
+  echo -e "    Recipes   : $COUNT_RECIPES installed"
+  echo -e "    Templates : $COUNT_TEMPLATES installed"
+  echo -e "    Configs   : $COUNT_CONFIGS installed"
+  echo -e "    Systemd   : $COUNT_SYSTEMD installed"
   echo ""
   echo -e "${GREEN}  Next Steps:${NC}"
   echo -e "    1. Set up Google DWD:  ${CYAN}see recipes/google-dwd.md${NC}"
-  echo -e "    2. Init gbrain:         ${CYAN}scripts/init-gbrain.sh${NC}"
+  echo -e "    2. Init gbrain:         ${CYAN}scripts/init-gbrain.sh --yes${NC}"
   echo -e "    3. Deploy profiles:     ${CYAN}./install.sh --deploy all${NC}"
   echo -e "    4. Wire scrum crons:    ${CYAN}python3 scripts/wire-crons.py <profile> --apply${NC}"
   echo -e "    5. Set up Slack bots:   ${CYAN}see SETUP.md Phase 4${NC}"
-  echo -e "    6. Verify install:      ${CYAN}./scripts/verify-install.sh${NC}"
+  echo -e "    6. Install systemd:     ${CYAN}./install.sh --systemd${NC}"
+  echo -e "    7. Verify install:      ${CYAN}./scripts/verify-install.sh${NC}"
+  echo -e "    8. Run tests:           ${CYAN}python3 scripts/verify-comprehensive.py${NC}"
   if [[ -n "$BACKUP_DIR" ]]; then
     echo ""
     info "Backups saved to: $BACKUP_DIR"
@@ -417,12 +640,23 @@ main() {
   echo ""
   section_scripts
   echo ""
+  section_recipes
+  echo ""
+  section_templates
+  echo ""
   section_configs
   echo ""
   section_gbrain
   echo ""
   section_symlink
   echo ""
+
+  # Systemd (only if --systemd flag or --deploy)
+  if [[ "$INSTALL_SYSTEMD" == true ]]; then
+    section_systemd
+    echo ""
+  fi
+
   print_summary
   echo ""
 

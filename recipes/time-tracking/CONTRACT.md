@@ -1,3 +1,11 @@
+---
+name: contract
+category: connector
+setup_time: 0
+cost: $0
+depends_on: []
+---
+
 # Time Tracking Provider Contract
 
 > **Standard tool names and response shapes for time tracking integrations.**
