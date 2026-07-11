@@ -1,5 +1,6 @@
 ---
 name: gateway-systemd-management
+id: gateway-systemd-management
 category: infra
 setup_time: 15 min
 cost: $0

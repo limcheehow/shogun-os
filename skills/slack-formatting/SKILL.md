@@ -87,7 +87,7 @@ curl -s -X POST https://slack.com/api/chat.postMessage \
   -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "channel": "C0B2NTXJD9U",
+    "channel": "C0XXXXXXXX",
     "text": "Fallback text for notifications",  # shown in push notifications
     "blocks": [ ... ]
   }'
@@ -379,7 +379,7 @@ curl -s -X POST https://slack.com/api/chat.postMessage \
   -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "channel": "C0B2NTXJD9U",
+    "channel": "C0XXXXXXXX",
     "text": "Corridor check results",
     "blocks": [
       { "type": "header", "text": { "type": "plain_text", "text": "🚄 Corridor Check", "emoji": true } },

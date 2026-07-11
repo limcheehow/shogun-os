@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # gbrain-sync.sh — Incremental brain sync via gbrain CLI
 # Designed for cron (no_agent mode) — silent on success, noisy on failure.
 # Run every 15 minutes. Edit BRAIN_DIR and GBRAIN_CONFIG_DIR for your setup.

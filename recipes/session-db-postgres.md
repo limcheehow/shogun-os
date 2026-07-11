@@ -1,5 +1,6 @@
 ---
 name: session-db-postgres
+id: session-db-postgres
 category: infra
 setup_time: 20
 cost: $0

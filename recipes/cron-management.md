@@ -1,5 +1,6 @@
 ---
 name: cron-management
+id: cron-management
 category: ops
 setup_time: 5
 cost: $0

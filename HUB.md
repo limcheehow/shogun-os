@@ -31,6 +31,26 @@ hermes skills install limuser/company-os/brain-ingest-pipeline
 | `profile-enrichment` | Enrich company and contact profiles via web research + gbrain |
 | `gbrain-operations` | GBrain operations: sync, embed, doctor, dream cycle, MCP setup |
 | `lark-formatting` | Format messages for Lark (Feishu) — CardKit JSON and text formatting |
+| `brain-first-lookup` | Mandatory brain-first lookup protocol |
+| `brain-e2e-tests` | Brain compliance E2E testing suite |
+| `brain-file-delivery` | Enforce file-attachment delivery for brain pages |
+| `brain-link-campaign` | Reduce orphan pages, increase link coverage |
+| `gbrain-capture` | Quick capture of thoughts and ideas to gbrain |
+| `gbrain-query` | Three-layer gbrain query pipeline |
+| `gbrain-think` | Multi-hop synthesis with cited answers |
+| `gbrain-maintain` | Brain health checks, orphan detection, link campaigns |
+| `gbrain-frontmatter-guard` | YAML frontmatter validation on every brain write |
+| `gbrain-signal-detector` | Ambient signal capture for gbrain |
+| `timeline-inject-v2` | gbrain-compatible timeline entry injection |
+| `coding-workflow` | Master coding workflow with subagent delegation |
+| `systematic-debugging` | 4-phase root cause debugging methodology |
+| `writing-plans` | Implementation plan authoring |
+| `plan` | Plan mode — write markdown plans without execution |
+| `verify-first` | Behavioral overlay — verify before claiming |
+| `search-router` | Intelligent search routing |
+| `company-workflow` | Mandatory 6-gate workflow enforcement |
+| `google-workspace` | Google Workspace API operations (Gmail, Calendar, Drive, Docs) |
+| `lark-workspace` | Lark/Feishu API operations (Calendar, messaging) |
 
 ## Repository Structure
 

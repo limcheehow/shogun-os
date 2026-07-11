@@ -1,5 +1,6 @@
 ---
 name: scrum-production-hardening
+id: scrum-production-hardening
 category: workflow
 setup_time: 0
 cost: $0
@@ -13,6 +14,10 @@ Reference guide for the 15 production pitfalls discovered running department-scr
 ## Full Reference
 
 All 15 pitfalls are documented in `skills/department-scrum/references/production-pitfalls.md`.
+
+## Setup
+
+No setup required — this is a read-only reference document. Read `skills/department-scrum/references/production-pitfalls.md` before deploying scrum.
 
 ## Quick Reference
 

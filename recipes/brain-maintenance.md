@@ -1,5 +1,6 @@
 ---
 name: brain-maintenance
+id: brain-maintenance
 category: ops
 setup_time: 15 min
 cost: $0

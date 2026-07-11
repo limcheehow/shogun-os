@@ -45,7 +45,7 @@ team:
 brain:
   source: "projects"
   task_id_patterns:
-    - pattern: "TS-20\\d{2}-\\d{3}"
+    - pattern: 'TS-20\d{2}-\d{3}' 
       label: "Support Ticket"
       brain_path: "~/brain/projects/support_tickets/INDEX.md"
   domain_terms:

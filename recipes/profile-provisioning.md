@@ -1,5 +1,6 @@
 ---
 name: profile-provisioning
+id: profile-provisioning
 category: ops
 setup_time: 20 min
 cost: $0

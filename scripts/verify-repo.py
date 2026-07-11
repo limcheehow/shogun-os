@@ -206,7 +206,7 @@ def test_verify_skill_list_matches():
     actual_skills = sorted(d.name for d in SKILLS_DIR.iterdir() if d.is_dir())
 
     # Extract skills from the for loop in verify-install.sh
-    match = re.findall(r'"([a-z][a-z-]+)"', verify_sh)
+    match = re.findall(r'"([a-z][a-z0-9-]+)"', verify_sh)
     checked_skills = [s for s in match if s not in ("profile", "support", "gbrain", "stock-scanner")]
 
     for s in actual_skills:

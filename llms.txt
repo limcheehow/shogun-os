@@ -2,54 +2,54 @@
 
 > Company OS is a reference architecture for running an entire organization through Hermes Agent. Each department gets a dedicated AI operator with role-specific tools, memory, and autonomy. Built on Hermes Agent + GBrain.
 
-Repo: https://github.com/limcheehow/company-os
+Repo: https://github.com/limuser/company-os
 
 ## Core entry points
 
-- [AGENTS.md](https://raw.githubusercontent.com/limcheehow/company-os/main/AGENTS.md): Start here if you are an AI agent. Install order, file layout, common tasks, trust boundary.
-- [CLAUDE.md](https://raw.githubusercontent.com/limcheehow/company-os/main/CLAUDE.md): Claude Code entry point. Orientation, key files, cross-cutting invariants.
-- [INSTALL_FOR_AGENTS.md](https://raw.githubusercontent.com/limcheehow/company-os/main/INSTALL_FOR_AGENTS.md): 8-phase agent installation protocol.
-- [README.md](https://raw.githubusercontent.com/limcheehow/company-os/main/README.md): Project overview, architecture diagram, quick start, troubleshooting.
+- [AGENTS.md](https://raw.githubusercontent.com/limuser/company-os/main/AGENTS.md): Start here if you are an AI agent. Install order, file layout, common tasks, trust boundary.
+- [CLAUDE.md](https://raw.githubusercontent.com/limuser/company-os/main/CLAUDE.md): Claude Code entry point. Orientation, key files, cross-cutting invariants.
+- [INSTALL_FOR_AGENTS.md](https://raw.githubusercontent.com/limuser/company-os/main/INSTALL_FOR_AGENTS.md): 8-phase agent installation protocol.
+- [README.md](https://raw.githubusercontent.com/limuser/company-os/main/README.md): Project overview, architecture diagram, quick start, troubleshooting.
 
 ## Architecture
 
-- [ARCHITECTURE.md](https://raw.githubusercontent.com/limcheehow/company-os/main/ARCHITECTURE.md): Three-layer system design (Hermes profiles → GBrain → Slack bots).
-- [docs/architecture/OVERVIEW.md](https://raw.githubusercontent.com/limcheehow/company-os/main/docs/architecture/OVERVIEW.md): Detailed architecture with data flow, scrum architecture, cron architecture, security model.
+- [ARCHITECTURE.md](https://raw.githubusercontent.com/limuser/company-os/main/ARCHITECTURE.md): Three-layer system design (Hermes profiles → GBrain → Slack bots).
+- [docs/architecture/OVERVIEW.md](https://raw.githubusercontent.com/limuser/company-os/main/docs/architecture/OVERVIEW.md): Detailed architecture with data flow, scrum architecture, cron architecture, security model.
 
 ## Setup & Deployment
 
-- [SETUP.md](https://raw.githubusercontent.com/limcheehow/company-os/main/SETUP.md): 8-phase human-readable setup playbook.
-- [docs/tutorials/getting-started.md](https://raw.githubusercontent.com/limcheehow/company-os/main/docs/tutorials/getting-started.md): From zero to first department agent in 30 minutes.
-- [docs/tutorials/add-new-department.md](https://raw.githubusercontent.com/limcheehow/company-os/main/docs/tutorials/add-new-department.md): How to create a new department agent beyond the 10 defaults.
-- [SECURITY.md](https://raw.githubusercontent.com/limcheehow/company-os/main/SECURITY.md): Threat model, trust boundaries, secret management.
-- [CONTRIBUTING.md](https://raw.githubusercontent.com/limcheehow/company-os/main/CONTRIBUTING.md): How to contribute, what goes in/out, skill format.
+- [SETUP.md](https://raw.githubusercontent.com/limuser/company-os/main/SETUP.md): 8-phase human-readable setup playbook.
+- [docs/tutorials/getting-started.md](https://raw.githubusercontent.com/limuser/company-os/main/docs/tutorials/getting-started.md): From zero to first department agent in 30 minutes.
+- [docs/tutorials/add-new-department.md](https://raw.githubusercontent.com/limuser/company-os/main/docs/tutorials/add-new-department.md): How to create a new department agent beyond the 10 defaults.
+- [SECURITY.md](https://raw.githubusercontent.com/limuser/company-os/main/SECURITY.md): Threat model, trust boundaries, secret management.
+- [CONTRIBUTING.md](https://raw.githubusercontent.com/limuser/company-os/main/CONTRIBUTING.md): How to contribute, what goes in/out, skill format.
 
 ## Profiles & Cron
 
-- [PROFILE_CATALOG.md](https://raw.githubusercontent.com/limcheehow/company-os/main/PROFILE_CATALOG.md): All 10 department profiles with personas, sources, skills, domains.
-- [CRON_INVENTORY.md](https://raw.githubusercontent.com/limcheehow/company-os/main/CRON_INVENTORY.md): Every cron job across all profiles (54 total).
+- [PROFILE_CATALOG.md](https://raw.githubusercontent.com/limuser/company-os/main/PROFILE_CATALOG.md): All 10 department profiles with personas, sources, skills, domains.
+- [CRON_INVENTORY.md](https://raw.githubusercontent.com/limuser/company-os/main/CRON_INVENTORY.md): Every cron job across all profiles (54 total).
 
 ## Recipes (Dependency-Ordered)
 
 | Recipe | Category | Setup Time |
 |--------|----------|------------|
-| [google-dwd.md](https://raw.githubusercontent.com/limcheehow/company-os/main/recipes/google-dwd.md) | auth | 20 min |
-| [token-watchdog.md](https://raw.githubusercontent.com/limcheehow/company-os/main/recipes/token-watchdog.md) | auth | 5 min |
-| [brain-ingest-pipeline.md](https://raw.githubusercontent.com/limcheehow/company-os/main/recipes/brain-ingest-pipeline.md) | ingest | 10 min |
-| [drive-to-brain.md](https://raw.githubusercontent.com/limcheehow/company-os/main/recipes/drive-to-brain.md) | ingest | 20 min |
-| [token-utilization.md](https://raw.githubusercontent.com/limcheehow/company-os/main/recipes/token-utilization.md) | monitor | 5 min |
-| [jibble-time-tracking.md](https://raw.githubusercontent.com/limcheehow/company-os/main/recipes/jibble-time-tracking.md) | connector | 15 min |
-| [slides-deck-gen.md](https://raw.githubusercontent.com/limcheehow/company-os/main/recipes/slides-deck-gen.md) | connector | 15 min |
-| [department-scrum.md](https://raw.githubusercontent.com/limcheehow/company-os/main/recipes/department-scrum.md) | workflow | 15 min per profile |
+| [google-dwd.md](https://raw.githubusercontent.com/limuser/company-os/main/recipes/google-dwd.md) | auth | 20 min |
+| [token-watchdog.md](https://raw.githubusercontent.com/limuser/company-os/main/recipes/token-watchdog.md) | auth | 5 min |
+| [brain-ingest-pipeline.md](https://raw.githubusercontent.com/limuser/company-os/main/recipes/brain-ingest-pipeline.md) | ingest | 10 min |
+| [drive-to-brain.md](https://raw.githubusercontent.com/limuser/company-os/main/recipes/drive-to-brain.md) | ingest | 20 min |
+| [token-utilization.md](https://raw.githubusercontent.com/limuser/company-os/main/recipes/token-utilization.md) | monitor | 5 min |
+| [jibble-time-tracking.md](https://raw.githubusercontent.com/limuser/company-os/main/recipes/jibble-time-tracking.md) | connector | 15 min |
+| [slides-deck-gen.md](https://raw.githubusercontent.com/limuser/company-os/main/recipes/slides-deck-gen.md) | connector | 15 min |
+| [department-scrum.md](https://raw.githubusercontent.com/limuser/company-os/main/recipes/department-scrum.md) | workflow | 15 min per profile |
 
 ## Scripts
 
 | Script | Purpose |
 |--------|---------|
-| [install.sh](https://raw.githubusercontent.com/limcheehow/company-os/main/scripts/install.sh) | Install skills, scripts, templates; gbrain version check; deploy profiles |
-| [generate-profile.py](https://raw.githubusercontent.com/limcheehow/company-os/main/scripts/generate-profile.py) | Generate Hermes profile with SOUL.md + config.yaml from template |
-| [wire-crons.py](https://raw.githubusercontent.com/limcheehow/company-os/main/scripts/wire-crons.py) | Generate and apply cron jobs per profile type |
-| [init-gbrain.sh](https://raw.githubusercontent.com/limcheehow/company-os/main/scripts/init-gbrain.sh) | Initialize gbrain with all 11 department sources |
-| [verify-install.sh](https://raw.githubusercontent.com/limcheehow/company-os/main/scripts/verify-install.sh) | Full install verification with MCP connectivity probe |
-| [backup-crons.py](https://raw.githubusercontent.com/limcheehow/company-os/main/scripts/backup-crons.py) | Export cron jobs to portable JSON |
-| [restore-crons.py](https://raw.githubusercontent.com/limcheehow/company-os/main/scripts/restore-crons.py) | Restore cron jobs from backup |
+| [install.sh](https://raw.githubusercontent.com/limuser/company-os/main/scripts/install.sh) | Install skills, scripts, templates; gbrain version check; deploy profiles |
+| [generate-profile.py](https://raw.githubusercontent.com/limuser/company-os/main/scripts/generate-profile.py) | Generate Hermes profile with SOUL.md + config.yaml from template |
+| [wire-crons.py](https://raw.githubusercontent.com/limuser/company-os/main/scripts/wire-crons.py) | Generate and apply cron jobs per profile type |
+| [init-gbrain.sh](https://raw.githubusercontent.com/limuser/company-os/main/scripts/init-gbrain.sh) | Initialize gbrain with all 11 department sources |
+| [verify-install.sh](https://raw.githubusercontent.com/limuser/company-os/main/scripts/verify-install.sh) | Full install verification with MCP connectivity probe |
+| [backup-crons.py](https://raw.githubusercontent.com/limuser/company-os/main/scripts/backup-crons.py) | Export cron jobs to portable JSON |
+| [restore-crons.py](https://raw.githubusercontent.com/limuser/company-os/main/scripts/restore-crons.py) | Restore cron jobs from backup |

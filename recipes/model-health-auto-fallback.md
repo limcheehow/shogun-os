@@ -1,5 +1,6 @@
 ---
 name: model-health-auto-fallback
+id: model-health-auto-fallback
 category: ops
 setup_time: 10 min
 cost: $0
