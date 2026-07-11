@@ -68,7 +68,7 @@ key_path = os.path.expanduser("~/.hermes/secrets/google-dwd-sa.json")
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 creds = service_account.Credentials.from_service_account_file(
-    key_path, scopes=SCOPES, subject="cheehow@gotapway.com"
+    key_path, scopes=SCOPES, subject="your-user@your-domain.com"
 )
 creds.refresh(google.auth.transport.requests.Request())
 
@@ -89,7 +89,7 @@ import google.auth.transport.requests
 KEY = os.path.expanduser("~/.hermes/secrets/google-dwd-sa.json")
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
-def get_dwd_creds(user="cheehow@gotapway.com"):
+def get_dwd_creds(user="your-user@your-domain.com"):
     creds = service_account.Credentials.from_service_account_file(
         KEY, scopes=SCOPES, subject=user
     )
@@ -101,7 +101,7 @@ The `subject` field controls **which user** you're impersonating. To access a
 different user's Gmail/Calendar/Drive, just change the subject:
 
 ```python
-creds = get_dwd_creds("sarah@gotapway.com")  # Sarah's data
+creds = get_dwd_creds("sarah@your-domain.com")  # Sarah's data
 ```
 
 ## Token Watchdog (for Legacy Scripts That Expect a Static Token File)
@@ -135,7 +135,7 @@ SCOPES = [
 ]
 
 creds = service_account.Credentials.from_service_account_file(
-    key_path, scopes=SCOPES, subject="cheehow@gotapway.com"
+    key_path, scopes=SCOPES, subject="your-user@your-domain.com"
 )
 creds.refresh(google.auth.transport.requests.Request())
 

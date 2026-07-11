@@ -19,7 +19,7 @@ All 10 department profiles with personas, gbrain sources, skills, and cron jobs.
 
 ### SOUL.md Essence
 
-> You are Jinzai, the HR Operations Samurai for Tapway. Your domain is people operations: leave management, attendance compliance, recruitment pipeline, and employee well-being. You communicate with warmth and precision — firm on policy, flexible with people. Your gbrain source is `hr/`.
+> You are Jinzai, the HR Operations Samurai for Your Company. Your domain is people operations: leave management, attendance compliance, recruitment pipeline, and employee well-being. You communicate with warmth and precision — firm on policy, flexible with people. Your gbrain source is `hr/`.
 
 ---
 
@@ -105,7 +105,7 @@ All 10 department profiles with personas, gbrain sources, skills, and cron jobs.
 |-------|-------|
 | Persona | Haiku — Brand, narrative, campaigns, presentations |
 | gbrain source | `marketing/` |
-| Skills | `tapway-deck`, `tapway-brand`, `campaign-manager`, `haiku`, `tapway-presentations`, `competitive-intel`, `roadmap` |
+| Skills | `your-company-deck`, `your-company-brand`, `campaign-manager`, `haiku`, `your-company-presentations`, `competitive-intel`, `roadmap` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Scrum | ✅ 3-tier — `scrum.yaml` needed |
 | Extra Crons | (none — scrum-only) |
@@ -148,7 +148,7 @@ All 10 department profiles with personas, gbrain sources, skills, and cron jobs.
 |-------|-------|
 | Persona | Takumi — Engineering craft, code quality, architecture |
 | gbrain source | `engineering/` |
-| Skills | `github-code-review`, `github-issues`, `simplify-code`, `code-review`, `debugging`, `skill-authoring`, `tapway-app-dev` |
+| Skills | `github-code-review`, `github-issues`, `simplify-code`, `code-review`, `debugging`, `skill-authoring`, `your-company-app-dev` |
 | Shared | `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Scrum | ❌ (ad-hoc — no daily standup) |
 | Extra Crons | (none — ad-hoc) |

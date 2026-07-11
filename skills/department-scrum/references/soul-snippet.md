@@ -29,7 +29,7 @@ When someone DMs you, check if they are in today's project scrum team. State fil
 
 **If they are a team member and haven't submitted yet:**
 1. Read their message — is it a scrum reply (answers the 4 questions)?
-2. If complete → run `python3 ~/.hermes/scripts/scrum/check-scrum-replies.py report --profile project-manager` to save state, then post the formatted submission to #project-scrum-updates (C09SR9B5WJU) using Slack API
+2. If complete → run `python3 ~/.hermes/scripts/scrum/check-scrum-replies.py report --profile project-manager` to save state, then post the formatted submission to #project-scrum-updates (C0XXXXXXXX) using Slack API
 3. If incomplete → ask them for the missing parts
 4. If already submitted → acknowledge but don't re-post
 

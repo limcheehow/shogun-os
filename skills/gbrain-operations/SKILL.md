@@ -47,7 +47,7 @@ Environment variables needed (set in `~/.hermes/.env` or profile `.env`):
 |----------|---------|
 | `SUPABASE_URL` | Postgres connection (for production gbrain) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
-| `OPENROUTER_API_KEY` | Embeddings (gbrain uses OpenRouter by default) |
+| `OPENROUTER_API_KEY` | Embeddings (gbrain uses Backup Provider by default) |
 
 ---
 
@@ -102,7 +102,7 @@ gbrain embed --stale
 gbrain embed --full
 ```
 
-**Embedding provider:** gbrain uses OpenRouter by default. Set `OPENROUTER_API_KEY` in the environment. To use a different provider:
+**Embedding provider:** gbrain uses Backup Provider by default. Set `OPENROUTER_API_KEY` in the environment. To use a different provider:
 
 ```bash
 # Use OpenAI
@@ -312,7 +312,7 @@ gbrain migrate --to supabase \
 
 **Symptom:** `gbrain embed` returns HTTP 429 rate limit errors.
 
-**Cause:** OpenRouter or embedding provider rate limits.
+**Cause:** Backup Provider or embedding provider rate limits.
 
 **Fix:**
 ```bash
@@ -323,7 +323,7 @@ gbrain embed --stale --batch-size 10
 gbrain embed --provider openai
 
 # Check quota:
-curl -s https://openrouter.ai/api/v1/auth/key \
+curl -s https://backup-provider.ai/api/v1/auth/key \
   -H "Authorization: Bearer $OPENROUTER_API_KEY"
 ```
 

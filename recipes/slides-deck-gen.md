@@ -9,7 +9,7 @@ requires:
 secrets: []
 health_checks:
   - type: script
-    command: "python3 -c \"from google.oauth2 import service_account; import google.auth.transport.requests; c=service_account.Credentials.from_service_account_file(os.path.expanduser('~/.hermes/secrets/google-dwd-sa.json'), scopes=['https://www.googleapis.com/auth/presentations'], subject='cheehow@gotapway.com'); c.refresh(google.auth.transport.requests.Request()); print('TOKEN_OK')\""
+    command: "python3 -c \"from google.oauth2 import service_account; import google.auth.transport.requests; c=service_account.Credentials.from_service_account_file(os.path.expanduser('~/.hermes/secrets/google-dwd-sa.json'), scopes=['https://www.googleapis.com/auth/presentations'], subject='your-user@your-domain.com'); c.refresh(google.auth.transport.requests.Request()); print('TOKEN_OK')\""
     label: "Slides API token"
 setup_time: 15 min
 cost_estimate: "$0"
@@ -26,7 +26,7 @@ Create, update, and present Google Slides decks via API. Used by the marketing-m
 ## Architecture
 
 ```
-Google DWD (impersonate cheehow@gotapway.com)
+Google DWD (impersonate your-user@your-domain.com)
   ↓ Slides API + Drive API
 Hermes Skill (Slides API wrapper)
   ↓ Agent workflows:
@@ -57,7 +57,7 @@ SA_PATH = os.path.expanduser("~/.hermes/secrets/google-dwd-sa.json")
 creds = service_account.Credentials.from_service_account_file(
     SA_PATH,
     scopes=["https://www.googleapis.com/auth/presentations"],
-    subject="cheehow@gotapway.com"
+    subject="your-user@your-domain.com"
 )
 creds.refresh(google.auth.transport.requests.Request())
 service = build("slides", "v1", credentials=creds)
@@ -85,7 +85,7 @@ The skill should support these operations via the Slides REST API:
 Identify template decks in Google Drive:
 
 ```bash
-# Template for standard Tapway decks
+# Template for standard Your Company decks
 TEMPLATE_DECK_ID="your-template-deck-id"
 # Store for the skill to reference
 echo "export TAPWAY_DECK_TEMPLATE_ID=\"$TEMPLATE_DECK_ID\"" >> ~/.hermes/.env
@@ -108,7 +108,7 @@ SA_PATH = os.path.expanduser("~/.hermes/secrets/google-dwd-sa.json")
 creds = service_account.Credentials.from_service_account_file(
     SA_PATH,
     scopes=["https://www.googleapis.com/auth/presentations", "https://www.googleapis.com/auth/drive"],
-    subject="cheehow@gotapway.com"
+    subject="your-user@your-domain.com"
 )
 creds.refresh(google.auth.transport.requests.Request())
 slides = build("slides", "v1", credentials=creds)

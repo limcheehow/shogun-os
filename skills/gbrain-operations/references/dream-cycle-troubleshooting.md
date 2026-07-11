@@ -16,7 +16,7 @@ The `getProviderCapabilities()` → `classifyCapabilities()` call needs `provide
 
 **Fix:** Set `models.tier.reasoning` in gbrain PGLite config:
 ```bash
-cd ~/gbrain && gbrain config set models.tier.reasoning "openrouter:anthropic/claude-sonnet-4"
+cd ~/gbrain && gbrain config set models.tier.reasoning "backup-provider:anthropic/claude-sonnet-4"
 ```
 
 ### Synthesize: `SYNTH_PHASE_FAIL` — 401 auth
@@ -37,7 +37,7 @@ cd ~/gbrain && gbrain config set models.tier.reasoning "openrouter:anthropic/cla
    print(r.status_code)  # 200 = OK, 401 = bad key
    ```
 
-2. **Wrong model prefix** (401 from OpenRouter). The subagent code at `src/core/minions/handlers/subagent.ts` calls `isAnthropicProvider()` which checks the provider prefix (before `:`). `openrouter:anthropic/claude-sonnet-4` has provider `openrouter` → NOT Anthropic. Fix:
+2. **Wrong model prefix** (401 from Backup Provider). The subagent code at `src/core/minions/handlers/subagent.ts` calls `isAnthropicProvider()` which checks the provider prefix (before `:`). `backup-provider:anthropic/claude-sonnet-4` has provider `backup-provider` → NOT Anthropic. Fix:
    ```bash
    cd ~/gbrain && gbrain config set models.dream.synthesize "anthropic:claude-sonnet-4-6"
    ```
@@ -78,7 +78,7 @@ export function isAnthropicProvider(modelString: string): boolean {
 ```
 
 - `anthropic:claude-sonnet-4-6` → provider = `anthropic` → ✅ true
-- `openrouter:anthropic/claude-sonnet-4` → provider = `openrouter` → ❌ false
+- `backup-provider:anthropic/claude-sonnet-4` → provider = `backup-provider` → ❌ false
 - `claude-sonnet-4-6` → starts with `claude-` → ✅ true
 
 ### `agent.use_gateway_loop` flag
@@ -94,7 +94,7 @@ This config exists to route subagent jobs through a provider-agnostic gateway lo
    await db.query("INSERT INTO config (key, value) VALUES ($1, $2) ON CONFLICT DO UPDATE",
      ["agent.use_gateway_loop", "true"])
    ```
-6. Even with gateway loop enabled, the OpenRouter auth chain still fails with 401 (experimental, not production-ready in v0.40.8.1)
+6. Even with gateway loop enabled, the Backup Provider auth chain still fails with 401 (experimental, not production-ready in v0.40.8.1)
 
 ### Synthesize phase flow
 

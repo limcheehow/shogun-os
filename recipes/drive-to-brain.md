@@ -29,7 +29,7 @@ The sync script handles all deterministic work (listing files, reading content, 
 ## Architecture
 
 ```
-Google DWD (impersonate cheehow@gotapway.com)
+Google DWD (impersonate your-user@your-domain.com)
   ↓ Drive API + Docs API
 Sync Script (deterministic Python)
   ↓ Creates:
@@ -62,7 +62,7 @@ gbrain import + embed + sync
 
 1. `google-dwd` recipe completed
 2. Google Drive API + Google Docs API enabled in the Google Cloud project
-3. The sync folder(s) are shared with `cheehow@gotapway.com` (accessible to the DWD subject)
+3. The sync folder(s) are shared with `your-user@your-domain.com` (accessible to the DWD subject)
 
 ## Setup Flow
 
@@ -81,7 +81,7 @@ from googleapiclient.discovery import build
 
 # ── Config ──────────────────────────────────
 SA_PATH = os.path.expanduser("~/.hermes/secrets/google-dwd-sa.json")
-SUBJECT = "cheehow@gotapway.com"
+SUBJECT = "your-user@your-domain.com"
 SCOPES = [
     "https://www.googleapis.com/auth/drive.readonly",
     "https://www.googleapis.com/auth/documents.readonly",

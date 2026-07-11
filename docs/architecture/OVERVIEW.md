@@ -63,9 +63,9 @@ One Slack bot per profile. Each bot:
 ```yaml
 model:
   default: deepseek-v4-flash
-  provider: custom:dashscope
+  provider: custom:primary-provider
   fallback:
-    - provider: openrouter
+    - provider: backup-provider
       model: deepseek/deepseek-v4-flash
 ```
 
@@ -74,11 +74,11 @@ model:
 ```yaml
 model:
   default: ~anthropic/claude-sonnet-4-20250514
-  provider: openrouter
+  provider: backup-provider
   fallback:
     - provider: custom
       model: deepseek-v4-flash
-      base_url: https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+      base_url: https://primary-provider-intl.aliyuncs.com/compatible-mode/v1
 ```
 
 ### Shared MCP Servers (all profiles)

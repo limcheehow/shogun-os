@@ -107,7 +107,7 @@ which hermes                    # Hermes Agent installed
 which gbrain                    # GBrain installed (v0.42.x+)
 
 # 2. Clone this repo
-git clone https://github.com/limcheehow/company-os.git
+git clone https://github.com/limuser/company-os.git
 cd company-os
 
 # 3. Install skills, scripts, and templates
@@ -131,7 +131,7 @@ If you have an AI agent running (Hermes, OpenClaw, Codex, Claude Code), paste th
 
 ```
 Retrieve and follow the instructions at:
-https://raw.githubusercontent.com/limcheehow/company-os/main/INSTALL_FOR_AGENTS.md
+https://raw.githubusercontent.com/limuser/company-os/main/INSTALL_FOR_AGENTS.md
 ```
 
 The agent installs Company OS, creates profiles, sets up gbrain sources, configures Slack bots, wires scrum crons, and verifies the install end-to-end. ~30 minutes. You answer questions about Slack tokens and channel IDs.
@@ -159,12 +159,30 @@ Every profile loads shared Hermes skills shipped with this repo:
 
 | Skill | Purpose |
 |-------|---------|
-| `department-scrum` | Cross-department 3-tier scrum workflow (9am/11am/5pm) |
+| `company-workflow` | Mandatory 6-gate workflow enforcement (Triage→RCA→Brainstorm→Plan→TDD→E2E) for any feature/bug request |
+| `department-scrum` | Cross-department 3-tier scrum workflow (9am/11am/5pm), production-hardened v3.0.0 with 15 documented pitfalls |
 | `brain-ingest-pipeline` | Unified 5-phase COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE data pipeline |
 | `slack-formatting` | Slack-optimized formatting (mrkdwn + Block Kit) |
 | `brain-compliance` | Gbrain-compliant brain page standards & validator |
 | `profile-enrichment` | Company/contact research via web + gbrain-native writes |
 | `gbrain-operations` | GBrain CLI operations (sync, embed, doctor, dream, MCP) |
+| `brain-first-lookup` | Mandatory brain-first lookup protocol before external searches |
+| `gbrain-capture` | Quick capture of thoughts, ideas, and observations to gbrain |
+| `gbrain-query` | Three-layer gbrain query pipeline (search → recall → think) |
+| `gbrain-think` | Multi-hop synthesis with cited answers + conflict analysis |
+| `gbrain-maintain` | Brain health checks, orphan detection, link campaigns |
+| `gbrain-frontmatter-guard` | YAML frontmatter validation on every brain write |
+| `brain-link-campaign` | Reduce orphan pages, increase link coverage |
+| `brain-file-delivery` | Enforce file-attachment delivery for brain pages |
+| `brain-e2e-tests` | Comprehensive brain compliance testing suite |
+| `gbrain-signal-detector` | Ambient signal capture for gbrain |
+| `timeline-inject-v2` | gbrain-compatible timeline entry injection |
+| `coding-workflow` | Master coding workflow with subagent delegation |
+| `systematic-debugging` | 4-phase root cause debugging methodology |
+| `writing-plans` | Implementation plan authoring (bite-sized tasks, paths, code) |
+| `plan` | Plan mode — write markdown plans without execution |
+| `verify-first` | Behavioral overlay — verify before claiming, challenge assumptions |
+| `search-router` | Intelligent search routing — analyzes query intent and routes to best source |
 
 ## What You Get
 
@@ -186,12 +204,12 @@ Each runs as an isolated Hermes Agent profile with:
 | Department-specific (pipeline, budget, leave, etc.) | 15 | Agent |
 | Health & monitoring | 4 | no_agent |
 
-### 6 Reusable Skills
+### 25 Reusable Skills
 
 Shipped in this repo, installable via Hermes skill tap:
 ```bash
-hermes skills tap add limcheehow/company-os
-hermes skills install company-os/department-scrum
+hermes skills tap add limuser/company-os
+hermes skills install company-os/company-workflow
 ```
 
 ### Complete Setup Tooling

@@ -22,7 +22,7 @@ You are working on the `company-os` repo — a reference architecture for deploy
 
 ## Cross-Cutting Invariants
 
-1. **Reusable only** — No Tapway-specific content in this repo. No employee names, Slack IDs, channel IDs, or personal cron schedules.
+1. **Reusable only** — No Your Company-specific content in this repo. No employee names, Slack IDs, channel IDs, or personal cron schedules.
 2. **Placeholder token** — All Slack IDs use `C0XXXXXXX` (channels) or `U0XXXXXXX` (users). Real values go in per-instance configs.
 3. **No secrets in repo** — `.env` files, `auth.json`, `google-dwd-sa.json` are gitignored.
 4. **Agent-installable** — Every doc should be readable by an AI agent. AGENTS.md and INSTALL_FOR_AGENTS.md are the primary agent entry points.

@@ -17,10 +17,10 @@
 ### 🔧 Quick Fixes Available
 ```bash
 # Re-authenticate with full scopes
-python /home/cheehow/.hermes/skills/productivity/google-workspace/scripts/setup.py --revoke
-python /home/cheehow/.hermes/skills/productivity/google-workspace/scripts/setup.py --auth-url
+python /home/user/.hermes/skills/productivity/google-workspace/scripts/setup.py --revoke
+python /home/user/.hermes/skills/productivity/google-workspace/scripts/setup.py --auth-url
 # Complete OAuth flow, then verify:
-python /home/cheehow/.hermes/skills/productivity/google-workspace/scripts/setup.py --check
+python /home/user/.hermes/skills/productivity/google-workspace/scripts/setup.py --check
 ```
 
 ## Brain Integration Options

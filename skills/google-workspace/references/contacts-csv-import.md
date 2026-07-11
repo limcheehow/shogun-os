@@ -2,13 +2,13 @@
 
 ## Use Case
 
-You need to import contacts from a **secondary Google account** (e.g. work Gmail `cheehow@gotapway.com`) into `~/brain/people/` as person files. The current OAuth token is for a different account.
+You need to import contacts from a **secondary Google account** (e.g. work Gmail `your-user@your-domain.com`) into `~/brain/people/` as person files. The current OAuth token is for a different account.
 
 ## Workflow: CSV Export → Parse → Person Files
 
 ### Step 1: Export Contacts CSV from the source account
 
-1. Sign into the source Google account (e.g. `cheehow@gotapway.com`)
+1. Sign into the source Google account (e.g. `your-user@your-domain.com`)
 2. Go to https://contacts.google.com
 3. Left sidebar → **Export**
 4. Select **All contacts**

@@ -1,19 +1,19 @@
 # ── Base Profile Config — Standard Department ──
-# Generated from profile-templates/base-config.yaml
+# Generated from templates/profiles/base-config.yaml
 # Override model by running: python3 scripts/switch-profile.py <name> --model <preset>
 
 model:
   default: deepseek-v4-flash
   provider: custom
-  base_url: https://dashscope-intl.aliyuncs.com/compatible-mode/v1
-  api_key: ${DASHSCOPE_API_KEY}
+  base_url: ${PRIMARY_PROVIDER_BASE_URL}
+  api_key: ${PRIMARY_PROVIDER_API_KEY}
   api_mode: chat_completions
 
 fallback_providers:
-  - provider: openrouter
-    model: deepseek/deepseek-v4-flash
+  - provider: ${BACKUP_PROVIDER_NAME}
+    model: ${BACKUP_PROVIDER_MODEL}
 
-auxiliary: google/gemma-4-31b-it:free
+auxiliary: ${AUXILIARY_MODEL}
 
 providers: {}
 

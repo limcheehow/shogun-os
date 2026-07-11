@@ -9,7 +9,7 @@ Usage:
 
 Example:
   python3 generate-profile.py project-manager --type engineering
-  python3 generate-profile.py crm-slack --type crm --gbrain-source tapway
+  python3 generate-profile.py crm-slack --type crm --gbrain-source your-company
   python3 generate-profile.py hr-manager --type hr --force
 
 Profile Types:
@@ -56,7 +56,7 @@ PROFILE_META = {
     "base": {
         "description": "Minimal Hermes profile with gbrain MCP + shared skills",
         "template": "base-config.yaml",
-        "skills": [],
+        "skills": ["company-workflow"],
         "cron_templates": [],
         "gbrain_source": "base",
         "soul_snippet": None,
@@ -64,7 +64,7 @@ PROFILE_META = {
     "coding": {
         "description": "Software development engineering profile — Takumi (匠)",
         "template": "coding-config.yaml",
-        "skills": ["department-scrum"],
+        "skills": ["company-workflow", "department-scrum"],
         "cron_templates": [],
         "gbrain_source": "engineering",
         "soul_snippet": "coding-soul",
@@ -72,7 +72,7 @@ PROFILE_META = {
     "engineering": {
         "description": "Full engineering profile with scrum — Takumi (匠)",
         "template": "coding-config.yaml",
-        "skills": ["department-scrum"],
+        "skills": ["company-workflow", "department-scrum"],
         "cron_templates": ["cron-9am", "cron-11am", "cron-5pm", "cron-holiday-gate"],
         "gbrain_source": "engineering",
         "soul_snippet": "coding-soul",
@@ -80,7 +80,7 @@ PROFILE_META = {
     "hr": {
         "description": "HR profile with leave management — Jinzai (人材)",
         "template": "base-config.yaml",
-        "skills": ["department-scrum"],
+        "skills": ["company-workflow", "department-scrum"],
         "cron_templates": ["cron-9am", "cron-11am", "cron-5pm"],
         "gbrain_source": "hr",
         "soul_snippet": "hr-soul",
@@ -88,7 +88,7 @@ PROFILE_META = {
     "finance": {
         "description": "Finance profile with budget tracking — Koku (石)",
         "template": "base-config.yaml",
-        "skills": [],
+        "skills": ["company-workflow"],
         "cron_templates": [],
         "gbrain_source": "finance",
         "soul_snippet": "finance-soul",
@@ -96,7 +96,7 @@ PROFILE_META = {
     "procurement": {
         "description": "Procurement profile with contract lifecycle — Kura (蔵)",
         "template": "base-config.yaml",
-        "skills": [],
+        "skills": ["company-workflow"],
         "cron_templates": [],
         "gbrain_source": "procurement",
         "soul_snippet": "procurement-soul",
@@ -104,7 +104,7 @@ PROFILE_META = {
     "crm": {
         "description": "CRM profile for sales — Kizuna (絆)",
         "template": "base-config.yaml",
-        "skills": [],
+        "skills": ["company-workflow"],
         "cron_templates": [],
         "gbrain_source": "crm",
         "soul_snippet": "crm-soul",
@@ -112,7 +112,7 @@ PROFILE_META = {
     "product": {
         "description": "Product management profile — Shi (志)",
         "template": "base-config.yaml",
-        "skills": [],
+        "skills": ["company-workflow"],
         "cron_templates": [],
         "gbrain_source": "products",
         "soul_snippet": "product-soul",
@@ -120,7 +120,7 @@ PROFILE_META = {
     "marketing": {
         "description": "Marketing profile — Haiku (俳句)",
         "template": "base-config.yaml",
-        "skills": [],
+        "skills": ["company-workflow"],
         "cron_templates": [],
         "gbrain_source": "marketing",
         "soul_snippet": "marketing-soul",
@@ -128,7 +128,7 @@ PROFILE_META = {
     "compliance": {
         "description": "Compliance profile — Kata (型)",
         "template": "base-config.yaml",
-        "skills": [],
+        "skills": ["company-workflow"],
         "cron_templates": [],
         "gbrain_source": "compliance",
         "soul_snippet": "compliance-soul",
@@ -136,7 +136,7 @@ PROFILE_META = {
     "support": {
         "description": "Customer support profile — Bōei (防衛)",
         "template": "base-config.yaml",
-        "skills": [],
+        "skills": ["company-workflow"],
         "cron_templates": [],
         "gbrain_source": "support",
         "soul_snippet": "support-soul",
@@ -144,7 +144,7 @@ PROFILE_META = {
     "executive": {
         "description": "Executive assistant profile — Shitsuji (執事)",
         "template": "base-config.yaml",
-        "skills": [],
+        "skills": ["company-workflow"],
         "cron_templates": ["cron-9am", "cron-11am", "cron-5pm"],
         "gbrain_source": "executive",
         "soul_snippet": "executive-soul",
@@ -152,7 +152,7 @@ PROFILE_META = {
     "all": {
         "description": "Installs all available skills (default gbrain source)",
         "template": "base-config.yaml",
-        "skills": ["department-scrum", "brain-ingest-pipeline"],
+        "skills": ["company-workflow", "department-scrum", "brain-ingest-pipeline"],
         "cron_templates": ["cron-9am", "cron-11am", "cron-5pm"],
         "gbrain_source": "default",
         "soul_snippet": None,
@@ -482,6 +482,31 @@ def substitute_config(template_text: str, profile_name: str, gbrain_source: str)
     return Template(template_text).safe_substitute(subs)
 
 
+WORKFLOW_ENFORCEMENT = """
+## Workflow Enforcement (MANDATORY)
+
+When any user request involves building, fixing, or changing functionality —
+whether code, scripts, cron jobs, skills, or configuration — you MUST follow
+this gate sequence BEFORE any implementation:
+
+1. **Triage** — Classify the request (feature, bug, refactor, config change)
+2. **RCA / Research** — Understand the root cause or requirements before writing code
+3. **Brainstorm** — Explore approaches, map scope, get confirmation before executing
+4. **Plan** — Write an implementation plan (bite-sized tasks, file paths, code outlines)
+5. **TDD** — Write tests first, then implement
+6. **E2E** — End-to-end validation against real systems, not mocks
+
+**Skipping the workflow is a critical defect, not a shortcut.** If you catch
+yourself jumping to implementation without completing Phase 1 (RCA/Research),
+STOP and return to the workflow.
+
+Signal phrases that trigger this workflow: feature, bug, fix, add, implement,
+build, refactor, new endpoint, "why is X failing", change behavior.
+
+When in doubt, load the `company-workflow` skill before proceeding.
+"""
+
+
 def generate_soul(profile_name: str, profile_type: str, meta: dict) -> str:
     snippet = SOUL_SNIPPETS.get(meta.get("soul_snippet", ""))
     if snippet:
@@ -493,6 +518,8 @@ profile_type: {profile_type}
 ---
 
 {snippet}
+
+{WORKFLOW_ENFORCEMENT}
 """
     return f"""---
 name: {profile_name}
@@ -506,16 +533,18 @@ profile_type: {profile_type}
 This profile was generated by Company OS.
 
 ## Your Role
+
 You are the **{profile_name}** agent — you handle tasks related to **{meta['description']}**.
 
 ## Guidelines
+
 1. Use gbrain MCP for all knowledge lookups
 2. Use the `department-scrum` skill for scrum ceremonies (if enabled)
 3. Be concise and actionable in your responses
 4. When uncertain, use gbrain to find relevant information before asking the user
+
+{WORKFLOW_ENFORCEMENT}
 """
-
-
 def generate_env_stub(profile_name: str, profile_type: str) -> str:
     return f"""# Company OS — Environment Variables for: {profile_name} ({profile_type})
 # NOTE: Profiles DO NOT inherit from ~/.hermes/.env

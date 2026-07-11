@@ -90,42 +90,32 @@ state_dir = Path(os.path.expanduser(state_dir_raw))
 state_dir.mkdir(parents=True, exist_ok=True)
 state_file = state_dir / f"{DATE_STR}.json"
 
-# ── Send DMs ───────────────────────────────────────────────────────────
+# ── Initialize state BEFORE sending DMs ─────────────────────────────────
+# CRITICAL: Save state first to prevent duplicate sends from concurrent
+# cron triggers (batch-fire race condition — see production-pitfalls.md #3)
 results = []
 errors = []
 
-print(f"=== Scrum Send: {PROFILE} — {DATE_STR}")
-print(f" Team size: {len(team)}")
-print()
-
 for member in team:
-    name = member["name"]
-    user_id = member.get("user_id", member.get("slack_id", ""))
-    role = member.get("role", "")
-    try:
-        result = provider.send_dm(user_id, QUESTIONS)
-        results.append({
-            "name": name,
-            "user_id": user_id,
-            "role": role,
-            "thread_id": result["thread_id"],
-            "conversation_id": result["conversation_id"],
-            "replied": False,
-            "reply_text": None,
-            "replied_at": None,
-            "compliance": "missed",
-            "confidence": None,
-            "issues": [],
-            "tasks_matched": [],
-            "brain_missing": [],
-            "warned_11am": False,
-        })
-        print(f"  [OK] {name:25s} ({role:22s}) -> DM sent")
-    except Exception as e:
-        errors.append({"name": name, "user_id": user_id, "error": str(e)})
-        print(f"  [ERR] {name:25s}: {e}")
+    results.append({
+        "name": member["name"],
+        "user_id": member.get("user_id", member.get("slack_id", "")),
+        "role": member.get("role", ""),
+        "thread_id": None,
+        "conversation_id": None,
+        "replied": False,
+        "reply_text": None,
+        "replied_at": None,
+        "compliance": "missed",
+        "confidence": None,
+        "issues": [],
+        "tasks_matched": [],
+        "brain_missing": [],
+        "warned_11am": False,
+        "posted_to_channel": None,
+        "submission_state": "pending",
+    })
 
-# ── Save state ─────────────────────────────────────────────────────────
 state = {
     "date": DATE_STR,
     "profile": PROFILE,
@@ -136,7 +126,29 @@ state = {
     "team": results,
     "errors": errors,
 }
+# Save initial state BEFORE any DMs are sent
 state_file.write_text(json.dumps(state, indent=2, default=str))
+
+print(f"=== Scrum Send: {PROFILE} — {DATE_STR}")
+print(f" Team size: {len(team)}")
+print(f" State initialized at {state_file}")
+print()
+
+# ── Send DMs (update state after each) ─────────────────────────────────
+for member in results:
+    try:
+        result = provider.send_dm(member["user_id"], QUESTIONS)
+        member["thread_id"] = result["thread_id"]
+        member["conversation_id"] = result["conversation_id"]
+        # Save after each DM so partial progress survives crashes
+        state_file.write_text(json.dumps(state, indent=2, default=str))
+        print(f"  [OK] {member['name']:25s} ({member['role']:22s}) -> DM sent")
+    except Exception as e:
+        errors.append({"name": member["name"], "user_id": member["user_id"], "error": str(e)})
+        state["errors"] = errors
+        state_file.write_text(json.dumps(state, indent=2, default=str))
+        print(f"  [ERR] {member['name']:25s}: {e}")
+
 print(f"\nState saved to {state_file}")
 
 # ── Build summary (stdout → cron delivery) ──────────────────────────────

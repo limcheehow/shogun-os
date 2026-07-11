@@ -28,7 +28,7 @@ Use this when someone sends a `.zip` containing companies/ and persons/ .md file
    rm -rf /tmp/brain-update
    ```
 
-5. **Run gbrain sync** (with OpenRouter key):
+5. **Run gbrain sync** (with Backup Provider key):
    ```bash
    cd ~/gbrain && \
      OPENROUTER_API_KEY=$(grep -m1 '^OPENROUTER_API_KEY=' ~/.hermes/.env | cut -d= -f2-) \

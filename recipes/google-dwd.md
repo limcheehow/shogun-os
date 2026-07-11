@@ -11,7 +11,7 @@ secrets:
     where: ~/.hermes/secrets/google-dwd-sa.json — downloaded from Google Cloud Console
   - name: GOOGLE_DWD_SUBJECT
     description: Email address to impersonate via DWD
-    where: cheehow@gotapway.com — your Workspace account
+    where: your-user@your-domain.com — your Workspace account
   - name: GOOGLE_DWD_SCOPES
     description: Comma-separated OAuth scopes the service account is delegated for
     where: Set in Google Workspace Admin Console when enabling DWD
@@ -46,13 +46,13 @@ Service account impersonation for Google Workspace. Every Google integration (em
 | Revocation | User revokes in Google Account | Admin revokes in Workspace Admin Console |
 | **Winner** | Quick initial setup | **Production** |
 
-**For Tapway, the DWD subject is `cheehow@gotapway.com`.** All Google integrations impersonate this account.
+**The DWD subject is the Google Workspace user account to impersonate.** All Google integrations impersonate this account.
 
 ## Architecture
 
 ```
 Google Cloud Console:
-  Project → Service Account (hermes-agent@...)
+  Project → Service Account (hermes-agent@your-project.iam.gserviceaccount.com  # Your service account email...)
   ↓
   Service Account Key JSON → ~/.hermes/secrets/google-dwd-sa.json
   ↓
@@ -63,7 +63,7 @@ Google Workspace Admin Console:
 Hermes (any profile):
   python3 -c "
     creds = service_account.Credentials.from_service_account_file(
-      SA_PATH, scopes=SCOPES, subject='cheehow@gotapway.com'
+      SA_PATH, scopes=SCOPES, subject='your-user@your-domain.com'
     )
     creds.refresh(google.auth.transport.requests.Request())
     # Now use creds.token for any Google API call
@@ -145,7 +145,7 @@ SA_PATH = os.path.expanduser("~/.hermes/secrets/google-dwd-sa.json")
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 creds = service_account.Credentials.from_service_account_file(
-    SA_PATH, scopes=SCOPES, subject="cheehow@gotapway.com"
+    SA_PATH, scopes=SCOPES, subject="your-user@your-domain.com"
 )
 creds.refresh(google.auth.transport.requests.Request())
 print(f"✅ Token generated: {creds.token[:20]}...")
@@ -166,7 +166,7 @@ mkdir -p ~/.gbrain/integrations/google-dwd
 echo '{"ts":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'","event":"setup_complete","version":"1.0.0","status":"ok"}' >> ~/.gbrain/integrations/google-dwd/heartbeat.jsonl
 ```
 
-Tell the user: "Google DWD is set up. The service account `hermes-agent@...` can now impersonate `cheehow@gotapway.com` for any authorized API scope. No more OAuth popups, no token expiry worries."
+Tell the user: "Google DWD is set up. The service account `hermes-agent@your-project.iam.gserviceaccount.com  # Your service account email...` can now impersonate `your-user@your-domain.com` for any authorized API scope. No more OAuth popups, no token expiry worries."
 
 ## Usage (Once Active)
 
@@ -180,7 +180,7 @@ SA_PATH = os.path.expanduser("~/.hermes/secrets/google-dwd-sa.json")
 SCOPES = ["https://www.googleapis.com/auth/CURRENT_SCOPE"]
 
 creds = service_account.Credentials.from_service_account_file(
-    SA_PATH, scopes=SCOPES, subject="cheehow@gotapway.com"
+    SA_PATH, scopes=SCOPES, subject="your-user@your-domain.com"
 )
 creds.refresh(google.auth.transport.requests.Request())
 # creds.token is a fresh bearer token, creds.expiry tells you when it expires

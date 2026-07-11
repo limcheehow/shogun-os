@@ -18,22 +18,22 @@ SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 
 # Same account list as gmail-triage.py
 ALL_ACCOUNTS = [
-    "cheehow@gotapway.com",
-    "hana@gotapway.com",
-    "sarah@gotapway.com",
-    "kunna@gotapway.com",
-    "anwar@gotapway.com",
-    "liyana@gotapway.com",
-    "syazwan@gotapway.com",
-    "fitri@gotapway.com",
-    "iskandar@gotapway.com",
-    "ashraf@gotapway.com",
+    "your-user@your-domain.com",
+    "hana@your-domain.com",
+    "sarah@your-domain.com",
+    "kunna@your-domain.com",
+    "anwar@your-domain.com",
+    "liyana@your-domain.com",
+    "syazwan@your-domain.com",
+    "fitri@your-domain.com",
+    "iskandar@your-domain.com",
+    "ashraf@your-domain.com",
 ]
 
 def short_name(email: str) -> str:
     name = email.split("@")[0]
     name_map = {
-        "cheehow": "Chee How", "syazwan": "Syazwan", "fitri": "Fitri",
+        "user": "Chee How", "syazwan": "Syazwan", "fitri": "Fitri",
         "ashraf": "Ashraf", "iskandar": "Iskandar", "liyana": "Liyana",
         "hana": "Hana", "sarah": "Sarah", "kunna": "Kunnasilan",
         "anwar": "Anwar",

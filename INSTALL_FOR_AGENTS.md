@@ -31,7 +31,7 @@ bun install -g github:garrytan/gbrain
 ## Phase 1: Clone and Install
 
 ```bash
-git clone https://github.com/limcheehow/company-os.git
+git clone https://github.com/limuser/company-os.git
 cd company-os
 ./scripts/install.sh
 ```
@@ -53,8 +53,8 @@ Company OS needs these secrets. Collect them from the user before proceeding:
 
 | Key | Where to get it |
 |-----|----------------|
-| `DASHSCOPE_API_KEY` | Alibaba Cloud DashScope console (for deepseek-v4-flash) |
-| `OPENROUTER_API_KEY` | OpenRouter dashboard (fallback provider) |
+| `DASHSCOPE_API_KEY` | Alibaba Cloud Primary Provider console (for deepseek-v4-flash) |
+| `OPENROUTER_API_KEY` | Backup Provider dashboard (fallback provider) |
 | `SUPABASE_URL` | Supabase project settings (for gbrain) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase project settings |
 | `TELEGRAM_BOT_TOKEN` | BotFather on Telegram (if using Telegram gateway) |

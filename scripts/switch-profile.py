@@ -14,7 +14,7 @@ Usage:
   python3 switch-profile.py hr-manager finance-manager --model standard
 
   # Set a custom model (ad-hoc, not a preset)
-  python3 switch-profile.py coding-agent --model-custom "anthropic/claude-sonnet-4" --provider openrouter
+  python3 switch-profile.py coding-agent --model-custom "anthropic/claude-sonnet-4" --provider backup-provider
 
   # Add shared MCP servers to all profiles
   python3 switch-profile.py mcp-sync
@@ -36,25 +36,25 @@ PRESETS = {
         "model": {
             "default": "deepseek-v4-flash",
             "provider": "custom",
-            "base_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+            "base_url": "https://primary-provider-intl.aliyuncs.com/compatible-mode/v1",
             "api_key": "${DASHSCOPE_API_KEY}",
             "api_mode": "chat_completions",
         },
         "fallback_providers": [
-            {"provider": "openrouter", "model": "deepseek/deepseek-v4-flash"}
+            {"provider": "backup-provider", "model": "deepseek/deepseek-v4-flash"}
         ],
         "auxiliary": "google/gemma-4-31b-it:free",
     },
     "coding": {
         "model": {
             "default": "~anthropic/claude-sonnet-4-20250514",
-            "provider": "openrouter",
+            "provider": "backup-provider",
         },
         "fallback_providers": [
             {
                 "provider": "custom",
                 "model": "deepseek-v4-flash",
-                "base_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+                "base_url": "https://primary-provider-intl.aliyuncs.com/compatible-mode/v1",
                 "api_key": "${DASHSCOPE_API_KEY}",
                 "api_mode": "chat_completions",
             }
@@ -63,10 +63,10 @@ PRESETS = {
     "lightweight": {
         "model": {
             "default": "google/gemini-2.0-flash-exp:free",
-            "provider": "openrouter",
+            "provider": "backup-provider",
         },
         "fallback_providers": [
-            {"provider": "openrouter", "model": "deepseek/deepseek-v4-flash"}
+            {"provider": "backup-provider", "model": "deepseek/deepseek-v4-flash"}
         ],
     },
 }
@@ -149,7 +149,7 @@ def switch_model(profile_names, preset_name, custom_model=None):
         model_config = {
             "model": {
                 "default": custom_model.get("model"),
-                "provider": custom_model.get("provider", "openrouter"),
+                "provider": custom_model.get("provider", "backup-provider"),
             }
         }
         if custom_model.get("base_url"):

@@ -33,9 +33,9 @@ def _load_batches():
             return cfg.get("batches", [])
     # Fallback if config missing
     return [
-        ["cheehow@gotapway.com", "hana@gotapway.com", "sarah@gotapway.com"],
-        ["kunna@gotapway.com", "anwar@gotapway.com", "liyana@gotapway.com"],
-        ["syazwan@gotapway.com", "fitri@gotapway.com", "iskandar@gotapway.com", "ashraf@gotapway.com"],
+        ["your-user@your-domain.com", "hana@your-domain.com", "sarah@your-domain.com"],
+        ["kunna@your-domain.com", "anwar@your-domain.com", "liyana@your-domain.com"],
+        ["syazwan@your-domain.com", "fitri@your-domain.com", "iskandar@your-domain.com", "ashraf@your-domain.com"],
     ]
 
 BATCHES = _load_batches()
@@ -77,9 +77,9 @@ PROMOTION_KEYWORDS = re.compile(
 
 
 def short_name(email: str) -> str:
-    """cheehow@gotapway.com → Chee How"""
+    """your-user@your-domain.com → Chee How"""
     name = email.split("@")[0]
-    name_map = {"cheehow": "Chee How", "syazwan": "Syazwan", "fitri": "Fitri",
+    name_map = {"user": "Chee How", "syazwan": "Syazwan", "fitri": "Fitri",
                 "ashraf": "Ashraf", "iskandar": "Iskandar", "liyana": "Liyana"}
     return name_map.get(name, name.capitalize())
 
@@ -159,12 +159,12 @@ def label_for_email(subject: str, from_header: str, name_to_id: dict):
 
     # ── 2. Support ticket detection ──
     if re.search(r"\[sr_|ticket\s+#|case\s+#|incident\s+#", subj_lower):
-        if "tapway-support/new" in name_to_id:
-            return name_to_id["tapway-support/new"], "tapway-support/new"
+        if "your-company-support/new" in name_to_id:
+            return name_to_id["your-company-support/new"], "your-company-support/new"
 
     # ── 2b. Skip internal audit/compliance (not marketing) ──
     if re.search(r"iso\s+\d+|audit\s+finding|audit\s+-+\s+closing|certification", subj_lower):
-        if domain in ("gotapway.com", "itmax.com.my"):
+        if domain in ("your-domain.com", "itmax.com.my"):
             return None, None
 
     # ── 3. Event / Meeting / Marketing ──
@@ -258,9 +258,9 @@ def label_for_email(subject: str, from_header: str, name_to_id: dict):
             return name_to_id["Finance & Accounting"], "Finance & Accounting"
 
     # ── 8b. Sales fallback (catch deal-related replies without [Sales] prefix) ──
-    sales_fb = r"(deal\s+registration|tapway\s+pipeline|"
+    sales_fb = r"(deal\s+registration|your-company\s+pipeline|"
     sales_fb += r"service\s+agreement|golden\s+screen|habib\s+suria|"
-    sales_fb += r"vision\s+ai\s+for|samurai\s+for)"
+    sales_fb += r"vision\s+ai\s+for|your-product\s+for)"
     if re.search(sales_fb, subj_lower):
         if "Sales" in name_to_id:
             return name_to_id["Sales"], "Sales"
@@ -298,7 +298,7 @@ def label_for_email(subject: str, from_header: str, name_to_id: dict):
     cold_kw += r"partnership\s+opportunity|exclusive\s+access)"
     salesy_domains = r"(\.io\b|\.ventures\b|\.ai\b|consulting)"
     if (re.search(cold_kw, subj_lower) or re.search(salesy_domains, domain)):
-        if not re.search(r"(gotapway|itmax|partner|project)", subj_lower):
+        if not re.search(r"(your-company|itmax|partner|project)", subj_lower):
             if "Cold outreach" in name_to_id:
                 return name_to_id["Cold outreach"], "Cold outreach"
 
@@ -363,8 +363,8 @@ REQUIRED_LABELS = [
     "Sales", "Projects", "HR", "Finance & Accounting",
     "Marketing", "Marketing/Events", "Partners", "Vendors",
     "Business Development", "Meeting Minutes", "Technical",
-    "Developer", "Cold outreach", "tapway-support/new",
-    "tapway-support/done",
+    "Developer", "Cold outreach", "your-company-support/new",
+    "your-company-support/done",
 ]
 
 def ensure_labels(service, email: str, dry_run: bool = False):

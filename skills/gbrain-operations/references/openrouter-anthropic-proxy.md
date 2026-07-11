@@ -1,22 +1,22 @@
-# OpenRouter → Anthropic SDK Proxy for GBrain
+# Backup Provider → Anthropic SDK Proxy for GBrain
 
 ## Overview
 
-GBrain's dream cycle (synthesize/patterns phases) and subagent handler use the Anthropic SDK (`@anthropic-ai/sdk`) for LLM calls. Instead of a direct Anthropic API key, these can be routed through OpenRouter, which proxies the Anthropic Messages API format.
+GBrain's dream cycle (synthesize/patterns phases) and subagent handler use the Anthropic SDK (`@anthropic-ai/sdk`) for LLM calls. Instead of a direct Anthropic API key, these can be routed through Backup Provider, which proxies the Anthropic Messages API format.
 
 ## Critical: Double-Path BaseURL Bug
 
-The Anthropic SDK **automatically appends `/v1/messages`** to the configured `baseURL`. Setting `baseURL: 'https://openrouter.ai/api/v1'` causes requests to hit `https://openrouter.ai/api/v1/v1/messages` → **404 error**.
+The Anthropic SDK **automatically appends `/v1/messages`** to the configured `baseURL`. Setting `baseURL: 'https://backup-provider.ai/api/v1'` causes requests to hit `https://backup-provider.ai/api/v1/v1/messages` → **404 error**.
 
-**✅ Correct:** `baseURL: 'https://openrouter.ai/api'` (no `/v1`)
-**❌ Wrong:** `baseURL: 'https://openrouter.ai/api/v1'` (SDK adds another `/v1`)
+**✅ Correct:** `baseURL: 'https://backup-provider.ai/api'` (no `/v1`)
+**❌ Wrong:** `baseURL: 'https://backup-provider.ai/api/v1'` (SDK adds another `/v1`)
 
 ## Environment Variable Fallback Chain
 
 All patched code follows this priority:
 
 ```
-1. OPENROUTER_API_KEY  → proxy through OpenRouter (baseURL = openrouter.ai/api)
+1. OPENROUTER_API_KEY  → proxy through Backup Provider (baseURL = backup-provider.ai/api)
 2. ANTHROPIC_API_KEY   → direct Anthropic (no baseURL override)
 3. Neither set         → skip (synthesize/patterns not available)
 ```
@@ -25,12 +25,12 @@ All patched code follows this priority:
 
 ### 1. `src/core/cycle/synthesize.ts`
 
-**`makeHaikuClient()`** — Routes the significance verdict judge (Haiku) through OpenRouter:
+**`makeHaikuClient()`** — Routes the significance verdict judge (Haiku) through Backup Provider:
 
 ```typescript
 function makeHaikuClient(): JudgeClient | null {
   const apiKey = process.env.OPENROUTER_API_KEY || process.env.ANTHROPIC_API_KEY;
-  const orBase = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api';
+  const orBase = process.env.OPENROUTER_BASE_URL || 'https://backup-provider.ai/api';
   const baseURL = process.env.ANTHROPIC_BASE_URL || (process.env.OPENROUTER_API_KEY ? orBase : undefined);
   if (!apiKey) return null;
   const client = new Anthropic({ apiKey, baseURL });
@@ -52,12 +52,12 @@ if (!opts.inputFile && !config.corpusDir && !config.meetingTranscriptsDir) { ret
 
 ### 2. `src/core/minions/handlers/subagent.ts`
 
-**`makeAnthropic` factory** — Routes the subagent LLM loop (Sonnet synthesis + tool use) through OpenRouter:
+**`makeAnthropic` factory** — Routes the subagent LLM loop (Sonnet synthesis + tool use) through Backup Provider:
 
 ```typescript
 const makeAnthropic = deps.makeAnthropic ?? (() => {
   const apiKey = process.env.OPENROUTER_API_KEY || process.env.ANTHROPIC_API_KEY;
-  const orBase = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api';
+  const orBase = process.env.OPENROUTER_BASE_URL || 'https://backup-provider.ai/api';
   const baseURL = process.env.ANTHROPIC_BASE_URL || (process.env.OPENROUTER_API_KEY ? orBase : undefined);
   return new Anthropic({ apiKey, baseURL });
 });
@@ -87,11 +87,11 @@ if (!name.endsWith('.txt')) continue;
 if (!name.endsWith('.txt') && !name.endsWith('.md')) continue;
 ```
 
-## Model Names (OpenRouter Format)
+## Model Names (Backup Provider Format)
 
-When proxying through OpenRouter, use their model identifiers:
+When proxying through Backup Provider, use their model identifiers:
 
-| Role | Anthropic ID | OpenRouter ID | Cost (per 1K tokens) |
+| Role | Anthropic ID | Backup Provider ID | Cost (per 1K tokens) |
 |---|---|---|---|
 | Synthesis (Sonnet) | `claude-sonnet-4-6` | `anthropic/claude-sonnet-4` | $0.003 / $0.015 |
 | Verdict (Haiku) | `claude-haiku-4-5-20251001` | `anthropic/claude-haiku-4.5` | $0.001 / $0.005 |
@@ -154,7 +154,7 @@ Test the proxy works with a direct API call:
 
 ```bash
 OPENROUTER_KEY=$(grep -m1 '^OPENROUTER_API_KEY=' ~/.hermes/.env | cut -d= -f2-)
-curl -s -X POST https://openrouter.ai/api/v1/messages \
+curl -s -X POST https://backup-provider.ai/api/v1/messages \
   -H "Content-Type: application/json" \
   -H "x-api-key: $OPENROUTER_KEY" \
   -H "anthropic-version: 2023-06-01" \

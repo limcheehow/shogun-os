@@ -12,7 +12,7 @@ Before any read/write, always resolve sheet names:
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
-creds = Credentials.from_authorized_user_file('/home/cheehow/.hermes/google_token.json')
+creds = Credentials.from_authorized_user_file('/home/user/.hermes/google_token.json')
 service = build('sheets', 'v4', credentials=creds)
 
 sheet_meta = service.spreadsheets().get(spreadsheetId=SPREADSHEET_ID).execute()

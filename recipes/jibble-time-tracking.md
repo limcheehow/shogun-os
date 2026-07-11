@@ -183,7 +183,7 @@ echo 'JIBBLE_API_KEY: "your-api-key-here"' >> ~/.hermes/profiles/hr-manager/conf
 
 ### Step 3: Create the Hermes Skill
 
-Write to `~/tapway-hermes/recipes/references/jibble-skill.md` as a draft (or directly to `~/.hermes/profiles/hr-manager/skills/jibble-time-tracking/SKILL.md` once active):
+Write to `~/your-company-hermes/recipes/references/jibble-skill.md` as a draft (or directly to `~/.hermes/profiles/hr-manager/skills/jibble-time-tracking/SKILL.md` once active):
 
 The skill should support:
 - **"Who's clocked in today?"** → Query `jibble_get_entries` for today, filter active entries, map member names

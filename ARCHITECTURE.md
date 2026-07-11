@@ -60,9 +60,9 @@ One Slack bot per profile. Each bot:
 ```yaml
 model:
   default: deepseek-v4-flash
-  provider: custom:dashscope
+  provider: custom:primary-provider
   fallback:
-    - provider: openrouter
+    - provider: backup-provider
       model: deepseek/deepseek-v4-flash
 ```
 
@@ -73,7 +73,7 @@ model:
   default: claude-sonnet-4
   provider: anthropic
   fallback:
-    - provider: custom:dashscope
+    - provider: custom:primary-provider
       model: deepseek-v4-flash
 ```
 
@@ -94,7 +94,7 @@ model:
 
 ## Google DWD Auth
 
-All Google API access (Gmail, Calendar, Drive, Slides) uses **Domain-Wide Delegation** — a service account impersonating `cheehow@gotapway.com`. No user-level OAuth tokens.
+All Google API access (Gmail, Calendar, Drive, Slides) uses **Domain-Wide Delegation** — a service account impersonating `your-user@your-domain.com`. No user-level OAuth tokens.
 
 ```
 Google Cloud Console:
@@ -107,7 +107,7 @@ Google Workspace Admin Console:
   ↓
 Hermes scripts (default profile):
   service_account.Credentials.from_service_account_file(
-    SA_PATH, scopes=SCOPES, subject='cheehow@gotapway.com'
+    SA_PATH, scopes=SCOPES, subject='your-user@your-domain.com'
   )
   creds.refresh(google.auth.transport.requests.Request())
   # creds.token ready for any Google API

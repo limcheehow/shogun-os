@@ -11,7 +11,7 @@ The file must have the keys `Credentials.from_authorized_user_file()` expects: `
 ```bash
 python3 -c "
 import json
-t = json.load(open('/home/cheehow/.hermes/google_token.json'))
+t = json.load(open('/home/user/.hermes/google_token.json'))
 print('Keys:', list(t.keys()))
 print('Has scopes (plural):', bool(t.get('scopes')))
 print('Has client_id:', bool(t.get('client_id')))
@@ -28,7 +28,7 @@ If `scopes`, `client_id`, or `token_uri` are missing, run the raw refresh test (
 ```bash
 python3 -c "
 import json
-t = json.load(open('/home/cheehow/.hermes/google_token.json'))
+t = json.load(open('/home/user/.hermes/google_token.json'))
 print(f'Refresh token present: {bool(t.get(\"refresh_token\"))}')
 print(f'Scopes: {len(t.get(\"scopes\",[]))} scopes')
 print(f'Expiry: {t.get(\"expiry\")}')

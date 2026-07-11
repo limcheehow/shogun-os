@@ -30,7 +30,7 @@ import google.auth.transport.requests
 creds = service_account.Credentials.from_service_account_file(
     "~/.hermes/secrets/google-dwd-sa.json",
     scopes=SCOPES,
-    subject="cheehow@gotapway.com"  # Workspace user to impersonate
+    subject="your-user@your-domain.com"  # Workspace user to impersonate
 )
 creds.refresh(google.auth.transport.requests.Request())
 # creds.token is now valid for ~1 hour
@@ -63,7 +63,7 @@ SA_PATH = os.path.expanduser("~/.hermes/secrets/google-dwd-sa.json")
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 creds = service_account.Credentials.from_service_account_file(
-    SA_PATH, scopes=SCOPES, subject="cheehow@gotapway.com"
+    SA_PATH, scopes=SCOPES, subject="your-user@your-domain.com"
 )
 creds.refresh(google.auth.transport.requests.Request())
 

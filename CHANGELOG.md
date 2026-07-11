@@ -1,5 +1,72 @@
 # Changelog
 
+## [3.0.0] — 2026-07-11
+
+### Production Hardening + Workflow Enforcement + Expanded Skill Catalog
+
+Major update driven by 2 weeks of production deployment. Adds 18 new shared skills, 7 new recipes, 12 new scripts, production-hardened scrum v3.0.0, and mandatory workflow enforcement for all profiles.
+
+#### Scrum v3.0.0 — Production Hardened
+
+- **15 production pitfalls documented** in `references/production-pitfalls.md` — lessons from running department-scrum in production. Covers: gateway WebSocket crash loops, LLM timeout cascades, cron batch-fire race conditions, HERMES_HOME path issues, JSON extraction from CLI, brain tool selection, listener crash vs LLM outage, save-state ordering, recovery sweep date filtering, compliance_state values, pass-through post failures, CLI syntax verification, Block Kit format, duplicate systemd services, cron silent skips.
+- **`send-scrum-dms.py` updated**: State saved BEFORE sending DMs (race condition fix), `posted_to_channel` and `submission_state` fields added to state schema, state saved after each DM for crash resilience.
+- **Migration path updated**: Phases 5-7 marked as ✅ Deployed, Phase 10 (pitfalls merge) added.
+- **Skill version bumped** to 3.0.0 with `production-hardened` tag.
+
+#### New: Workflow Enforcement (company-workflow skill)
+
+- **`skills/company-workflow/`** — Mandatory 6-gate workflow for any feature/bug/change request: Triage → RCA → Brainstorm → Plan → TDD → E2E.
+- **`generate-profile.py` updated**: Every generated SOUL.md now includes a `## Workflow Enforcement (MANDATORY)` section with the gate sequence and trigger phrases.
+- **Every profile type** in `PROFILE_META` now includes `company-workflow` in its skills list.
+- **`references/soul-snippet-workflow.md`** — Standalone snippet for manual SOUL.md updates.
+
+#### New: 18 Shared Skills
+
+Brain operations (11, already generic — copied as-is):
+- `brain-first-lookup`, `gbrain-capture`, `gbrain-query`, `gbrain-think`, `gbrain-maintain`, `gbrain-frontmatter-guard`, `brain-link-campaign`, `brain-file-delivery`, `brain-e2e-tests`, `gbrain-signal-detector`, `timeline-inject-v2`
+
+Development & operations (7, generalized from production):
+- `coding-workflow`, `systematic-debugging`, `writing-plans`, `plan`, `verify-first`, `search-router`, `company-workflow`
+
+#### New: 7 Recipes
+
+- `recipes/gateway-systemd-management.md` — systemd template units, restart script, watchdog, crash recovery
+- `recipes/model-health-auto-fallback.md` — Provider health check cron + auto-switchover
+- `recipes/brain-maintenance.md` — Health checks, orphan detection, link campaigns, compliance validation
+- `recipes/profile-provisioning.md` — Profile creation, SOUL.md authoring, systemd enable
+- `recipes/cron-management.md` — Cron job lifecycle, backup/restore, migration
+- `recipes/session-db-postgres.md` — Migrate from SQLite to shared Postgres
+- `recipes/scrum-production-hardening.md` — All 15 production pitfalls as a standalone reference
+
+#### New: 12 Scripts
+
+- `restart-profile-gateway.sh` — Unified gateway restart with auto-profile detection via symlinks
+- `gateway-signal-monitor.sh` — Monitor gateway PID changes + SIGTERM events
+- `model-health-check.sh` — Provider health check + auto-switchover (config-driven)
+- `dashboard-watchdog.sh` — Site health monitoring (config-driven URLs)
+- `sites-startup.sh` — @reboot site startup (config-driven site list)
+- `hermes-backup.sh` — DB backup to local + optional cloud storage
+- `cloudflared-tunnel-watchdog.sh` — Tunnel health check
+- `session-db-health-check.sh` — Postgres/SQLite health check
+- `daily-disk-cleanup.py` — Disk space cleanup (config-driven paths)
+- `daily-token-cost.py` — AI spend tracking via tokscale
+- `generate-org-chart.py` — Org chart from brain data
+- `gateway-scheduled-restart.sh` — Scheduled gateway restart
+
+#### Template Generalization
+
+- **`base-config.yaml`**: Hardcoded provider URLs/keys replaced with `${PLACEHOLDER}` variables (`PRIMARY_PROVIDER_BASE_URL`, `PRIMARY_PROVIDER_API_KEY`, `BACKUP_PROVIDER_NAME`, `BACKUP_PROVIDER_MODEL`, `AUXILIARY_MODEL`)
+- **`coding-config.yaml`**: Hardcoded Anthropic/Primary Provider references replaced with `${CODING_MODEL}`, `${CODING_PROVIDER}`. Removed hardcoded `stock-scanner` MCP (company-specific).
+- **All scripts**: Company names, product names, Slack channel IDs, person names, and hardcoded ports replaced with config-driven placeholders.
+
+#### Excluded (env-specific, not in repo)
+
+- SQLite WAL recovery scripts (`enforce-wal.sh`, `wsl-drop-caches.sh`, `cache-dropper.sh`, `memory-watchdog.sh`) — WSL/SQLite environment-specific
+- All company-specific skills (`your-company-*`, `your-company-dwd`)
+- Company-specific scrum scripts (`product-scrum-*.py`, `project-scrum-*.py`) — replaced by generic `send-scrum-dms.py` / `check-scrum-replies.py`
+
+---
+
 ## [2.3.0] — 2026-06-25
 
 ### Deployment Readiness Update
@@ -23,7 +90,7 @@ Comprehensive audit and fix pass to make Company OS deployable to a fresh Hermes
 - **examples/scrum-configs/:** Added 8 new templates (hr, finance, product, crm, support, procurement, marketing, compliance) — 9 total with existing project-manager.yaml. Each has placeholder Slack IDs, team roster, and domain terms
 - **scripts/backup-crons.py:** Export all cron jobs to portable JSON for cross-machine migration
 - **scripts/restore-crons.py:** Restore cron jobs from backup via `hermes cron create` — supports dry-run, profile filter
-- **skills/gbrain-operations:** Slimmed from 96KB to 10KB — stripped Tapway-specific content, kept generic gbrain CLI patterns (sync, embed, doctor, dream, MCP, Python wrapper, troubleshooting). Removed 12 personal references, kept 7 generic ones
+- **skills/gbrain-operations:** Slimmed from 96KB to 10KB — stripped Your Company-specific content, kept generic gbrain CLI patterns (sync, embed, doctor, dream, MCP, Python wrapper, troubleshooting). Removed 12 personal references, kept 7 generic ones
 - **skills/brain-compliance:** Updated validator reference to prefer gbrain MCP tools over local validator script
 
 #### Documentation
@@ -76,7 +143,7 @@ Complete Company OS tooling and documentation suite:
 
 #### Hub Publishing
 
-- Created `HUB.md` — Hermes skill tap manifest. Usage: `hermes skills tap add limcheehow/company-os`
+- Created `HUB.md` — Hermes skill tap manifest. Usage: `hermes skills tap add limuser/company-os`
 
 #### Docs Updated
 

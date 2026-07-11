@@ -30,7 +30,7 @@ node ~/brain/calendar-sync.mjs
 node ~/brain/calendar-sync.mjs --start 2026-01-01 --end 2026-06-30
 
 # Specific calendar (shared work calendar)
-node ~/brain/calendar-sync.mjs --calendar "cheehow@gotapway.com"
+node ~/brain/calendar-sync.mjs --calendar "your-user@your-domain.com"
 ```
 
 ## How It Works
@@ -76,7 +76,7 @@ node ~/brain/calendar-sync.mjs --calendar "cheehow@gotapway.com"
 
 ```bash
 # Daily at 8 AM - sync yesterday
-cd ~/brain && node calendar-sync.mjs --start $(date -d "yesterday" +%Y-%m-%d) --end $(date +%Y-%m-%d) --calendar "cheehow@gotapway.com"
+cd ~/brain && node calendar-sync.mjs --start $(date -d "yesterday" +%Y-%m-%d) --end $(date +%Y-%m-%d) --calendar "your-user@your-domain.com"
 ```
 
 ## Key Design Decisions

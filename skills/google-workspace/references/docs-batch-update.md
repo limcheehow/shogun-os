@@ -276,7 +276,7 @@ This reveals the actual pattern — e.g., the original doc uses `HEADING_1` for 
 
 The key insight: use **exact-string-set matching** for headings (not regex) and build the lookup sets from the planned content, not the source text. This avoids fragile offset math.
 
-Layman-friendly content: When writing new sections for a doc aimed at a general audience, use conversational tone ("Have you ever wished...", "My AI does not sleep...", "You tell it where to go and it plans everything"). Avoid technical jargon (DashScope, gbrain, batchUpdate, API endpoints). Focus on **what each thing does** — workflows, schedules, routines — not implementation details.
+Layman-friendly content: When writing new sections for a doc aimed at a general audience, use conversational tone ("Have you ever wished...", "My AI does not sleep...", "You tell it where to go and it plans everything"). Avoid technical jargon (Primary Provider, gbrain, batchUpdate, API endpoints). Focus on **what each thing does** — workflows, schedules, routines — not implementation details.
 
 ### Why pre-computing source-text offsets fails
 Naive approach: compute paragraph start/end indices from the source text string, then pass those to batchUpdate. This fails because:
@@ -352,7 +352,7 @@ Break long descriptions into digestible paragraphs of 2–4 sentences each. Each
 When writing doc content for a general audience (not technical):
 - Conversational, layman-friendly tone
 - Explain what each thing DOES in plain English
-- Avoid jargon: DashScope → "AI engine", gbrain → "knowledge base", batchUpdate → "formatting"
+- Avoid jargon: Primary Provider → "AI engine", gbrain → "knowledge base", batchUpdate → "formatting"
 - Start sections with a one-sentence elevator pitch
 
 ### Classification strategy for appendices

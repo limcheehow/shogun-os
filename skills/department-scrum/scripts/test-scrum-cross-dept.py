@@ -57,10 +57,10 @@ except ImportError:
 SAMPLE_PROJECTS = """
 profile: project-manager
 app_name: Gorobei
-channel_updates: C09SR9B5WJU
+channel_updates: C0XXXXXXXX
 team:
   - name: Sheikh Syazwan
-    slack_id: U060MSDBQMQ
+    slack_id: U0XXXXXXX
     role: Head of Project
   - name: Mohd Fitri Abdullah
     slack_id: U07CDEPTDH8
@@ -79,7 +79,7 @@ brain:
 SAMPLE_PRODUCT = """
 profile: product-manager
 app_name: Shi
-channel_updates: C0308PA6Y
+channel_updates: C0XXXXXXXX
 team:
   - name: Kunnasilan
     slack_id: U03T22QJZDX
@@ -95,7 +95,7 @@ brain:
     - pattern: 'INT-\\d+'
       label: Integration Task
   domain_terms:
-    - SamurAI
+    - Your Product
     - ReID
     - VMS
 """
@@ -236,8 +236,8 @@ term_tests = [
     ("Alam Flora and Kossan both on track", configs["projects"]["brain"]["domain_terms"],
      ["Alam Flora", "Kossan"]),
     ("No project mentioned here", configs["projects"]["brain"]["domain_terms"], []),
-    ("VMS ReID integration for SamurAI V2", configs["products"]["brain"]["domain_terms"],
-     ["VMS", "ReID", "SamurAI"]),
+    ("VMS ReID integration for Your Product V2", configs["products"]["brain"]["domain_terms"],
+     ["VMS", "ReID", "Your Product"]),
     ("Processing invoice for budget review", configs["finance"]["brain"]["domain_terms"],
      ["budget", "invoice"]),
     ("Hiring new executive - leave handover planned", configs["hr"]["brain"]["domain_terms"],
@@ -295,7 +295,7 @@ ok(f"  HIGH quality reply -> confidence={conf}, compliant={comp}")
 
 # Test: good reply with product detail
 conf, issues, comp, terms = assess_quality(
-    "Yesterday: Completed SAM-26-05-069 ReID training pipeline. Today: Starting VMS integration tests for SamurAI V2 Lite. Blocked by GPU availability.",
+    "Yesterday: Completed SAM-26-05-069 ReID training pipeline. Today: Starting VMS integration tests for Your Product V2 Lite. Blocked by GPU availability.",
     configs["products"]["brain"]["domain_terms"],
 )
 assert conf == "high", f"Expected high, got {conf}"
@@ -367,12 +367,12 @@ valid_state = {
     "date": TODAY,
     "profile": "project-manager",
     "app_name": "Gorobei",
-    "channel_updates": "C09SR9B5WJU",
+    "channel_updates": "C0XXXXXXXX",
     "brain_source": "projects",
     "questions_sent_at": "2026-06-22T09:00:00+08:00",
     "team": [{
         "name": "Sheikh Syazwan",
-        "slack_id": "U060MSDBQMQ",
+        "slack_id": "U0XXXXXXX",
         "role": "Head of Project",
         "dm_channel": "D01ABC",
         "question_ts": "1234567890.123456",

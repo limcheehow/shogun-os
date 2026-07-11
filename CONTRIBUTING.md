@@ -2,7 +2,7 @@
 
 ## What This Repo Is
 
-Company OS is a **reference architecture** — not a shipped product. Contributions that make the architecture more reusable, better documented, or easier to deploy are welcome. Contributions that add Tapway-specific content belong in your own fork or in the running Hermes profiles, not here.
+Company OS is a **reference architecture** — not a shipped product. Contributions that make the architecture more reusable, better documented, or easier to deploy are welcome. Contributions that add Your Company-specific content belong in your own fork or in the running Hermes profiles, not here.
 
 ## What Goes In
 
@@ -14,7 +14,7 @@ Company OS is a **reference architecture** — not a shipped product. Contributi
 
 ## What Stays Out
 
-- **Personal/Tapway-specific content** — no specific employee names, Slack IDs, channel IDs, or company-specific cron schedules
+- **Personal/Your Company-specific content** — no specific employee names, Slack IDs, channel IDs, or company-specific cron schedules
 - **Personal skills** — trading scanners, budget trackers, meal planners, personal fitness
 - **API keys or secrets** — never, ever
 - **Binary files** — no images, no compiled artifacts

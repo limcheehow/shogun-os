@@ -27,8 +27,8 @@ app_name: "Gorobei"                  # Agent name for DM greetings (required)
 comm_provider: "slack"               # Comm provider: slack, telegram (default: slack)
 
 # ── Slack Channels ──
-channel_updates: "C09SR9B5WJU"      # Scrum summary channel (required)
-channel_leadership: "C0B4792J3AP"   # Enriched 5pm report channel (optional, falls back to updates)
+channel_updates: "C0XXXXXXXX"      # Scrum summary channel (required)
+channel_leadership: "C0XXXXXXXX"   # Enriched 5pm report channel (optional, falls back to updates)
 
 # ── State ──
 state_dir: "~/.hermes/scrum-states/<profile>"  # State file dir
@@ -36,7 +36,7 @@ state_dir: "~/.hermes/scrum-states/<profile>"  # State file dir
 # ── Team Roster ──
 team:
   - name: "Sheikh Syazwan"
-    slack_id: "U060MSDBQMQ"
+    slack_id: "U0XXXXXXX"
     role: "Head of Project"
 
 # ── Brain Cross-Reference ──
@@ -63,8 +63,8 @@ brain:
 ```yaml
 profile: project-manager
 app_name: Gorobei
-channel_updates: "C09SR9B5WJU"
-channel_leadership: "C0B4792J3AP"
+channel_updates: "C0XXXXXXXX"
+channel_leadership: "C0XXXXXXXX"
 brain:
   source: projects
   task_id_patterns:
@@ -81,8 +81,8 @@ brain:
 ```yaml
 profile: product-manager
 app_name: Shi
-channel_updates: "C0308PA6Y"
-channel_leadership: "C0ABY3VT4U8"
+channel_updates: "C0XXXXXXXX"
+channel_leadership: "C0XXXXXXXX"
 brain:
   source: products
   task_id_patterns:
@@ -93,7 +93,7 @@ brain:
     - pattern: 'EP-\d+'
       label: "Epic"
   domain_terms:
-    - SamurAI, V2 Lite, Karo, Shogun, Runner, Executor, City OS
+    - Your Product, V2 Lite, Karo, Shogun, Runner, Executor, City OS
     - ReID, VMS, Queue, Dashboard, GPU Inference
 ```
 

@@ -6,18 +6,18 @@ Add it as a custom skill source to install Company OS skills directly.
 ## Add as a Tap
 
 ```bash
-hermes skills tap add limcheehow/company-os
+hermes skills tap add limuser/company-os
 ```
 
 ## Install Skills
 
 ```bash
 # Browse available skills
-hermes skills search --source limcheehow/company-os
+hermes skills search --source limuser/company-os
 
 # Install specific skills
-hermes skills install limcheehow/company-os/department-scrum
-hermes skills install limcheehow/company-os/brain-ingest-pipeline
+hermes skills install limuser/company-os/department-scrum
+hermes skills install limuser/company-os/brain-ingest-pipeline
 ```
 
 ## Skills Available
@@ -50,7 +50,7 @@ skills/
 
 Company OS is a reference architecture for running an organization through Hermes Agent. Each department gets a dedicated AI agent with role-specific tools, memory, and autonomy.
 
-See the [full repo](https://github.com/limcheehow/company-os) for profiles, templates, install scripts, and documentation.
+See the [full repo](https://github.com/limuser/company-os) for profiles, templates, install scripts, and documentation.
 
 ## Architecture
 

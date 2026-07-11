@@ -1,0 +1,46 @@
+# ── Company OS Sites Config ──
+# Referenced by: dashboard-watchdog.sh, sites-startup.sh
+#
+# Edit the paths, ports, and names below to match your setup.
+
+sites:
+  - name: product-dashboard
+    port: 3002
+    dir: "$HOME/projects/your-product-dashboard"
+    cmd: "${NODE_BIN}/npx next start -p 3002 -H 127.0.0.1"
+    needs_env: true
+    type: nohup
+
+  - name: project-app
+    port: 3001
+    dir: "$HOME/your-project-app"
+    cmd: "${NODE_BIN}/npx next start -p 3001 -H 127.0.0.1"
+    needs_env: true
+    type: tmux
+
+  - name: crm-dashboard
+    port: 8770
+    dir: "$HOME/crm-dashboard"
+    cmd: "PORT=8770 HOSTNAME=127.0.0.1 ${NODE_BIN}/node .next/standalone/server.js"
+    needs_env: true
+    type: tmux
+
+  - name: brain-site
+    port: 8080
+    dir: "$HOME/brain-site"
+    cmd: "python3 brain-site-server.py"
+    needs_env: false
+    type: tmux
+
+  - name: https-proxy
+    port: 8443
+    dir: "$HOME/.hermes/ssl"
+    cmd: "${NODE_BIN}/node $HOME/.hermes/ssl/serve-https.js"
+    needs_env: false
+    type: tmux
+
+# ── Cloudflare Tunnel Config ──
+cloudflare_tunnel:
+  name: pm-tunnel
+  config_path: "$HOME/.cloudflared/tunnel.yml"
+  tunnel_id: "your-tunnel-id"

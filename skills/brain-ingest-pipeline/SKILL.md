@@ -42,9 +42,9 @@ Account batches are defined in `~/.hermes/config/gmail-batches.json`:
 ```json
 {
   "batches": [
-    ["cheehow@gotapway.com", "hana@gotapway.com", "sarah@gotapway.com"],
-    ["kunna@gotapway.com", "anwar@gotapway.com", "liyana@gotapway.com"],
-    ["syazwan@gotapway.com", "fitri@gotapway.com", "iskandar@gotapway.com", "ashraf@gotapway.com"]
+    ["your-user@your-domain.com", "hana@your-domain.com", "sarah@your-domain.com"],
+    ["kunna@your-domain.com", "anwar@your-domain.com", "liyana@your-domain.com"],
+    ["syazwan@your-domain.com", "fitri@your-domain.com", "iskandar@your-domain.com", "ashraf@your-domain.com"]
   ]
 }
 ```

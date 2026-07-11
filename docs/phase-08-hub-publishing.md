@@ -14,8 +14,8 @@ Make Company OS skills discoverable and installable via the Hermes Agent skill h
 
 A discoverability document at the repo root describing:
 
-- How to add the repo as a Hermes skill tap (`hermes skills tap add limcheehow/company-os`)
-- How to install individual skills (`hermes skills install limcheehow/company-os/department-scrum`)
+- How to add the repo as a Hermes skill tap (`hermes skills tap add limuser/company-os`)
+- How to install individual skills (`hermes skills install limuser/company-os/department-scrum`)
 - Listing of available skills with descriptions
 - Link to the full repo for profiles, templates, and documentation
 
@@ -39,14 +39,14 @@ Each skills is already in the standard format with:
 A "tap" is a GitHub repo containing `skills/<name>/SKILL.md` directories. Users run:
 
 ```bash
-hermes skills tap add limcheehow/company-os
+hermes skills tap add limuser/company-os
 ```
 
 This registers the repo as a skill source. Then:
 
 ```bash
-hermes skills search pipeline --source limcheehow/company-os
-hermes skills install limcheehow/company-os/brain-ingest-pipeline
+hermes skills search pipeline --source limuser/company-os
+hermes skills install limuser/company-os/brain-ingest-pipeline
 ```
 
 Skills install to `~/.hermes/skills/` and become available as slash commands.

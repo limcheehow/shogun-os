@@ -76,7 +76,7 @@ amount: 123456.78
 mrr: 0
 contact_name: Contact Person
 contact_email: contact@company.com
-relationship: partner > customer > tapway
+relationship: partner > customer > your-company
 close_date: YYYY-MM-DD
 priority: High|Medium|Low
 hot: true|false
@@ -208,7 +208,7 @@ If violations are reported, fix them before delivering the result to the user.
 |--------|--------|----------------|----------|
 | Person | `persons/` | title, tags, first_seen, source, company, role | `john-doe.md` |
 | Company | `companies/` | title, tags, industry, source, first_seen, website | `acme-corp.md` |
-| Deal | `deals/` | title, tags, stage, owner, customer, partner, industry, amount, contact_name, contact_email, relationship, close_date, priority, mrr, created | `tapway-aeon.md` |
+| Deal | `deals/` | title, tags, stage, owner, customer, partner, industry, amount, contact_name, contact_email, relationship, close_date, priority, mrr, created | `your-company-aeon.md` |
 | Daily | `daily/` | title, type, date, tags | `2026-06-21.md` |
 | Meeting | `meetings/` | title, type, date, source, source_id | `client-review.md` |
 | Wiki | `wiki/` | title | `overview.md` |

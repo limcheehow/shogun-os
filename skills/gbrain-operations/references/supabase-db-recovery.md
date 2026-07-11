@@ -45,7 +45,7 @@ curl -s "$SUPABASE_URL/rest/v1/pages?select=count" \
    {
      "engine": "postgres",
      "database_url": "postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-REGION.pooler.supabase.com:6543/postgres?sslmode=require",
-     "embedding_model": "openrouter:openai/text-embedding-3-small",
+     "embedding_model": "backup-provider:openai/text-embedding-3-small",
      "embedding_dimensions": 1536,
      "expansion_model": "openai:gpt-5.2",
      "chat_model": "openai:gpt-5.2"
@@ -94,17 +94,17 @@ cd ~/gbrain && bun run src/cli.ts init
 # 3. Sync from filesystem
 cd ~/gbrain && \
   OPENAI_API_KEY="$(grep -m1 '^OPENROUTER_API_KEY=' ~/.hermes/.env | cut -d= -f2-)" \
-  OPENAI_BASE_URL="https://openrouter.ai/api/v1" \
+  OPENAI_BASE_URL="https://backup-provider.ai/api/v1" \
   bun run src/cli.ts sync --repo ~/brain
 
 # 4. Embed
 cd ~/gbrain && \
   OPENAI_API_KEY="$(grep -m1 '^OPENROUTER_API_KEY=' ~/.hermes/.env | cut -d= -f2-)" \
-  OPENAI_BASE_URL="https://openrouter.ai/api/v1" \
+  OPENAI_BASE_URL="https://backup-provider.ai/api/v1" \
   bun run src/cli.ts embed --stale
 ```
 
-Note: gbrain reads `OPENAI_API_KEY` + `OPENAI_BASE_URL` env vars. Since the OpenAI key is exhausted, set these to the OpenRouter key + base URL. There's no gbrain config for "embedding provider" — you must always inject env vars or use the permanent wrapper.
+Note: gbrain reads `OPENAI_API_KEY` + `OPENAI_BASE_URL` env vars. Since the OpenAI key is exhausted, set these to the Backup Provider key + base URL. There's no gbrain config for "embedding provider" — you must always inject env vars or use the permanent wrapper.
 
 ## Recovery Path B: Fix Supabase Connection
 

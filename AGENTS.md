@@ -25,7 +25,7 @@ Company OS is NOT a single piece of software. It is a **reference architecture**
 
 ```
 Retrieve and follow the instructions at:
-https://raw.githubusercontent.com/limcheehow/company-os/main/INSTALL_FOR_AGENTS.md
+https://raw.githubusercontent.com/limuser/company-os/main/INSTALL_FOR_AGENTS.md
 ```
 
 The full protocol covers: prerequisites, Google DWD, gbrain init, profile creation, Slack bot setup, cron wiring, model configuration, and verification.

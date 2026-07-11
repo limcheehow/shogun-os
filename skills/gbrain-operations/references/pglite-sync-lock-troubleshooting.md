@@ -54,7 +54,7 @@ cd ~/gbrain && bun run /tmp/release-lock.ts
 rm /tmp/release-lock.ts
 ```
 
-4. Retry the sync with the correct environment variables (see SKILL.md for the full command with OpenRouter key).
+4. Retry the sync with the correct environment variables (see SKILL.md for the full command with Backup Provider key).
 
 ## Prevention
 

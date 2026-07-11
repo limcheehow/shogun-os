@@ -10,14 +10,14 @@ status: planning
 
 ## Purpose
 
-This document captures a comprehensive audit of the `company-os` repository (v2.2.0) against the actual running Tapway Hermes deployment. It identifies gaps, prioritizes fixes, and provides an execution plan to make the repo deployable to a fresh Hermes copy with zero errors.
+This document captures a comprehensive audit of the `company-os` repository (v2.2.0) against the actual running Your Company Hermes deployment. It identifies gaps, prioritizes fixes, and provides an execution plan to make the repo deployable to a fresh Hermes copy with zero errors.
 
 ## Method
 
 The review compared three sources:
 
-1. **`company-os/` (v2.2.0)** — the blueprint repo at `github.com/limcheehow/company-os`
-2. **`tapway-hermes/`** — the predecessor local directory with legacy recipes and profile templates
+1. **`company-os/` (v2.2.0)** — the blueprint repo at `github.com/limuser/company-os`
+2. **`your-company-hermes/`** — the predecessor local directory with legacy recipes and profile templates
 3. **Running Hermes instance** — 22 live profiles with real SOUL.md, cron jobs, skills, and configuration at `~/.hermes/`
 
 ## Architecture (3-Layer)
@@ -61,9 +61,9 @@ Layer 3: Communication
 
 | # | Gap | Impact | Fix |
 |---|-----|--------|-----|
-| G9 | `gbrain-operations` skill has Tapway-specific paths/troubleshooting | Not reusable out of the box | Strip personal/CH-specific sections |
+| G9 | `gbrain-operations` skill has Your Company-specific paths/troubleshooting | Not reusable out of the box | Strip personal/CH-specific sections |
 | G10 | No cron state migration | 54 cron jobs must be re-created manually on new machine | Add export/restore scripts |
-| G11 | Superseded recipes still in `tapway-hermes/` | `email-to-brain.md` and `calendar-to-brain.md` replaced by `brain-ingest-pipeline` skill | Mark as deprecated |
+| G11 | Superseded recipes still in `your-company-hermes/` | `email-to-brain.md` and `calendar-to-brain.md` replaced by `brain-ingest-pipeline` skill | Mark as deprecated |
 
 ## Execution Plan
 
@@ -102,11 +102,11 @@ Layer 3: Communication
 | `department-scrum` | Already in repo ✅ | ✅ | Cross-dept 3-tier scrum |
 | `brain-ingest-pipeline` | Already in repo ✅ | ✅ | 5-phase data pipeline |
 | `slack-formatting` | Copy from running Hermes | ✅ | Clean — formatting only |
-| `gbrain-operations` | Copy + slim | ✅ After stripping | Remove Tapway-specific paths |
+| `gbrain-operations` | Copy + slim | ✅ After stripping | Remove Your Company-specific paths |
 | `brain-compliance` | Copy from running Hermes | ✅ | Validation rules |
 | `shared/profile-enrichment` | Copy (NOT productivity/ version) | ✅ | gbrain-native, no personal deps |
 
-### Skills NOT to Ship (Personal / Tapway-Specific)
+### Skills NOT to Ship (Personal / Your Company-Specific)
 
 | Skill | Reason |
 |-------|--------|

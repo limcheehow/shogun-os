@@ -271,9 +271,9 @@ Two named presets:
 ```yaml
 model:
   default: deepseek-v4-flash
-  provider: custom:dashscope
+  provider: custom:primary-provider
   fallback:
-    - provider: openrouter
+    - provider: backup-provider
       model: deepseek/deepseek-v4-flash
 ```
 
@@ -283,7 +283,7 @@ model:
   default: claude-sonnet-4
   provider: anthropic
   fallback:
-    - provider: custom:dashscope
+    - provider: custom:primary-provider
       model: deepseek-v4-flash
 ```
 

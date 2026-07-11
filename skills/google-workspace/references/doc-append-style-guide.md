@@ -28,7 +28,7 @@ Once you've characterized the voice, **rewrite your content to match it**. The w
 ### Don't:
 ```
 Purpose: Dedicated meeting notes processor. Syncs calendar, prepares briefs.
-Model: DeepSeek V4 Flash via DashScope.
+Model: DeepSeek V4 Flash via Primary Provider.
 ```
 
 ### Do:
@@ -38,7 +38,7 @@ meeting transcript, downloads it, and saves it to your brain.
 ```
 
 ### Voice Checklist
-- ❌ Technical specs ("DashScope", "gbrain", "batchUpdate", "Bukku API")
+- ❌ Technical specs ("Primary Provider", "gbrain", "batchUpdate", "Bukku API")
 - ❌ Raw data dumps ("RM 31,390/month training phase × 3 months")
 - ❌ Bullet-point catalogue style
 - ✅ Full sentences that tell a story

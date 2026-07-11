@@ -5,8 +5,8 @@ app_name: Gorobei
 comm_provider: slack
 
 # ── Slack Channels ──
-channel_updates: "C09SR9B5WJU"       # #project-scrum-updates
-channel_leadership: "C0B4792J3AP"     # #project-leadership
+channel_updates: "C0XXXXXXXX"       # #project-scrum-updates
+channel_leadership: "C0XXXXXXXX"     # #project-leadership
 
 # ── State ──
 state_dir: "~/.hermes/scrum-states/project-manager"
@@ -14,7 +14,7 @@ state_dir: "~/.hermes/scrum-states/project-manager"
 # ── Team Roster ──
 team:
   - name: "Sheikh Syazwan"
-    slack_id: "U060MSDBQMQ"
+    slack_id: "U0XXXXXXX"
     role: "Head of Project"
   - name: "Mohd Fitri Abdullah"
     slack_id: "U07CDEPTDH8"

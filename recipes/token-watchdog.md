@@ -9,7 +9,7 @@ requires:
 secrets: []
 health_checks:
   - type: script
-    command: "python3 -c \"from google.oauth2 import service_account; import google.auth.transport.requests; import os; c=service_account.Credentials.from_service_account_file(os.path.expanduser('~/.hermes/secrets/google-dwd-sa.json'), scopes=['https://www.googleapis.com/auth/gmail.readonly'], subject='cheehow@gotapway.com'); c.refresh(google.auth.transport.requests.Request()); print('TOKEN_OK')\""
+    command: "python3 -c \"from google.oauth2 import service_account; import google.auth.transport.requests; import os; c=service_account.Credentials.from_service_account_file(os.path.expanduser('~/.hermes/secrets/google-dwd-sa.json'), scopes=['https://www.googleapis.com/auth/gmail.readonly'], subject='your-user@your-domain.com'); c.refresh(google.auth.transport.requests.Request()); print('TOKEN_OK')\""
     label: "DWD token generation"
 setup_time: 5 min
 cost_estimate: "$0"
@@ -80,7 +80,7 @@ SCOPES = [
 
 try:
     creds = service_account.Credentials.from_service_account_file(
-        SA_PATH, scopes=SCOPES, subject="cheehow@gotapway.com"
+        SA_PATH, scopes=SCOPES, subject="your-user@your-domain.com"
     )
     creds.refresh(google.auth.transport.requests.Request())
     # Silent on success — watchdog pattern

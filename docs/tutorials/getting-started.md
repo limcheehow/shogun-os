@@ -12,7 +12,7 @@ This tutorial walks through the first deployment end-to-end. By the end, you'll 
 | Hermes Agent installed | `curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh \| bash` |
 | A Supabase account | Free tier at [supabase.com](https://supabase.com) — for gbrain |
 | A Slack workspace | Free tier — for the agent's Slack bot |
-| API keys | OpenRouter or DashScope for the LLM |
+| API keys | Backup Provider or Primary Provider for the LLM |
 
 ## Step 1: Install Prerequisites
 
@@ -36,7 +36,7 @@ which hermes && which gbrain
 ## Step 2: Clone Company OS
 
 ```bash
-git clone https://github.com/limcheehow/company-os.git
+git clone https://github.com/limuser/company-os.git
 cd company-os
 ```
 
@@ -57,10 +57,10 @@ This installs:
 Create or edit `~/.hermes/.env` with your LLM provider key:
 
 ```bash
-# For DashScope (Alibaba Cloud) — recommended default
+# For Primary Provider (Alibaba Cloud) — recommended default
 export DASHSCOPE_API_KEY="sk-your-key-here"
 
-# For OpenRouter — fallback
+# For Backup Provider — fallback
 export OPENROUTER_API_KEY="sk-or-your-key-here"
 ```
 
@@ -154,7 +154,7 @@ The 3-tier daily scrum is the core workflow. Create the cron jobs:
 ```bash
 python3 scripts/wire-crons.py project-manager \
   --type project-manager \
-  --deliver "slack:C09SR9B5WJU" \
+  --deliver "slack:C0XXXXXXXX" \
   --apply
 ```
 

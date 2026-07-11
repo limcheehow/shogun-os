@@ -1,8 +1,8 @@
 ---
 name: department-scrum
 description: "Universal cross-department scrum workflow — 3-tier cadence (9am/11am/5pm). Any profile loads this for their daily standup, quality tracking, and brain cross-reference. Replaces per-dept hardcoded scripts with profile-parameterized config."
-version: 2.0.0
-tags: [shared, scrum, standup, cron, cross-department, compliance]
+version: 3.0.0
+tags: [shared, scrum, standup, cron, cross-department, compliance, production-hardened]
 triggers:
   - "morning scrum"
   - "midday scrum"
@@ -66,8 +66,8 @@ Every department asks the same structure — domain context adapts the cross-ref
 # ~/.hermes/profiles/<profile>/scrum.yaml
 profile: project-manager
 app_name: Gorobei                    # Used in DM greetings
-channel_updates: "C09SR9B5WJU"      # Where scrum summaries post
-channel_leadership: "C0B4792J3AP"   # Where enriched 5pm reports post
+channel_updates: "C0XXXXXXXX"      # Where scrum summaries post
+channel_leadership: "C0XXXXXXXX"   # Where enriched 5pm reports post
 state_dir: "~/.hermes/scrum-states/<profile>"
 
 brain:
@@ -316,6 +316,23 @@ Tests (48 total):
 
 Add new tests before deploying scrum.yaml for a new department.
 
+## Production Pitfalls
+
+**15 hard-won lessons from running this workflow in production.** Each was discovered during live operation and is documented in `references/production-pitfalls.md`. Read them before deploying scrum for the first time.
+
+Key ones to know upfront:
+
+| # | Pitfall | One-liner |
+|---|---|---|
+| 1 | Gateway healthy but WebSocket dead | `systemctl is-active` ≠ gateway actually receiving messages |
+| 3 | Cron batch-fire race condition | Save state BEFORE sending DMs, not after |
+| 4 | HERMES_HOME points to profile dir | Use `~/.hermes` expanded, not `$HERMES_HOME` |
+| 8 | Save state AFTER posting to channel | Otherwise crash leaves `posted_to_channel: null` |
+| 10 | Non-standard compliance_state values | Only use `ok` / `pending_clarification` |
+| 14 | Duplicate systemd services | Check for both user and system level units |
+
+**See `references/production-pitfalls.md` for full details, detection commands, and fixes.**
+
 ## Migration Path
 
 | Phase | What changes | Status |
@@ -324,8 +341,9 @@ Add new tests before deploying scrum.yaml for a new department.
 | 2 | Write generic `send-scrum-dms.py` | ✅ Complete |
 | 3 | Write generic `check-scrum-replies.py` | ✅ Complete |
 | 4 | Create `scrum.yaml` for project-manager profile | ✅ Complete |
-| 5 | Convert project scrum crons to new pattern | ⏳ Deploy on Tapway server |
-| 6 | Create `scrum.yaml` for product-manager profile | ⏳ |
-| 7 | Convert product scrum crons to new pattern | ⏳ |
+| 5 | Convert project scrum crons to new pattern | ✅ Deployed |
+| 6 | Create `scrum.yaml` for product-manager profile | ✅ Deployed |
+| 7 | Convert product scrum crons to new pattern | ✅ Deployed |
 | 8 | Add scrum to HR, Finance, CRM, etc. | ⏳ Per-profile create scrum.yaml + crons |
-| 9 | Deprecate old per-dept scrum skills | ⏳ After migration |
+| 9 | Deprecate old per-dept scrum skills | ⏳ After all profiles migrated |
+| 10 | Merge production pitfalls (v3.0.0) | ✅ Complete — 15 pitfalls documented |
