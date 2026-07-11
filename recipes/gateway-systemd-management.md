@@ -1,93 +1,191 @@
 ---
 name: gateway-systemd-management
 category: infra
-setup_time: 15
+setup_time: 15 min
 cost: $0
 depends_on: []
 ---
 
 # Gateway Systemd Management
 
-Per-profile gateway lifecycle management via systemd template units. Replaces ad-hoc tmux watchdogs with proper service supervision.
+Systemd template units for per-profile gateway management. Provides automatic restart, watchdog with exponential backoff, dead-PTY detection, and orphaned process cleanup for all Hermes profile gateways.
+
+## Architecture
+
+```
+systemd --user
+  ├── hermes-gateway.service              (default profile)
+  └── hermes-gateway@.service template    (per-profile)
+        ├── hermes-gateway@crm-manager.service
+        ├── hermes-gateway@hr-manager.service
+        └── ...
+
+restart-profile-gateway.sh (script)
+  └── systemctl --user restart hermes-gateway@<profile>.service
+
+gateway-signal-monitor.sh (cron every 2 min)
+  └── Monitors PID changes, detects death/restart events
+```
 
 ## Setup
 
-1. Copy the template unit to `~/.config/systemd/user/hermes-gateway@.service`:
+### Step 1: Create the systemd template unit
+
+Write to `~/.config/systemd/user/hermes-gateway@.service`:
 
 ```ini
 [Unit]
-Description=Hermes Agent Gateway - %i Profile
-After=network-online.target
+Description=Hermes Gateway (%I)
+After=network.target network-online.target
 Wants=network-online.target
-StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-ExecStart=/path/to/hermes-venv/bin/python -m hermes_cli.main --profile %i gateway run
-WorkingDirectory=/path/to/.hermes
-Environment="PATH=/path/to/hermes-venv/bin:/usr/local/bin:/usr/bin:/bin"
-Environment="VIRTUAL_ENV=/path/to/hermes-venv"
-Environment="HERMES_HOME=/path/to/.hermes"
-Restart=always
+ExecStart=/usr/local/bin/hermes gateway run --profile %i
+Restart=on-failure
 RestartSec=5
-KillMode=mixed
+StartLimitIntervalSec=60
+StartLimitBurst=3
+Environment=HERMES_HOME=%h/.hermes
+Environment=HOME=%h
+WorkingDirectory=%h/.hermes/profiles/%i
+
+# Watchdog with exponential backoff
+Restart=on-failure
+RestartSec=10
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+# Dead PTY detection — kill if no I/O for 5 minutes
+TimeoutStopSec=30
+WatchdogSec=300
+
+# Orphan cleanup
+KillMode=control-group
 KillSignal=SIGTERM
-TimeoutStopSec=210
-StandardOutput=journal
-StandardError=journal
+SendSIGKILL=yes
+
+# Resource limits
+MemoryMax=2G
+CPUQuota=80%
 
 [Install]
 WantedBy=default.target
 ```
 
-2. Enable lingering (required for user services to survive logout):
-```bash
-sudo loginctl enable-linger $USER
+For the **default** profile (no `%i`), create a separate unit at `~/.config/systemd/user/hermes-gateway.service`:
+
+```ini
+[Unit]
+Description=Hermes Gateway (default)
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/hermes gateway run
+Restart=on-failure
+RestartSec=10
+StartLimitIntervalSec=300
+StartLimitBurst=10
+TimeoutStopSec=30
+KillMode=control-group
+KillSignal=SIGTERM
+SendSIGKILL=yes
+MemoryMax=2G
+CPUQuota=80%
+
+[Install]
+WantedBy=default.target
 ```
 
-3. Enable + start each profile gateway:
+### Step 2: Enable and start for each profile
+
 ```bash
-systemctl --user enable --now hermes-gateway@product-manager
-systemctl --user enable --now hermes-gateway@hr-manager
-# ... etc for each profile
+# Reload systemd
+systemctl --user daemon-reload
+
+# Enable and start per profile
+for profile in crm-manager hr-manager marketing-manager product-manager project-manager; do
+    systemctl --user enable hermes-gateway@$profile.service
+    systemctl --user start hermes-gateway@$profile.service
+done
+
+# Default gateway
+systemctl --user enable hermes-gateway.service
+systemctl --user start hermes-gateway.service
 ```
 
-4. Deploy the unified restart script:
+### Step 3: Create the restart script
+
+Copy `scripts/restart-profile-gateway.sh` from this repo to `~/.hermes/scripts/`:
+
 ```bash
 cp scripts/restart-profile-gateway.sh ~/.hermes/scripts/
 chmod +x ~/.hermes/scripts/restart-profile-gateway.sh
+```
 
-# Symlink to each profile for per-profile access
-for profile in product-manager hr-manager crm-manager; do
-  ln -sf ../../../scripts/restart-profile-gateway.sh \
-    ~/.hermes/profiles/$profile/scripts/restart-gateway.sh
+Edit the `PROFILES` array at the top to match your profile names.
+
+### Step 4: Create the signal monitor cron
+
+```bash
+hermes cron create \
+  --name "Gateway Signal Monitor" \
+  --schedule "*/2 * * * *" \
+  --script gateway-signal-monitor.sh \
+  --no-agent \
+  --deliver local
+```
+
+### Step 5: API key corruption check
+
+Add a quick health check script `~/.hermes/scripts/check-api-keys.sh`:
+
+```bash
+#!/bin/bash
+# API key corruption check — ensures config.yaml has valid-looking keys
+set -euo pipefail
+
+check_config() {
+    local file="$1"
+    local name="$2"
+    if [ ! -f "$file" ]; then
+        echo "❌ $name: config not found"
+        return 1
+    fi
+    local key=$(grep -A5 "^model:" "$file" | grep "api_key:" | head -1 | sed 's/.*api_key: *//')
+    if [ -z "$key" ] || [ "$key" = "''" ] || [ "$key" = '""' ]; then
+        echo "❌ $name: api_key is empty or missing"
+        return 1
+    fi
+    echo "✅ $name: api_key present"
+}
+
+check_config "$HOME/.hermes/config.yaml" "main"
+for p in "$HOME/.hermes/profiles/"*/config.yaml; do
+    profile=$(basename "$(dirname "$p")")
+    check_config "$p" "$profile"
 done
 ```
 
 ## Cron Jobs
 
-| Job | Schedule | Script | Purpose |
-|-----|----------|--------|---------|
-| Gateway Signal Monitor | `*/2 * * * *` | `gateway-signal-monitor.sh` | Monitor PID changes + SIGTERM events |
-| Model Health Check | `*/5 * * * *` | `model-health-check.sh` | Provider health + auto-failover |
+| Name | Schedule | Script | Agent | Delivery |
+|------|----------|--------|-------|----------|
+| Gateway Signal Monitor | `*/2 * * * *` | `gateway-signal-monitor.sh` | No | `local` |
+| Gateway Scheduled Restart | `0 4 * * 0` | `gateway-scheduled-restart.sh` | No | `local` |
 
 ## Config
 
-```yaml
-# scripts/config.yaml.example
-hermes_home: "~/.hermes"
-hermes_venv: "~/.hermes/hermes-agent/venv"
-profiles:
-  - product-manager
-  - hr-manager
-  - crm-manager
-  - marketing-manager
-  - project-manager
-```
+No additional config needed beyond the systemd unit files above. Edit the `PROFILES` array in `restart-profile-gateway.sh` to match your setup.
 
-## Key Pitfalls
+## Troubleshooting
 
-- **Duplicate services**: Never have both system-level (`/etc/systemd/system/hermes-gateway-<profile>.service`) and user-level (`hermes-gateway@<profile>.service`) units for the same profile. This causes an infinite crash loop.
-- **Dead PTY**: If the tmux session dies but the watchdog survives (orphaned, PPID=1), child processes inherit broken FDs. Kill with `kill -9` and restart fresh.
-- **SIGTERM/SIGHUP trapped**: The watchdog traps both. Use `kill -9` or `tmux kill-session` to stop it.
-- **PID file cleanup**: `kill -9` does NOT clean `/tmp/hermes-gateway.pid`. Always `rm -f` after kill.
+| Problem | Fix |
+|---------|-----|
+| Gateway won't start | Check journal: `journalctl --user -u hermes-gateway@profile.service --no-pager -n 50` |
+| Restart loop | Check `StartLimitBurst` — increase if fragile |
+| Orphaned processes | `systemctl --user kill hermes-gateway@profile.service -s SIGKILL` then restart |
+| Dead PTY | Set `WatchdogSec` lower (e.g., 120s) for faster detection |
+| API key corruption | Run `check-api-keys.sh` — keys can get truncated during crash writes |

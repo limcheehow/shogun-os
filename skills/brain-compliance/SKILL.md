@@ -4,7 +4,7 @@ description: >-
   Standards and validation for Gbrain-compliant brain pages.
   Mandatory to load whenever writing, editing, or creating brain files.
 version: 1.0.0
-author: CH Lim
+author: user
 tags: [brain, gbrain, compliance, standards]
 triggers:
   - "create brain page"
@@ -17,13 +17,23 @@ triggers:
   - "brain compliance"
 ---
 
-# Brain Page Compliance — Gbrain Standards
+## Your Company Conventions
 
-**Mandatory:** Load this skill and follow its rules whenever you write, edit, or create any file under `~/brain/`. The validator script must be run after every write.
 
----
+| Convention | Your Company | Gbrain Standard |
+|-----------|--------|-----------------|
+| Person folder | `people/` | `persons/` |
+| Primary classifier | `type: company` | `tags: [company]` |
+| HR folder (unified) | `hr/` | N/A |
+| Canonical types | 14 types | arbitrary |
+| Email storage | `data/email/` | N/A |
+| Product dev | `products/your-product/`, `products/your-product-v2/` | N/A |
+
+The validator accepts BOTH `type:` and `tags:` as valid classifiers.
+
 
 ## 1. Per-Entity Type Frontmatter Standards
+
 
 ### persons/ (`persons/<slug>.md`)
 
@@ -124,6 +134,7 @@ tags: [wiki, <section>]
 
 ## 2. Filename Rules (ALL entity types)
 
+
 | Rule | ✅ Correct | ❌ Wrong |
 |------|-----------|---------|
 | Lowercase | `eddie-goh.md` | `Eddie Goh.md` |
@@ -135,6 +146,7 @@ tags: [wiki, <section>]
 
 ## 3. Wikilink Rules
 
+
 - **Always** use `[[folder/slug|Display Name]]` format
 - **Never** use bare display names like `[[Eddie]]` — they don't resolve
 - Existing bare-name links (like `[[Kossan]]`) should be fixed to `[[companies/kossan|Kossan]]`
@@ -143,6 +155,7 @@ tags: [wiki, <section>]
 ---
 
 ## 4. Post-Write Validation
+
 
 **Two approaches — use gbrain MCP when possible:**
 
@@ -193,16 +206,19 @@ If violations are reported, fix them before delivering the result to the user.
 
 ## Related Skills
 
+
 - `brain-folder-organization` — Folder conventions, cron-to-brain writing pattern, the compliance gate checklist
 - `brain-crosslinking` — **Reactive complement**: fixes broken wikilinks, missing titles, and orphan pages after they've been created. Run after compliance validation when fixing legacy files.
 - `liteparse` — PDF/document parsing for extracting entity data from attachments before writing brain pages
 
 ## Reference Files
 
+
 - `references/cron-to-compliance-workflow.md` — End-to-end example of how cron jobs write brain pages and validate compliance
 - `brain-folder-organization` skill → `references/brain-page-validator-reference.md` — Full validator reference: all 6 checks, how to interpret each violation type, batch mode output format, per-folder required fields
 
 ## Quick Reference Card
+
 
 | Entity | Folder | Required Fields | Slug Ex. |
 |--------|--------|----------------|----------|
@@ -216,6 +232,7 @@ If violations are reported, fix them before delivering the result to the user.
 ---
 
 ## 6. Cron Jobs — Post-Write Requirement
+
 
 Every cron job that writes a brain page MUST include a "Validate Compliance" step after the write step. Use this pattern:
 
@@ -237,8 +254,89 @@ If any violations are reported, fix them.
 
 ## Pitfalls
 
+
 - ❌ **Don't skip frontmatter** — every brain file needs at least `title:` and `tags:`
 - ❌ **Don't use bare wikilinks** — always `[[folder/slug|Display]]`
 - ❌ **Don't create files with uppercase or spaces in filenames**
 - ❌ **Don't skip the post-write validation** — run it every time
 - ❌ **Don't write person/company/deal files to wrong folders** — each type has a dedicated folder
+
+## 4. Enforcement Architecture (3 Layers)
+
+
+```
+NEW BRAIN PAGE CREATED
+        │
+        ▼
+┌─────────────────────────────────────┐
+│ LAYER 1: Agent Gate (me + cron agents) │
+│ Loads brain-compliance skill         │
+│ Runs validator as final step         │
+│ ✅ 5 cron jobs wired                 │
+└─────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────┐
+│ LAYER 2: Pre-Commit Hook             │
+│ ~/brain/.git/hooks/pre-commit        │
+│ Validates ALL staged .md files       │
+│ Blocks commit on violations          │
+│ ✅ Catches script-generated pages    │
+└─────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────┐
+│ LAYER 3: Batch Audit (manual)        │
+│ python3 validator --batch            │
+│ Full brain scan for drift            │
+│ ✅ Run weekly or on-demand           │
+└─────────────────────────────────────┘
+```
+
+### Layer 1: Agent Gate
+
+5 brain-writing crons load `brain-compliance` skill + validate as final step:
+
+| Cron | Folder | Skills |
+|------|--------|--------|
+| Sales CRM Pipeline | `deals/` | `brain-compliance` |
+| Candidate Application Pipeline | `HR/`, `hr/` | `brain-compliance` + 3 |
+| Hiring Pipeline Daily | `HR/`, `hr/` | `brain-compliance` |
+| Meeting Brain Classifier | `meetings/` | `brain-compliance` |
+| Collect Calendar | `data/calendar/` | `brain-compliance` |
+
+### Layer 2: Pre-Commit Hook
+
+`~/brain/.git/hooks/pre-commit` validates every staged `.md` file before commit:
+
+```bash
+# Blocks commits with violations:
+❌ concepts/bad-page.md
+     • MISSING: 'title:' field in frontmatter
+     • WIKILINK: [[Eddie]] uses bare display name
+
+# Allows compliant commits:
+✅ 1/1 files compliant — commit allowed
+```
+
+Emergency bypass: `git commit --no-verify`
+
+### Layer 3: Batch Audit
+
+```bash
+python3 ~/.hermes/skills/gbrain/brain-compliance/scripts/validate-brain-page.py ~/brain --batch
+```
+
+---
+
+## 5. Compliance Baseline (2026-06-21)
+
+
+| Folder | Compliant | Issues |
+|--------|:---:|--------|
+| `people/` | 98.5% | Minor: missing title in ~100 pages |
+| `data/` | 99% | Clean |
+| `products/` | 82% | Task pages with SAM-IDs, minor format issues |
+| `companies/` | 0.1% | Legacy pages without `title:` field |
+| `deals/` | 0.3% | Title/heading mismatches in legacy deals |
+| **Overall** | **69%** | Mostly legacy slug/title issues |

@@ -41,18 +41,27 @@ from _hermes_home import get_hermes_home
 HERMES_HOME = get_hermes_home()
 TOKEN_PATH = HERMES_HOME / "google_token.json"
 CLIENT_SECRET_PATH = HERMES_HOME / "google_client_secret.json"
+SERVICE_ACCOUNT_KEY_PATH = HERMES_HOME / "service-account-key.json"
 
+# Module-level impersonation target — set by main() before dispatching
+_impersonate_subject: str | None = None
+
+# Scopes must match EXACTLY what's authorized in admin.google.com DWD for client ID
+# 107398056952657264498. Any scope mismatch → entire JWT fails with 'unauthorized_client'.
+# This list mirrors ~/.local/bin/google-api (the thin wrapper) which is verified working.
+# If adding/removing scopes, update BOTH this list AND the admin console DWD config.
 SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",
     "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/gmail.modify",
+    "https://www.googleapis.com/auth/gmail.compose",
     "https://www.googleapis.com/auth/calendar",
-    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/calendar.events",
+    "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/drive.file",
-    "https://www.googleapis.com/auth/contacts.readonly",
-    "https://www.googleapis.com/auth/contacts",
     "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/documents.readonly",
+    "https://www.googleapis.com/auth/documents",
+    "https://www.googleapis.com/auth/contacts",
 ]
 
 
@@ -82,6 +91,9 @@ def _stored_token_scopes() -> list[str]:
 
 
 def _gws_binary() -> str | None:
+    # Service account impersonation bypasses gws — gws uses OAuth user tokens
+    if _impersonate_subject:
+        return None
     override = os.getenv("HERMES_GWS_BIN")
     if override:
         return override
@@ -177,7 +189,19 @@ def _datetime_with_timezone(value: str) -> str:
 
 
 def get_credentials():
-    """Load and refresh credentials from token file."""
+    """Load credentials: service account impersonation if --subject is set, otherwise OAuth user token."""
+    if _impersonate_subject:
+        if not SERVICE_ACCOUNT_KEY_PATH.exists():
+            print(f"ERROR: Service account key not found at {SERVICE_ACCOUNT_KEY_PATH}", file=sys.stderr)
+            print("Place the JSON key file at that path, or see the google-workspace skill for SA-DWD setup.", file=sys.stderr)
+            sys.exit(1)
+        from google.oauth2.service_account import Credentials
+        return Credentials.from_service_account_file(
+            str(SERVICE_ACCOUNT_KEY_PATH),
+            scopes=SCOPES,
+            subject=_impersonate_subject,
+        )
+
     _ensure_authenticated()
 
     from google.oauth2.credentials import Credentials
@@ -589,31 +613,216 @@ def drive_search(args):
     print(json.dumps(files, indent=2, ensure_ascii=False))
 
 
+def drive_get(args):
+    """Get metadata for a single Drive file by ID."""
+    fields = "id, name, mimeType, modifiedTime, size, webViewLink, parents, owners(emailAddress)"
+    if _gws_binary():
+        result = _run_gws(
+            ["drive", "files", "get"],
+            params={"fileId": args.file_id, "fields": fields},
+        )
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        return
+
+    service = build_service("drive", "v3")
+    result = service.files().get(fileId=args.file_id, fields=fields).execute()
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+
+
+def drive_upload(args):
+    """Upload a local file to Drive. Falls through to Python client even when gws
+    is installed, because gws doesn't do multipart uploads."""
+    import mimetypes
+    from googleapiclient.http import MediaFileUpload
+
+    local_path = Path(args.path).expanduser()
+    if not local_path.exists():
+        print(f"ERROR: file not found: {local_path}", file=sys.stderr)
+        sys.exit(1)
+
+    mime = args.mime_type or mimetypes.guess_type(str(local_path))[0] or "application/octet-stream"
+    metadata = {"name": args.name or local_path.name}
+    if args.parent:
+        metadata["parents"] = [args.parent]
+
+    service = build_service("drive", "v3")
+    media = MediaFileUpload(str(local_path), mimetype=mime, resumable=True)
+    result = service.files().create(
+        body=metadata,
+        media_body=media,
+        fields="id, name, mimeType, webViewLink",
+    ).execute()
+    print(json.dumps({
+        "status": "uploaded",
+        "id": result["id"],
+        "name": result.get("name", ""),
+        "mimeType": result.get("mimeType", ""),
+        "webViewLink": result.get("webViewLink", ""),
+    }, indent=2, ensure_ascii=False))
+
+
+def drive_download(args):
+    """Download a Drive file to a local path. Google-native files (Docs/Sheets/Slides)
+    must be exported; binary files are downloaded as-is."""
+    import io
+    from googleapiclient.http import MediaIoBaseDownload
+
+    service = build_service("drive", "v3")
+
+    # Look up the file to decide download vs export.
+    meta = service.files().get(fileId=args.file_id, fields="id, name, mimeType").execute()
+    mime = meta.get("mimeType", "")
+    name = meta.get("name", args.file_id)
+
+    # Map Google-native MIME types to a sensible export default.
+    native_export_map = {
+        "application/vnd.google-apps.document": ("application/pdf", ".pdf"),
+        "application/vnd.google-apps.spreadsheet": ("text/csv", ".csv"),
+        "application/vnd.google-apps.presentation": ("application/pdf", ".pdf"),
+        "application/vnd.google-apps.drawing": ("image/png", ".png"),
+    }
+
+    out_path = Path(args.output).expanduser() if args.output else Path.cwd() / name
+
+    if mime in native_export_map:
+        export_mime = args.export_mime or native_export_map[mime][0]
+        default_ext = native_export_map[mime][1]
+        if not args.output and not out_path.suffix:
+            out_path = out_path.with_suffix(default_ext)
+        request = service.files().export_media(fileId=args.file_id, mimeType=export_mime)
+    else:
+        request = service.files().get_media(fileId=args.file_id)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fh = io.FileIO(str(out_path), "wb")
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while not done:
+        _, done = downloader.next_chunk()
+    fh.close()
+
+    print(json.dumps({
+        "status": "downloaded",
+        "id": args.file_id,
+        "name": name,
+        "path": str(out_path),
+        "mimeType": mime,
+    }, indent=2, ensure_ascii=False))
+
+
+def drive_create_folder(args):
+    body = {
+        "name": args.name,
+        "mimeType": "application/vnd.google-apps.folder",
+    }
+    if args.parent:
+        body["parents"] = [args.parent]
+
+    if _gws_binary():
+        result = _run_gws(
+            ["drive", "files", "create"],
+            params={"fields": "id, name, webViewLink"},
+            body=body,
+        )
+        print(json.dumps({
+            "status": "created",
+            "id": result["id"],
+            "name": result.get("name", ""),
+            "webViewLink": result.get("webViewLink", ""),
+        }, indent=2, ensure_ascii=False))
+        return
+
+    service = build_service("drive", "v3")
+    result = service.files().create(body=body, fields="id, name, webViewLink").execute()
+    print(json.dumps({
+        "status": "created",
+        "id": result["id"],
+        "name": result.get("name", ""),
+        "webViewLink": result.get("webViewLink", ""),
+    }, indent=2, ensure_ascii=False))
+
+
+def drive_share(args):
+    permission = {
+        "type": args.type,
+        "role": args.role,
+    }
+    if args.type in ("user", "group"):
+        if not args.email:
+            print("ERROR: --email is required for type=user or type=group", file=sys.stderr)
+            sys.exit(1)
+        permission["emailAddress"] = args.email
+    elif args.type == "domain":
+        if not args.domain:
+            print("ERROR: --domain is required for type=domain", file=sys.stderr)
+            sys.exit(1)
+        permission["domain"] = args.domain
+
+    if _gws_binary():
+        result = _run_gws(
+            ["drive", "permissions", "create"],
+            params={
+                "fileId": args.file_id,
+                "sendNotificationEmail": args.notify,
+            },
+            body=permission,
+        )
+        print(json.dumps({
+            "status": "shared",
+            "permissionId": result.get("id", ""),
+            "fileId": args.file_id,
+            "role": permission["role"],
+            "type": permission["type"],
+        }, indent=2, ensure_ascii=False))
+        return
+
+    service = build_service("drive", "v3")
+    result = service.permissions().create(
+        fileId=args.file_id,
+        body=permission,
+        sendNotificationEmail=args.notify,
+        fields="id",
+    ).execute()
+    print(json.dumps({
+        "status": "shared",
+        "permissionId": result.get("id", ""),
+        "fileId": args.file_id,
+        "role": permission["role"],
+        "type": permission["type"],
+    }, indent=2, ensure_ascii=False))
+
+
+def drive_delete(args):
+    """Trash or permanently delete a Drive file. Defaults to trash (reversible)."""
+    if args.permanent:
+        if _gws_binary():
+            _run_gws(["drive", "files", "delete"], params={"fileId": args.file_id})
+            print(json.dumps({"status": "deleted", "fileId": args.file_id, "permanent": True}))
+            return
+        service = build_service("drive", "v3")
+        service.files().delete(fileId=args.file_id).execute()
+        print(json.dumps({"status": "deleted", "fileId": args.file_id, "permanent": True}))
+        return
+
+    # Trash (reversible). Use files.update with trashed=True.
+    body = {"trashed": True}
+    if _gws_binary():
+        _run_gws(
+            ["drive", "files", "update"],
+            params={"fileId": args.file_id},
+            body=body,
+        )
+        print(json.dumps({"status": "trashed", "fileId": args.file_id, "permanent": False}))
+        return
+
+    service = build_service("drive", "v3")
+    service.files().update(fileId=args.file_id, body=body).execute()
+    print(json.dumps({"status": "trashed", "fileId": args.file_id, "permanent": False}))
+
+
 # =========================================================================
 # Contacts
 # =========================================================================
-
-
-def contacts_create(args):
-    """Create a Google Contact via People API."""
-    service = build_service("people", "v1")
-    
-    person = {
-        "names": [{"givenName": args.given_name, "familyName": args.family_name or ""}],
-    }
-    if args.email:
-        person["emailAddresses"] = [{"value": args.email}]
-    if args.phone:
-        person["phoneNumbers"] = [{"value": args.phone}]
-    if args.company:
-        person["organizations"] = [{"name": args.company, "title": args.title or ""}]
-    
-    result = service.people().createContact(body=person).execute()
-    print(json.dumps({
-        "status": "created",
-        "resourceName": result.get("resourceName", ""),
-        "name": result.get("names", [{}])[0].get("displayName", "") if result.get("names") else "",
-    }, indent=2))
 
 
 def contacts_list(args):
@@ -732,6 +941,34 @@ def sheets_append(args):
     print(json.dumps({"updatedCells": result.get("updates", {}).get("updatedCells", 0)}, indent=2))
 
 
+def sheets_create(args):
+    """Create a new spreadsheet. Returns the new spreadsheet ID and URL."""
+    body = {"properties": {"title": args.title}}
+    if args.sheet_name:
+        body["sheets"] = [{"properties": {"title": args.sheet_name}}]
+
+    if _gws_binary():
+        result = _run_gws(["sheets", "spreadsheets", "create"], body=body)
+        print(json.dumps({
+            "status": "created",
+            "spreadsheetId": result.get("spreadsheetId", ""),
+            "title": result.get("properties", {}).get("title", ""),
+            "spreadsheetUrl": result.get("spreadsheetUrl", ""),
+        }, indent=2, ensure_ascii=False))
+        return
+
+    service = build_service("sheets", "v4")
+    result = service.spreadsheets().create(
+        body=body, fields="spreadsheetId,properties,spreadsheetUrl",
+    ).execute()
+    print(json.dumps({
+        "status": "created",
+        "spreadsheetId": result.get("spreadsheetId", ""),
+        "title": result.get("properties", {}).get("title", ""),
+        "spreadsheetUrl": result.get("spreadsheetUrl", ""),
+    }, indent=2, ensure_ascii=False))
+
+
 # =========================================================================
 # Docs
 # =========================================================================
@@ -758,6 +995,79 @@ def docs_get(args):
     print(json.dumps(result, indent=2, ensure_ascii=False))
 
 
+def docs_create(args):
+    """Create a new Doc. Optionally seed it with initial body text."""
+    body = {"title": args.title}
+
+    if _gws_binary():
+        doc = _run_gws(["docs", "documents", "create"], body=body)
+    else:
+        service = build_service("docs", "v1")
+        doc = service.documents().create(body=body).execute()
+
+    doc_id = doc.get("documentId", "")
+
+    if args.body and doc_id:
+        _docs_insert_text(doc_id, args.body, index=1)
+
+    print(json.dumps({
+        "status": "created",
+        "documentId": doc_id,
+        "title": doc.get("title", ""),
+        "url": f"https://docs.google.com/document/d/{doc_id}/edit" if doc_id else "",
+    }, indent=2, ensure_ascii=False))
+
+
+def docs_append(args):
+    """Append text to the end of an existing Doc."""
+    if _gws_binary():
+        doc = _run_gws(["docs", "documents", "get"], params={"documentId": args.doc_id})
+    else:
+        service = build_service("docs", "v1")
+        doc = service.documents().get(documentId=args.doc_id).execute()
+
+    # The end-of-body index is one less than the segment endIndex of the body
+    # (trailing newline is always at length-1). Docs indexes are 1-based; use
+    # endIndex - 1 to insert before the final newline.
+    content = doc.get("body", {}).get("content", [])
+    end_index = 1
+    for element in content:
+        ei = element.get("endIndex")
+        if isinstance(ei, int) and ei > end_index:
+            end_index = ei
+    insert_index = max(end_index - 1, 1)
+
+    text = args.text if args.text.endswith("\n") else args.text + "\n"
+    _docs_insert_text(args.doc_id, text, index=insert_index)
+
+    print(json.dumps({
+        "status": "appended",
+        "documentId": args.doc_id,
+        "inserted_at": insert_index,
+        "characters": len(text),
+    }, indent=2, ensure_ascii=False))
+
+
+def _docs_insert_text(doc_id: str, text: str, index: int) -> None:
+    """Send a batchUpdate with a single insertText request."""
+    requests = [{
+        "insertText": {
+            "location": {"index": index},
+            "text": text,
+        }
+    }]
+    if _gws_binary():
+        _run_gws(
+            ["docs", "documents", "batchUpdate"],
+            params={"documentId": doc_id},
+            body={"requests": requests},
+        )
+        return
+
+    service = build_service("docs", "v1")
+    service.documents().batchUpdate(documentId=doc_id, body={"requests": requests}).execute()
+
+
 # =========================================================================
 # CLI parser
 # =========================================================================
@@ -765,6 +1075,11 @@ def docs_get(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Google Workspace API for Hermes Agent")
+    parser.add_argument(
+        "--subject", default="",
+        help="Email to impersonate via domain-wide delegation (e.g. user@your-domain.com). "
+             "Requires service-account-key.json from SA-DWD setup."
+    )
     sub = parser.add_subparsers(dest="service", required=True)
 
     # --- Gmail ---
@@ -841,6 +1156,42 @@ def main():
     p.add_argument("--raw-query", action="store_true", help="Use query as raw Drive API query")
     p.set_defaults(func=drive_search)
 
+    p = drv_sub.add_parser("get")
+    p.add_argument("file_id")
+    p.set_defaults(func=drive_get)
+
+    p = drv_sub.add_parser("upload")
+    p.add_argument("path", help="Local file path to upload")
+    p.add_argument("--name", default="", help="Override file name in Drive (defaults to local filename)")
+    p.add_argument("--parent", default="", help="Parent folder ID")
+    p.add_argument("--mime-type", default="", help="Override MIME type (auto-detected if omitted)")
+    p.set_defaults(func=drive_upload)
+
+    p = drv_sub.add_parser("download")
+    p.add_argument("file_id")
+    p.add_argument("--output", default="", help="Local output path (defaults to ./<name> in cwd)")
+    p.add_argument("--export-mime", default="", help="Export MIME for Google-native files (overrides defaults: pdf for Docs/Slides, csv for Sheets, png for Drawings)")
+    p.set_defaults(func=drive_download)
+
+    p = drv_sub.add_parser("create-folder")
+    p.add_argument("name")
+    p.add_argument("--parent", default="", help="Parent folder ID (defaults to root)")
+    p.set_defaults(func=drive_create_folder)
+
+    p = drv_sub.add_parser("share")
+    p.add_argument("file_id")
+    p.add_argument("--role", default="reader", choices=["reader", "commenter", "writer", "fileOrganizer", "organizer", "owner"])
+    p.add_argument("--type", default="user", choices=["user", "group", "domain", "anyone"])
+    p.add_argument("--email", default="", help="Email address (required for type=user or type=group)")
+    p.add_argument("--domain", default="", help="Domain (required for type=domain)")
+    p.add_argument("--notify", action="store_true", help="Send notification email")
+    p.set_defaults(func=drive_share)
+
+    p = drv_sub.add_parser("delete")
+    p.add_argument("file_id")
+    p.add_argument("--permanent", action="store_true", help="Permanently delete (default is trash, which is reversible)")
+    p.set_defaults(func=drive_delete)
+
     # --- Contacts ---
     con = sub.add_parser("contacts")
     con_sub = con.add_subparsers(dest="action", required=True)
@@ -848,15 +1199,6 @@ def main():
     p = con_sub.add_parser("list")
     p.add_argument("--max", type=int, default=50)
     p.set_defaults(func=contacts_list)
-
-    p = con_sub.add_parser("create")
-    p.add_argument("--given-name", required=True)
-    p.add_argument("--family-name", default="")
-    p.add_argument("--email", default="")
-    p.add_argument("--phone", default="")
-    p.add_argument("--company", default="")
-    p.add_argument("--title", default="")
-    p.set_defaults(func=contacts_create)
 
     # --- Sheets ---
     sh = sub.add_parser("sheets")
@@ -879,6 +1221,11 @@ def main():
     p.add_argument("--values", required=True, help="JSON array of arrays")
     p.set_defaults(func=sheets_append)
 
+    p = sh_sub.add_parser("create")
+    p.add_argument("--title", required=True, help="Spreadsheet title")
+    p.add_argument("--sheet-name", default="", help="Name of the first tab (defaults to 'Sheet1')")
+    p.set_defaults(func=sheets_create)
+
     # --- Docs ---
     docs = sub.add_parser("docs")
     docs_sub = docs.add_subparsers(dest="action", required=True)
@@ -887,7 +1234,22 @@ def main():
     p.add_argument("doc_id")
     p.set_defaults(func=docs_get)
 
+    p = docs_sub.add_parser("create")
+    p.add_argument("--title", required=True, help="Document title")
+    p.add_argument("--body", default="", help="Initial body text (optional)")
+    p.set_defaults(func=docs_create)
+
+    p = docs_sub.add_parser("append")
+    p.add_argument("doc_id")
+    p.add_argument("--text", required=True, help="Text to append to the end of the document")
+    p.set_defaults(func=docs_append)
+
     args = parser.parse_args()
+
+    # Set impersonation before dispatching — all functions check _impersonate_subject
+    global _impersonate_subject
+    _impersonate_subject = args.subject if args.subject else None
+
     args.func(args)
 
 

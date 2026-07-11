@@ -64,7 +64,7 @@ For each new page created, classify and route:
 | **Projects** — project names, milestones, deliverables | Match against `~/brain/projects/active_projects/`. Add timeline or notes. |
 | **HR / Hiring** — candidates, interviews, offers | Match against `~/brain/hiring/`. Link to candidate profiles. |
 | **Finance** — invoices, POs, payment requests | Match against finance-related pages. Flag amount and urgency. |
-| **Internal Ops** — needs CH Lim attention | Highlight in summary report. |
+| **Internal Ops** — needs user attention | Highlight in summary report. |
 
 Use `mcp_gbrain_query` to find matching pages, not grep. The brain graph is the source of truth.
 
