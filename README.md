@@ -10,6 +10,59 @@ I built this for my own company, where I was spending too much time on ops, repo
 
 > **Agents:** start with [`AGENTS.md`](AGENTS.md). **Humans:** start with [`SETUP.md`](SETUP.md). **LLMs:** fetch [`llms.txt`](llms.txt) for the documentation map.
 
+## Prerequisites
+
+Before deploying Company OS, you need two core tools installed on your server (Linux or WSL2):
+
+### 1. Hermes Agent
+
+The AI agent runtime that powers every department profile.
+
+```bash
+# Install via the official script
+curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+
+# Verify
+hermes --version
+```
+
+**Links:** [Documentation](https://hermes-agent.nousresearch.com/docs) | [GitHub](https://github.com/NousResearch/hermes-agent) | [Install Guide](https://hermes-agent.nousresearch.com/docs/getting-started/installation)
+
+### 2. GBrain (Knowledge Base)
+
+The hybrid-search knowledge engine that stores and retrieves every department's data.
+
+```bash
+# Install via Bun (recommended)
+curl -fsSL https://bun.sh/install | bash
+export PATH="$HOME/.bun/bin:$PATH"
+bun install -g github:garrytan/gbrain
+
+# Verify
+gbrain --version  # should be v0.42.x+
+```
+
+**Links:** [GitHub](https://github.com/garrytan/gbrain) | [AGENTS.md](https://github.com/garrytan/gbrain/blob/main/AGENTS.md) (install protocol for AI agents)
+
+### 3. Optional but Recommended
+
+| Tool | Why | Install |
+|------|-----|---------|
+| **Slack Bot** | Every department agent communicates via Slack | [api.slack.com/apps](https://api.slack.com/apps) — create one bot per profile |
+| **Google Workspace SA-DWD** | Gmail/Calendar/Drive access via service accounts | See [`recipes/google-dwd.md`](recipes/google-dwd.md) |
+| **PostgreSQL 16+** | Production-grade session storage (vs PGLite) | `sudo apt install postgresql-16` or use Supabase |
+| **Node.js 20+** | Required by GBrain (Bun runtime) | `curl -fsSL https://deb.nodesource.com/setup_20.x \| sudo bash -` |
+
+### Quick Check
+
+Run this to confirm everything is in place:
+
+```bash
+which hermes && echo "✅ Hermes" || echo "❌ Hermes"
+which gbrain && echo "✅ GBrain" || echo "❌ GBrain"
+which bun    && echo "✅ Bun"    || echo "⚠️  Bun (recommended for gbrain)"
+```
+
 ## What this looks like
 
 Say you're the CEO. You want to know how things are going across the company. Here's what you'd ask, and what you'd get back.
