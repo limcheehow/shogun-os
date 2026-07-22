@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Company OS — Cron Restore
+Shogun OS — Cron Restore
 ──────────────────────────
 Restores cron jobs from a backup file created by backup-crons.py.
 Creates jobs via hermes cron create.
@@ -121,7 +121,7 @@ def run_hermes_cron_create(job, dry_run=False):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Company OS — Cron Restore",
+        description="Shogun OS — Cron Restore",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )

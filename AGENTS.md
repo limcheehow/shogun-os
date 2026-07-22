@@ -1,6 +1,6 @@
-# Agents working on Company OS
+# Agents working on Shogun OS
 
-This is your install + operating protocol. Start here if you're an AI agent tasked with deploying or operating Company OS.
+This is your install + operating protocol. Start here if you're an AI agent tasked with deploying or operating Shogun OS.
 
 ## Read this order
 
@@ -11,9 +11,9 @@ This is your install + operating protocol. Start here if you're an AI agent task
 5. `./INSTALL_FOR_AGENTS.md` — full 8-phase install protocol
 6. `./recipes/` — integration patterns (google-dwd, department-scrum, etc.)
 
-## What Company OS is
+## What Shogun OS is
 
-Company OS is NOT a single piece of software. It is a **reference architecture** with provisioning tooling. It deploys 10 independent Hermes Agent profiles, each connected to its own gbrain source and a dedicated Slack bot. The three layers:
+Shogun OS is NOT a single piece of software. It is a **reference architecture** with provisioning tooling. It deploys 10 independent Hermes Agent profiles, each connected to its own gbrain source and a dedicated Slack bot. The three layers:
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
@@ -25,7 +25,7 @@ Company OS is NOT a single piece of software. It is a **reference architecture**
 
 ```
 Retrieve and follow the instructions at:
-https://raw.githubusercontent.com/limcheehow/company-os/main/INSTALL_FOR_AGENTS.md
+https://raw.githubusercontent.com/limcheehow/shogun-os/main/INSTALL_FOR_AGENTS.md
 ```
 
 The full protocol covers: prerequisites, Google DWD, gbrain init, profile creation, Slack bot setup, cron wiring, model configuration, and verification.
@@ -33,7 +33,7 @@ The full protocol covers: prerequisites, Google DWD, gbrain init, profile creati
 ## File Layout
 
 ```
-company-os/
+shogun-os/
 ├── ARCHITECTURE.md         # System design (read after this)
 ├── SETUP.md                # Human-readable setup playbook
 ├── PROFILE_CATALOG.md      # All 10 profiles
@@ -99,10 +99,10 @@ hermes -p <dept>-manager --exec "mcp_gbrain_whoami"
 
 ```bash
 # Backup all cron jobs (on current machine)
-python3 scripts/backup-crons.py ~/company-os-cron-backup.json
+python3 scripts/backup-crons.py ~/shogun-os-cron-backup.json
 
 # Restore on fresh machine
-python3 scripts/restore-crons.py ~/company-os-cron-backup.json
+python3 scripts/restore-crons.py ~/shogun-os-cron-backup.json
 ```
 
 ## Trust Boundary

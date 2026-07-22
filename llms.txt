@@ -1,6 +1,6 @@
-# Company OS
+# Shogun OS
 
-> Company OS is a reference architecture for running an entire organization through Hermes Agent. Each department gets a dedicated AI operator with role-specific tools, memory, and autonomy. Built on Hermes Agent + GBrain.
+> Shogun OS is a reference architecture for running an entire organization through Hermes Agent. Each department gets a dedicated AI operator with role-specific tools, memory, and autonomy. Built on Hermes Agent + GBrain.
 
 Repo: https://github.com/limcheehow/company-os
 

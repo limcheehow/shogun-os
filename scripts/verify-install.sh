@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ──────────────────────────────────────────────────────────────────────────
-# Company OS — Install Verification Suite
+# Shogun OS — Install Verification Suite
 # ──────────────────────────────────────────────────────────────────────────
-# Checks that all Company OS assets are correctly installed under ~/.hermes/
+# Checks that all Shogun OS assets are correctly installed under ~/.hermes/
 # after running install.sh.
 #
 # Usage:
@@ -48,7 +48,7 @@ done
 
 echo ""
 echo -e "${CYAN}══════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}  Company OS — Install Verification${NC}"
+echo -e "${CYAN}  Shogun OS — Install Verification${NC}"
 echo -e "${CYAN}  Hermes home: ${HERMES_HOME}${NC}"
 [[ "$QUICK" == true ]] && echo -e "${YELLOW}  Quick mode — skipping expensive checks${NC}"
 [[ "$FIX" == true ]] && echo -e "${YELLOW}  Fix mode enabled — will attempt repairs${NC}"

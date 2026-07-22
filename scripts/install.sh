@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ──────────────────────────────────────────────────────────────────────────
-# Company OS — Hermes Companion Installer v3.1.1
+# Shogun OS — Hermes Companion Installer v3.1.1
 # ──────────────────────────────────────────────────────────────────────────
 # Installs skills, scripts, recipes, templates, and configs into ~/.hermes/
 #
@@ -58,7 +58,7 @@ err() { echo -e "  ${RED}❌${NC} $1"; }
 # ── Help ───────────────────────────────────────────────────────────────
 usage() {
   cat <<EOF
-Company OS Installer v${VERSION}
+Shogun OS Installer v${VERSION}
 
 Installs skills, scripts, recipes, configs, templates, and systemd units
 from this repo into ~/.hermes/
@@ -130,7 +130,7 @@ fi
 
 echo ""
 echo -e "${CYAN}══════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}  Company OS Installer v${VERSION}${NC}"
+echo -e "${CYAN}  Shogun OS Installer v${VERSION}${NC}"
 echo -e "${CYAN}  Repo: ${REPO_ROOT}${NC}"
 if [[ -n "$PROFILE" ]]; then
   echo -e "${CYAN}  Profile: ${PROFILE}${NC}"

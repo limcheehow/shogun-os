@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Company OS — Pre-Deployment Verification Suite
+Shogun OS — Pre-Deployment Verification Suite
 ───────────────────────────────────────────────
 Runs comprehensive checks on the repo itself (not a running Hermes instance)
 to catch issues before pushing to a fresh machine.
@@ -429,7 +429,7 @@ def test_changelog_version():
 
 def run_all():
     parser = argparse.ArgumentParser(
-        description="Company OS — Pre-Deployment Repo Verification",
+        description="Shogun OS — Pre-Deployment Repo Verification",
     )
     parser.add_argument("--verbose", "-v", action="store_true", help="Show all details")
     parser.add_argument("--fix", "-f", action="store_true", help="Auto-fix common issues")
@@ -439,7 +439,7 @@ def run_all():
     FIX = args.fix
     VERBOSE = args.verbose
 
-    print(f"\n{color('Company OS — Pre-Deployment Repo Verification', 'cyan')}")
+    print(f"\n{color('Shogun OS — Pre-Deployment Repo Verification', 'cyan')}")
     print(f"  Repo: {REPO_ROOT}")
     print()
 

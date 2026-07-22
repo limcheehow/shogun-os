@@ -2,7 +2,7 @@
 
 ## Threat Model
 
-Company OS is designed for an organization where multiple department agents share the same infrastructure but must not access each other's data. The primary threat is **cross-department data leakage** through shared infrastructure.
+Shogun OS is designed for an organization where multiple department agents share the same infrastructure but must not access each other's data. The primary threat is **cross-department data leakage** through shared infrastructure.
 
 ## Trust Boundaries
 
@@ -71,7 +71,7 @@ Federated read is **read-only** from `shared/`. Profiles cannot accidentally wri
 
 ### Reporting a Vulnerability
 
-If you find a security issue in Company OS, please open a GitHub issue with the `security` label. Do NOT disclose via public channels.
+If you find a security issue in Shogun OS, please open a GitHub issue with the `security` label. Do NOT disclose via public channels.
 
 ## Security Checklist
 

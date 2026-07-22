@@ -2,7 +2,7 @@
 
 ## System Design
 
-Company OS runs on three layers, each providing isolation and autonomy for department-specific AI agents.
+Shogun OS runs on three layers, each providing isolation and autonomy for department-specific AI agents.
 
 ### Layer 1: Hermes Agent Profiles
 

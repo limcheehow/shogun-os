@@ -2,7 +2,7 @@
 
 ## System Design
 
-Company OS runs on three layers:
+Shogun OS runs on three layers:
 
 ### Layer 1: Hermes Agent Profiles
 

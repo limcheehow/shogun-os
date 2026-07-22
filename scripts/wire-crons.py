@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Company OS — Cron Wirer
+Shogun OS — Cron Wirer
 ────────────────────────
 Generates and recommends cron jobs for a profile based on its type.
 
@@ -318,7 +318,7 @@ def apply_crons(crons, deliver, dry_run=False):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Company OS — Cron Wirer",
+        description="Shogun OS — Cron Wirer",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(__doc__ or "").split("═══════════════════════════════")[-1].strip(),
     )

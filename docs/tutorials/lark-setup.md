@@ -69,7 +69,7 @@ team:
 
 ```bash
 # Test DM sending
-echo '{"id":1,"method":"tools/call","params":{"name":"comm_send_dm","arguments":{"userId":"ou_xxx","text":"Hello from Company OS!"}}}' \
+echo '{"id":1,"method":"tools/call","params":{"name":"comm_send_dm","arguments":{"userId":"ou_xxx","text":"Hello from Shogun OS!"}}}' \
   | python3 -c "from comm.lark import LarkProvider; p = LarkProvider({'LARK_APP_ID': '...', 'LARK_APP_SECRET': '...'}); print(p.send_dm('ou_xxx', 'Hello!'))"
 
 # Expected: {"thread_id": "om_xxx", "conversation_id": "oc_xxx"}

@@ -25,13 +25,13 @@ CORE_DOCS=(
 )
 
 cat > "$OUTPUT" << HEADER
-# Company OS — Full Context
+# Shogun OS — Full Context
 
-> Company OS is a reference architecture for running an entire organization through
+> Shogun OS is a reference architecture for running an entire organization through
 > Hermes Agent. Each department gets a dedicated AI operator with role-specific
 > tools, memory, and autonomy. Built on Hermes Agent + GBrain.
 
-This file concatenates core Company OS documentation for single-fetch ingestion.
+This file concatenates core Shogun OS documentation for single-fetch ingestion.
 For the link-only index, see \`llms.txt\`. Source of truth: https://github.com/limcheehow/company-os.
 
 HEADER

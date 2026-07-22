@@ -1,8 +1,8 @@
-# Contributing to Company OS
+# Contributing to Shogun OS
 
 ## What This Repo Is
 
-Company OS is a **reference architecture** — not a shipped product. Contributions that make the architecture more reusable, better documented, or easier to deploy are welcome. Contributions that add Your Company-specific content belong in your own fork or in the running Hermes profiles, not here.
+Shogun OS is a **reference architecture** — not a shipped product. Contributions that make the architecture more reusable, better documented, or easier to deploy are welcome. Contributions that add Your Company-specific content belong in your own fork or in the running Hermes profiles, not here.
 
 ## What Goes In
 

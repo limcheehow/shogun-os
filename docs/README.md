@@ -1,6 +1,6 @@
-# Company OS — Docs
+# Shogun OS — Docs
 
-This directory documents the phased development of Company OS, a Hermes Agent companion repository that standardizes skills, templates, profiles, and scripts for new-user onboarding.
+This directory documents the phased development of Shogun OS, a Hermes Agent companion repository that standardizes skills, templates, profiles, and scripts for new-user onboarding.
 
 ## Phase Index
 

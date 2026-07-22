@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Comprehensive E2E test suite for Company OS.
+Comprehensive E2E test suite for Shogun OS.
 Covers: Python syntax, shell scripts, unit tests, skills, recipes, templates, examples.
 Run: python3 scripts/verify-comprehensive.py
 """

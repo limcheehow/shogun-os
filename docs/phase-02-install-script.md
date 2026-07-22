@@ -6,7 +6,7 @@
 
 ## Goal
 
-Create a comprehensive `install.sh` that deploys all Company OS assets into `~/.hermes/` with safety checks, dry-run mode, and profile-specific installs.
+Create a comprehensive `install.sh` that deploys all Shogun OS assets into `~/.hermes/` with safety checks, dry-run mode, and profile-specific installs.
 
 ## Script: `scripts/install.sh`
 

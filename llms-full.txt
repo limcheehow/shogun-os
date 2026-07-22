@@ -1,10 +1,10 @@
-# Company OS — Full Context
+# Shogun OS — Full Context
 
-> Company OS is a reference architecture for running an entire organization through
+> Shogun OS is a reference architecture for running an entire organization through
 > Hermes Agent. Each department gets a dedicated AI operator with role-specific
 > tools, memory, and autonomy. Built on Hermes Agent + GBrain.
 
-This file concatenates core Company OS documentation for single-fetch ingestion.
+This file concatenates core Shogun OS documentation for single-fetch ingestion.
 For the link-only index, see `llms.txt`. Source of truth: https://github.com/limcheehow/company-os.
 
 
@@ -13,9 +13,9 @@ For the link-only index, see `llms.txt`. Source of truth: https://github.com/lim
 
 Source: https://raw.githubusercontent.com/limcheehow/company-os/main/AGENTS.md
 
-# Agents working on Company OS
+# Agents working on Shogun OS
 
-This is your install + operating protocol. Start here if you're an AI agent tasked with deploying or operating Company OS.
+This is your install + operating protocol. Start here if you're an AI agent tasked with deploying or operating Shogun OS.
 
 ## Read this order
 
@@ -26,9 +26,9 @@ This is your install + operating protocol. Start here if you're an AI agent task
 5. `./INSTALL_FOR_AGENTS.md` — full 8-phase install protocol
 6. `./recipes/` — integration patterns (google-dwd, department-scrum, etc.)
 
-## What Company OS is
+## What Shogun OS is
 
-Company OS is NOT a single piece of software. It is a **reference architecture** with provisioning tooling. It deploys 10 independent Hermes Agent profiles, each connected to its own gbrain source and a dedicated Slack bot. The three layers:
+Shogun OS is NOT a single piece of software. It is a **reference architecture** with provisioning tooling. It deploys 10 independent Hermes Agent profiles, each connected to its own gbrain source and a dedicated Slack bot. The three layers:
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
@@ -154,9 +154,9 @@ For full verification (includes MCP connectivity tests):
 
 Source: https://raw.githubusercontent.com/limcheehow/company-os/main/INSTALL_FOR_AGENTS.md
 
-# Company OS — Install Protocol for AI Agents
+# Shogun OS — Install Protocol for AI Agents
 
-> **An AI agent should be able to read this file and deploy Company OS on a fresh Hermes install without human intervention, except where API keys or Slack tokens must be provided.**
+> **An AI agent should be able to read this file and deploy Shogun OS on a fresh Hermes install without human intervention, except where API keys or Slack tokens must be provided.**
 
 ## Prerequisites
 
@@ -205,7 +205,7 @@ Show the summary to the user.
 
 ## Phase 2: Ask for API Keys
 
-Company OS needs these secrets. Collect them from the user before proceeding:
+Shogun OS needs these secrets. Collect them from the user before proceeding:
 
 | Key | Where to get it |
 |-----|----------------|
@@ -452,7 +452,7 @@ Source: https://raw.githubusercontent.com/limcheehow/company-os/main/ARCHITECTUR
 
 ## System Design
 
-Company OS runs on three layers:
+Shogun OS runs on three layers:
 
 ### Layer 1: Hermes Agent Profiles
 
@@ -1307,7 +1307,7 @@ Source: https://raw.githubusercontent.com/limcheehow/company-os/main/SECURITY.md
 
 ## Threat Model
 
-Company OS is designed for an organization where multiple department agents share the same infrastructure but must not access each other's data. The primary threat is **cross-department data leakage** through shared infrastructure.
+Shogun OS is designed for an organization where multiple department agents share the same infrastructure but must not access each other's data. The primary threat is **cross-department data leakage** through shared infrastructure.
 
 ## Trust Boundaries
 
@@ -1376,7 +1376,7 @@ Federated read is **read-only** from `shared/`. Profiles cannot accidentally wri
 
 ### Reporting a Vulnerability
 
-If you find a security issue in Company OS, please open a GitHub issue with the `security` label. Do NOT disclose via public channels.
+If you find a security issue in Shogun OS, please open a GitHub issue with the `security` label. Do NOT disclose via public channels.
 
 ## Security Checklist
 

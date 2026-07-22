@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Company OS — Cron Backup
+Shogun OS — Cron Backup
 ────────────────────────
 Exports all cron jobs from ~/.hermes/cron/jobs.json to a portable JSON file
 that can be restored on a fresh Hermes install.
@@ -50,7 +50,7 @@ def color(text, code):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Company OS — Cron Backup",
+        description="Shogun OS — Cron Backup",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )

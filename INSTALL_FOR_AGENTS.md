@@ -1,6 +1,6 @@
-# Company OS — Install Protocol for AI Agents
+# Shogun OS — Install Protocol for AI Agents
 
-> **An AI agent should be able to read this file and deploy Company OS on a fresh Hermes install without human intervention, except where API keys or Slack tokens must be provided.**
+> **An AI agent should be able to read this file and deploy Shogun OS on a fresh Hermes install without human intervention, except where API keys or Slack tokens must be provided.**
 
 ## Prerequisites
 
@@ -49,7 +49,7 @@ Show the summary to the user.
 
 ## Phase 2: Ask for API Keys
 
-Company OS needs these secrets. Collect them from the user before proceeding:
+Shogun OS needs these secrets. Collect them from the user before proceeding:
 
 | Key | Where to get it |
 |-----|----------------|

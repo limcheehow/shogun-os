@@ -97,7 +97,7 @@ Legacy rich text format (superseded by CardKit in most cases).
 }
 ```
 
-## CardKit Templates for Company OS
+## CardKit Templates for Shogun OS
 
 ### Scrum Report Card
 

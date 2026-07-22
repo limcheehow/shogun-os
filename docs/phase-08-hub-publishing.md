@@ -6,7 +6,7 @@
 
 ## Goal
 
-Make Company OS skills discoverable and installable via the Hermes Agent skill hub system.
+Make Shogun OS skills discoverable and installable via the Hermes Agent skill hub system.
 
 ## What Was Done
 
@@ -53,4 +53,4 @@ Skills install to `~/.hermes/skills/` and become available as slash commands.
 
 ## Future
 
-If Company OS grows additional skills (task-management, profile-enrichment, etc.), they should be added to the `skills/` directory with proper SKILL.md frontmatter — no other hub configuration is needed. The `HUB.md` should be updated to list new skills.
+If Shogun OS grows additional skills (task-management, profile-enrichment, etc.), they should be added to the `skills/` directory with proper SKILL.md frontmatter — no other hub configuration is needed. The `HUB.md` should be updated to list new skills.

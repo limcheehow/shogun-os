@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Company OS — E2E Test Suite
+Shogun OS — E2E Test Suite
 ─────────────────────────────
 Tests provider abstractions (comm, time tracking) using mock providers.
 Does NOT require real API keys — all providers are simulated.
@@ -464,7 +464,7 @@ def test_tt_bridge_current_status():
 # ═══════════════════════════════════════════════════════════════════════
 
 def run_all():
-    parser = argparse.ArgumentParser(description="Company OS — E2E Test Suite")
+    parser = argparse.ArgumentParser(description="Shogun OS — E2E Test Suite")
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 

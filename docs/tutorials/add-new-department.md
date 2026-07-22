@@ -1,6 +1,6 @@
 # How to Add a New Department Agent
 
-> **Extend Company OS with a new department beyond the 10 default profiles.**
+> **Extend Shogun OS with a new department beyond the 10 default profiles.**
 
 This tutorial walks through adding, say, a **Legal department** agent. The same steps work for any new department — R&D, Facilities, Security, or a custom team.
 
@@ -39,7 +39,7 @@ mkdir -p ~/brain/legal/policies
 mkdir -p ~/brain/legal/cases
 ```
 
-## Step 2: Create the Profile Type in Company OS
+## Step 2: Create the Profile Type in Shogun OS
 
 Add a new entry to `scripts/generate-profile.py`'s `PROFILE_META`:
 
@@ -168,7 +168,7 @@ hermes -p legal-manager --exec "mcp_gbrain_whoami"
 
 ## Step 6: Update Documentation
 
-To make the new department official in the Company OS repo:
+To make the new department official in the Shogun OS repo:
 
 1. Add to `PROFILE_CATALOG.md` — department entry with persona, source, skills, scrum
 2. Add to `CRON_INVENTORY.md` — any cron jobs specific to this department

@@ -1,10 +1,10 @@
-# Company OS
+# Shogun OS
 
 > **Every department gets its own AI agent with a Samurai persona, its own gbrain source, and shared infrastructure. One Slack bot per profile. One unified task system. One brain.**
 
-Company OS is a reference architecture for running an entire organization through AI agents. Built on [Hermes Agent](https://hermes-agent.nousresearch.com) + [GBrain](https://github.com/garrytan/gbrain), it gives each department a dedicated AI operator with role-specific tools, memory, and autonomy — isolated from every other department by design.
+Shogun OS is a reference architecture for running an entire organization through AI agents. Built on [Hermes Agent](https://hermes-agent.nousresearch.com) + [GBrain](https://github.com/garrytan/gbrain), it gives each department a dedicated AI operator with role-specific tools, memory, and autonomy — isolated from every other department by design.
 
-I built this for my own company, where I was spending too much time on ops, reporting, and keeping context across engineering, product, sales, and HR. Each department now has a 24/7 agent that knows its domain, runs its scrum, flags its risks, and enriches its knowledge base while I sleep. This repo is that architecture, generalized and packaged so any company can deploy it.
+Choose your **industry vertical** during setup: **General** (services, consulting, software) or **Manufacturing** (factory, production, OEM). Shared profiles deploy regardless of industry; department-specific profiles activate based on your selection.
 
 > **~30 minutes to a working multi-agent setup.** Clone the repo, run the installer, wire Slack bots. Your agents handle the rest.
 
@@ -12,7 +12,7 @@ I built this for my own company, where I was spending too much time on ops, repo
 
 ## Prerequisites
 
-Before deploying Company OS, you need two core tools installed on your server (Linux or WSL2):
+Before deploying Shogun OS, you need two core tools installed on your server (Linux or WSL2):
 
 ### 1. Hermes Agent
 
@@ -72,7 +72,7 @@ Say you're the CEO. You want to know how things are going across the company. He
 
 **Most project trackers give you a dashboard to navigate and interpret yourself.** You open Jira, find the project board, scan through cards, switch to Slack for context, check the support ticket system — it's your brain doing the synthesis across 5 tools.
 
-**Company OS gives you a synthesized answer across departments:**
+**Shogun OS gives you a synthesized answer across departments:**
 
 ```
 IOI Project — Gorobei (Projects)
@@ -97,11 +97,24 @@ Budget — Koku (Finance)
 
 Each sentence is a claim written by the department agent, verified against its gbrain source, and cross-referenced with the shared staff directory. You get the answer, not the dashboard.
 
+## Agent Roster — Shared vs Industry-Specific
+
+Shogun OS profiles are organized by **industry vertical**. Every company gets shared profiles, then picks an industry for department-specific agents.
+
+| Category | Profiles | Details |
+|----------|----------|---------|
+| **Shared** (every company) | Jinzai, Koku, Kura, Kizuna, Haiku, Kata, Boei, Takumi, Benkei | HR, Finance, Procurement, CRM, Marketing, Compliance, Support, Engineering, Executive |
+| **General** (services/software) | Gorobei, Shi | Project management, Product management → [`profiles-general.md`](profiles-general.md) |
+| **Manufacturing** (factory/OEM) | Kojo, Kensa, Shuri, Soko, Anzen | Production, Quality, Maintenance, Warehouse, HSE → [`profiles-manufacturing.md`](profiles-manufacturing.md) |
+
+> **Deploy:** `./install.sh --deploy all --industry manufacturing` — creates 13 profiles total.
+> **Deploy:** `./install.sh --deploy all --industry general` — creates 10 profiles total.
+
 ## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                    Company OS Architecture                    │
+│                    Shogun OS Architecture                    │
 ├──────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐     ┌──────────┐   │
@@ -160,7 +173,7 @@ which hermes                    # Hermes Agent installed
 which gbrain                    # GBrain installed (v0.42.x+)
 
 # 2. Clone this repo
-git clone https://github.com/limcheehow/company-os.git
+git clone https://github.com/limcheehow/shogun-os.git
 cd company-os
 
 # 3. Install skills, scripts, and templates
@@ -184,10 +197,10 @@ If you have an AI agent running (Hermes, OpenClaw, Codex, Claude Code), paste th
 
 ```
 Retrieve and follow the instructions at:
-https://raw.githubusercontent.com/limcheehow/company-os/main/INSTALL_FOR_AGENTS.md
+https://raw.githubusercontent.com/limcheehow/shogun-os/main/INSTALL_FOR_AGENTS.md
 ```
 
-The agent installs Company OS, creates profiles, sets up gbrain sources, configures Slack bots, wires scrum crons, and verifies the install end-to-end. ~30 minutes. You answer questions about Slack tokens and channel IDs.
+The agent installs Shogun OS, creates profiles, sets up gbrain sources, configures Slack bots, wires scrum crons, and verifies the install end-to-end. ~30 minutes. You answer questions about Slack tokens and channel IDs.
 
 ## Contents
 
@@ -261,7 +274,7 @@ Each runs as an isolated Hermes Agent profile with:
 
 Shipped in this repo, installable via Hermes skill tap:
 ```bash
-hermes skills tap add limcheehow/company-os
+hermes skills tap add limcheehow/shogun-os
 hermes skills install company-os/company-workflow
 ```
 

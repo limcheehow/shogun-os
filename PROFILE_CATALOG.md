@@ -1,6 +1,6 @@
 # Profile Catalog
 
-Company OS profiles are organized by **industry vertical**. All companies get the **shared profiles** (HR, Finance, CRM, etc.), then pick an industry for department-specific agents.
+Shogun OS profiles are organized by **industry vertical**. All companies get the **shared profiles** (HR, Finance, CRM, etc.), then pick an industry for department-specific agents.
 
 ---
 

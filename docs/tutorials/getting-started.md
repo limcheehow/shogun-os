@@ -1,4 +1,4 @@
-# Getting Started with Company OS
+# Getting Started with Shogun OS
 
 > **From zero to your first working department agent in about 30 minutes.**
 
@@ -33,7 +33,7 @@ which hermes && which gbrain
 
 **Expected output:** Both commands return version numbers. If either fails, resolve before proceeding.
 
-## Step 2: Clone Company OS
+## Step 2: Clone Shogun OS
 
 ```bash
 git clone https://github.com/limcheehow/company-os.git

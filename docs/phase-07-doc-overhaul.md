@@ -6,7 +6,7 @@
 
 ## Goal
 
-Establish a structured documentation directory at `/docs/` that records the phased development history of Company OS, and update root-level docs to cross-reference it.
+Establish a structured documentation directory at `/docs/` that records the phased development history of Shogun OS, and update root-level docs to cross-reference it.
 
 ## What Was Created
 

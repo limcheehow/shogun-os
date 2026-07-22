@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-E2E test suite for Company OS v3.1.0 — skill sync verification.
+E2E test suite for Shogun OS v3.1.0 — skill sync verification.
 
 Tests that the synced/merged skills from the live installation are:
 1. Present and non-trivial (not empty/stub)

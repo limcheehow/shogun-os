@@ -1,6 +1,6 @@
 # Manufacturing Vertical — Implementation Plan
 
-> **Goal:** Reorganize Company OS into shared + industry vertical architecture, then build the manufacturing vertical with 5 new profiles, 10 new skills, and ERP/MES connectors.
+> **Goal:** Reorganize Shogun OS into shared + industry vertical architecture, then build the manufacturing vertical with 5 new profiles, 10 new skills, and ERP/MES connectors.
 
 **Architecture:** `shared/` profiles (every company needs them) + `industries/{general,manufacturing,...}/` (pick one or more). The installer prompts for industry type and deploys the right set.
 

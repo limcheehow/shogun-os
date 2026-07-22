@@ -6,7 +6,7 @@
 
 ## Goal
 
-Create a comprehensive verification script that validates all Company OS assets are correctly installed and reports any issues with optional auto-fix.
+Create a comprehensive verification script that validates all Shogun OS assets are correctly installed and reports any issues with optional auto-fix.
 
 ## Script: `scripts/verify-install.sh`
 

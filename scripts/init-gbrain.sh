@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ──────────────────────────────────────────────────────────────────────────
-# Company OS — GBrain Initialization Script
+# Shogun OS — GBrain Initialization Script
 # ──────────────────────────────────────────────────────────────────────────
 # Initializes gbrain and creates all 10 department sources.
 # Uses the latest stable gbrain CLI (v0.42.x+ recommended).
@@ -36,7 +36,7 @@ err()   { echo -e "  ${RED}❌${NC} $1"; }
 
 usage() {
   cat <<EOF
-Company OS — GBrain Initialization Script v${VERSION}
+Shogun OS — GBrain Initialization Script v${VERSION}
 
 Initializes gbrain and creates all department sources.
 
@@ -77,7 +77,7 @@ done
 
 echo ""
 echo -e "${CYAN}══════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}  Company OS — GBrain Init v${VERSION}${NC}"
+echo -e "${CYAN}  Shogun OS — GBrain Init v${VERSION}${NC}"
 [[ "$DRY_RUN" == true ]] && echo -e "${YELLOW}  ⚡ DRY RUN — no changes will be made${NC}"
 echo -e "${CYAN}══════════════════════════════════════════════════════${NC}"
 echo ""

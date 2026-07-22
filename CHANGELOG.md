@@ -71,7 +71,7 @@ Development & operations (7, generalized from production):
 
 ### Deployment Readiness Update
 
-Comprehensive audit and fix pass to make Company OS deployable to a fresh Hermes copy with zero errors. Full analysis at `docs/deployment-readiness-review.md`.
+Comprehensive audit and fix pass to make Shogun OS deployable to a fresh Hermes copy with zero errors. Full analysis at `docs/deployment-readiness-review.md`.
 
 #### Fixed: Deployment Blockers
 
@@ -126,7 +126,7 @@ Comprehensive audit and fix pass to make Company OS deployable to a fresh Hermes
 
 ### Added: Phases 4–8 (Profile Generator, Cron Wirer, Verification, Docs, Hub)
 
-Complete Company OS tooling and documentation suite:
+Complete Shogun OS tooling and documentation suite:
 
 #### New Scripts
 
