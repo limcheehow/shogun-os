@@ -58,7 +58,7 @@ Federated read is **read-only** from `shared/`. Profiles cannot accidentally wri
 
 ### During Install
 
-1. Clone the repo — verify via HTTPS from `github.com/limuser/company-os`
+1. Clone the repo — verify via HTTPS from `github.com/limcheehow/company-os`
 2. Inspect any script before running with `sudo` — company-os scripts use `sudo` only for systemd service installation
 3. Do NOT run as root — use the user's primary account
 

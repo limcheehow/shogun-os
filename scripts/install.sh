@@ -9,7 +9,9 @@
 #   ./install.sh --dry-run          # Preview only
 #   ./install.sh --force            # Overwrite without backup prompt
 #   ./install.sh --profile hr       # Install only HR-relevant assets
-#   ./install.sh --deploy all       # Install + generate all 10 department profiles
+#   ./install.sh --industry general   # Deploy general industry profiles
+#   ./install.sh --industry manufacturing  # Deploy manufacturing profiles
+#   ./install.sh --deploy all       # Install + generate all department profiles (prompts for industry)
 #   ./install.sh --deploy-profile hr-manager --type hr  # Deploy one profile
 #   ./install.sh --systemd          # Install systemd template units
 #   ./install.sh --help             # Show help
@@ -27,8 +29,19 @@ DRY_RUN=false
 FORCE=false
 PROFILE=""
 DEPLOY=""
+INDUSTRY=""
 INSTALL_SYSTEMD=false
 BACKUP_DIR=""
+
+# ── Industry profiles ─────────────────────────────────────────────────
+SHARED_PROFILES="coding-agent hr-manager finance-manager procurement-manager crm-manager marketing-manager compliance-manager customer-support"
+SHARED_TYPES="coding hr finance procurement crm marketing compliance support"
+
+GENERAL_EXTRA="project-manager product-manager"
+GENERAL_EXTRA_TYPES="project-manager product"
+
+MANUFACTURING_EXTRA="production-manager quality-manager maintenance-manager warehouse-manager hse-manager"
+MANUFACTURING_EXTRA_TYPES="production quality maintenance warehouse hse"
 
 # ── Color helpers ──────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -55,7 +68,9 @@ USAGE:
   ./install.sh --dry-run          Preview without making changes
   ./install.sh --force            Overwrite existing files without backup prompt
   ./install.sh --profile <name>   Install assets relevant to one profile
-  ./install.sh --deploy all       Full deploy: install + generate all 10 profiles
+  ./install.sh --deploy all       Full deploy: install + generate all profiles (prompts for industry)
+  ./install.sh --deploy all --industry general    Deploy general industry profiles
+  ./install.sh --deploy all --industry manufacturing  Deploy manufacturing profiles
   ./install.sh --deploy-profile <name> --type <type>  Deploy a single profile
   ./install.sh --systemd          Install systemd template units for gateway management
   ./install.sh --help             This message
@@ -64,8 +79,9 @@ EXAMPLES:
   ./install.sh
   ./install.sh --dry-run --profile project-manager
   ./install.sh --force
-  ./install.sh --deploy all
+  ./install.sh --deploy all --industry manufacturing
   ./install.sh --deploy-profile hr-manager --type hr
+  ./install.sh --deploy-profile production-manager --type production  # Manufacturing
   ./install.sh --systemd
 
 WHAT GETS INSTALLED:
@@ -98,6 +114,7 @@ while [[ $# -gt 0 ]]; do
     --profile)        PROFILE="$2"; shift 2 ;;
     --deploy)         DEPLOY="all"; shift ;;
     --deploy-profile) DEPLOY="$2"; shift 2 ;;
+    --industry)       INDUSTRY="$2"; shift 2 ;;
     --systemd)        INSTALL_SYSTEMD=true; shift ;;
     --help|-h)        usage ;;
     *) err "Unknown option: $1"; echo "  Use --help for usage"; exit 1 ;;
@@ -545,9 +562,30 @@ section_deploy() {
   fi
 
   if [[ "$deploy_target" == "all" ]]; then
-    # Deploy all 10 department profiles
-    local profiles="coding-agent hr-manager finance-manager project-manager procurement-manager product-manager crm-manager marketing-manager compliance-manager customer-support"
-    local types="coding hr finance project-manager procurement product crm marketing compliance support"
+    # Ask about industry
+    if [[ -z "$INDUSTRY" ]]; then
+      echo ""
+      info "Select your industry:"
+      echo "    1) General (services, consulting, software)"
+      echo "    2) Manufacturing (factory, production, OEM)"
+      read -p "    Choice [1]: " INDUSTRY
+      INDUSTRY=${INDUSTRY:-1}
+    fi
+
+    # Deploy shared profiles (every industry)
+    local profiles="$SHARED_PROFILES"
+    local types="$SHARED_TYPES"
+
+    # Add industry-specific profiles
+    if [[ "$INDUSTRY" == "2" ]]; then
+      profiles="$profiles $MANUFACTURING_EXTRA"
+      types="$types $MANUFACTURING_EXTRA_TYPES"
+      info "Manufacturing profiles included: production, quality, maintenance, warehouse, HSE"
+    else
+      profiles="$profiles $GENERAL_EXTRA"
+      types="$types $GENERAL_EXTRA_TYPES"
+      info "General profiles included: project-manager, product-manager"
+    fi
 
     local i=0
     local p_arr=($profiles)

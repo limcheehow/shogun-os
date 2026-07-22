@@ -160,7 +160,7 @@ which hermes                    # Hermes Agent installed
 which gbrain                    # GBrain installed (v0.42.x+)
 
 # 2. Clone this repo
-git clone https://github.com/limuser/company-os.git
+git clone https://github.com/limcheehow/company-os.git
 cd company-os
 
 # 3. Install skills, scripts, and templates
@@ -184,7 +184,7 @@ If you have an AI agent running (Hermes, OpenClaw, Codex, Claude Code), paste th
 
 ```
 Retrieve and follow the instructions at:
-https://raw.githubusercontent.com/limuser/company-os/main/INSTALL_FOR_AGENTS.md
+https://raw.githubusercontent.com/limcheehow/company-os/main/INSTALL_FOR_AGENTS.md
 ```
 
 The agent installs Company OS, creates profiles, sets up gbrain sources, configures Slack bots, wires scrum crons, and verifies the install end-to-end. ~30 minutes. You answer questions about Slack tokens and channel IDs.
@@ -261,7 +261,7 @@ Each runs as an isolated Hermes Agent profile with:
 
 Shipped in this repo, installable via Hermes skill tap:
 ```bash
-hermes skills tap add limuser/company-os
+hermes skills tap add limcheehow/company-os
 hermes skills install company-os/company-workflow
 ```
 

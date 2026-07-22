@@ -16,7 +16,7 @@ This document captures a comprehensive audit of the `company-os` repository (v2.
 
 The review compared three sources:
 
-1. **`company-os/` (v2.2.0)** — the blueprint repo at `github.com/limuser/company-os`
+1. **`company-os/` (v2.2.0)** — the blueprint repo at `github.com/limcheehow/company-os`
 2. **`your-company-hermes/`** — the predecessor local directory with legacy recipes and profile templates
 3. **Running Hermes instance** — 22 live profiles with real SOUL.md, cron jobs, skills, and configuration at `~/.hermes/`
 

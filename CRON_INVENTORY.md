@@ -45,6 +45,19 @@ Cron templates at `skills/department-scrum/templates/` — copy and fill placeho
 | hr-manager | Jibble Attendance | Weekdays 9:30AM |
 | hr-manager | Jibble Timesheet | Weekly Mon 10AM |
 
+## Manufacturing Industry Crons
+
+These profiles deploy only when `--industry manufacturing` is selected:
+
+| Profile | Cron | Schedule | Type |
+|---------|------|----------|------|
+| production-manager (Kojo) | Daily Production Schedule | `0 6 * * *` | deterministic (no_agent) |
+| production-manager (Kojo) | OEE Tracking | `0 * * * *` | deterministic (no_agent) |
+| quality-manager (Kensa) | Inspection Dashboard | `0 7 * * *` | deterministic (no_agent) |
+| maintenance-manager (Shuri) | PM Schedule | `0 6 * * *` | deterministic (no_agent) |
+| warehouse-manager (Soko) | Inventory Status | `0 6 * * *` | deterministic (no_agent) |
+| hse-manager (Anzen) | Safety Walk Schedule | `0 8 * * 1` | deterministic (no_agent) |
+
 ## Shared Script Crons (from `scripts/`)
 
 These scripts are shared across profiles and run via the default profile's cron infrastructure:

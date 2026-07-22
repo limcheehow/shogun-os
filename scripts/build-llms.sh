@@ -11,7 +11,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUTPUT="$REPO_ROOT/llms-full.txt"
-REPO_BASE="${LLMS_REPO_BASE:-https://raw.githubusercontent.com/limuser/company-os/main}"
+REPO_BASE="${LLMS_REPO_BASE:-https://raw.githubusercontent.com/limcheehow/company-os/main}"
 
 # ── Files to inline (in order) ──
 CORE_DOCS=(
@@ -32,7 +32,7 @@ cat > "$OUTPUT" << HEADER
 > tools, memory, and autonomy. Built on Hermes Agent + GBrain.
 
 This file concatenates core Company OS documentation for single-fetch ingestion.
-For the link-only index, see \`llms.txt\`. Source of truth: https://github.com/limuser/company-os.
+For the link-only index, see \`llms.txt\`. Source of truth: https://github.com/limcheehow/company-os.
 
 HEADER
 

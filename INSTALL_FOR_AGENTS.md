@@ -31,7 +31,7 @@ bun install -g github:garrytan/gbrain
 ## Phase 1: Clone and Install
 
 ```bash
-git clone https://github.com/limuser/company-os.git
+git clone https://github.com/limcheehow/company-os.git
 cd company-os
 ./scripts/install.sh
 ```
