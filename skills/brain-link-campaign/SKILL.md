@@ -2,7 +2,7 @@
 name: brain-link-campaign
 description: "Reduce orphan pages, increase link coverage, and improve brain score by creating gbrain graph links and [[wikilinks]] in markdown content."
 version: 1.0.0
-author: Your Company
+author: user
 tags: [gbrain, links, orphans, enrichment]
 ---
 

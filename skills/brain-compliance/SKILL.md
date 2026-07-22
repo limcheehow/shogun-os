@@ -3,7 +3,7 @@ name: brain-compliance
 description: >-
   Standards and validation for Gbrain-compliant brain pages.
   Mandatory to load whenever writing, editing, or creating brain files.
-version: 1.0.0
+version: 1.1.0
 author: user
 tags: [brain, gbrain, compliance, standards]
 triggers:
@@ -15,10 +15,11 @@ triggers:
   - "save to brain"
   - "enrichment"
   - "brain compliance"
+  - "validate brain"
+  - "check compliance"
 ---
 
 ## Your Company Conventions
-
 
 | Convention | Your Company | Gbrain Standard |
 |-----------|--------|-----------------|
@@ -31,34 +32,39 @@ triggers:
 
 The validator accepts BOTH `type:` and `tags:` as valid classifiers.
 
+## 14 Canonical Types
+
+`company`, `person`, `project`, `project-scrum`, `deal`, `meeting`, `product-scrum`, `note`, `email`, `concept`, `calendar-event`, `hr`, `ticket`, `status-report`
+
+---
 
 ## 1. Per-Entity Type Frontmatter Standards
 
-
-### persons/ (`persons/<slug>.md`)
+### people/ (`people/<slug>.md`)
 
 ```yaml
 ---
+type: person                    # OR tags: [person, contact]
 title: "Full Name"
-tags: [person, contact]
 first_seen: YYYY-MM-DD
 source: meeting|email|nrf|linkedin|cold-call|referral
 company: Company Name
 role: Job Title
 email: person@company.com
-phone: "+60123456789"          # optional
+phone: "+601****6789"          # optional
 linkedin: https://linkedin.com/in/...  # optional
 ---
 ```
 
 - `title:` must match the first `# Heading` in the file
 - Slug must be lowercase, hyphenated: `eddie-goh.md`, not `Eddie Goh.md`
-- Wikilinks to this person always use `[[persons/eddie-goh|Eddie Goh]]`
+- Wikilinks to this person always use `[[people/eddie-goh|Eddie Goh]]`
 
 ### companies/ (`companies/<slug>.md`)
 
 ```yaml
 ---
+type: company                   # OR tags: [company, customer]
 title: "Company Name"
 tags: [company, customer]
 industry: Retail / Technology / ...
@@ -75,10 +81,11 @@ type: customer|vendor|partner|competitor|potential-customer  # optional
 
 ```yaml
 ---
+type: deal                      # OR tags: [deal]
 title: "Deal Name"
 tags: [deal]
 stage: Lead|Qualified|Proposal|Negotiation|Closed Won|Closed Lost
-owner: Anwar|Sarah|CH
+owner: Sales Rep Name
 customer: Customer Company Name
 partner: Partner Name
 industry: Retail / Technology / ...
@@ -134,28 +141,94 @@ tags: [wiki, <section>]
 
 ## 2. Filename Rules (ALL entity types)
 
-
 | Rule | ✅ Correct | ❌ Wrong |
 |------|-----------|---------|
 | Lowercase | `eddie-goh.md` | `Eddie Goh.md` |
 | Hyphens, no spaces | `alvin-ong.md` | `Alvin Ong.md` |
 | No special chars | `1-utama-shopping-centre.md` | `1 Utama Shopping Centre.md` |
-| Folder prefix in wikilinks | `[[persons/eddie-goh\|Eddie]]` | `[[Eddie]]` |
+| Folder prefix in wikilinks | `[[people/eddie-goh\|Eddie]]` | `[[Eddie]]` |
 
 ---
 
 ## 3. Wikilink Rules
 
-
 - **Always** use `[[folder/slug|Display Name]]` format
+- Our injected wikilinks use `[[companies/foo]]` (no display name) — valid
 - **Never** use bare display names like `[[Eddie]]` — they don't resolve
 - Existing bare-name links (like `[[Kossan]]`) should be fixed to `[[companies/kossan|Kossan]]`
 - Cross-link related entities: person to company, company to deals, deal to contacts
 
+### Orphan Prevention (Mandatory for Scripts)
+
+Every brain-writing script MUST ensure new pages have at least one inbound graph link. Without this, pages become orphans and drag the brain score down.
+
+**Standard implementation — use the shared helper:**
+
+```python
+from brain_compliance_helper import write_brain_page
+
+result = write_brain_page(
+    slug="deals/acme-foo",
+    title="Acme Foo Deal",
+    page_type="deal",
+    body="Deal content...",
+    tags=["test"],
+    extra_fields={"stage": "Lead", "customer": "Acme Corp", "created": "2026-07-08"},
+    category="deal",                      # auto-links to deals-index/all
+    entity_links=[                         # cross-links to related entities
+        ("companies/acme-corp", "customer_of"),
+        ("people/john-doe", "attended"),
+    ],
+    use_gbrain_put=True,                   # sync to DB immediately
+)
+# result = {"slug", "filepath", "valid", "links_created", "warnings"}
+```
+
+The helper handles:
+1. ✅ YAML frontmatter (title, type, tags — auto-adds type as tag)
+2. ✅ # H1 heading matching frontmatter title
+3. ✅ Slug validation (lowercase, hyphens, no underscores)
+4. ✅ Graph link to category index hub (orphan prevention)
+5. ✅ Entity cross-linking (bidirectional graph links)
+6. ✅ Post-write validation via brain-compliance validator
+
+**For shell scripts:**
+```bash
+# Write page, then link to index
+gbrain put deals/acme-foo --content "$(cat file.md)"
+python3 ~/.hermes/scripts/brain_compliance_helper.py link deals/acme-foo deal
+```
+
+**For agent skills (MCP):**
+```python
+mcp_gbrain_put_page(slug, content)
+mcp_gbrain_add_link(from="deals-index/all", to=slug,
+                     link_type="mentions", link_source="script-auto")
+```
+
+**Category → Index mapping:**
+
+| Category | Index hub slug |
+|----------|---------------|
+| deal | deals-index/all |
+| email | email-index/YYYY-MM-w1 (current half-month) |
+| meeting | meetings-index/all |
+| scrum | scrum-index/all |
+| person | people-index/batch-NN (current batch) |
+| company | companies-index/batch-NN |
+| ticket | projects/support_tickets/all-tickets |
+| calendar | cal-index/YYYY-MM (current month) |
+| project | projects/active_projects/all-pages |
+| note | notes-index/all |
+| hr | hr-index/all-hr |
+| concept | concepts-index/all |
+| idea | ideas-index/all |
+
+**Validator check:** The pre-commit hook validates frontmatter and wikilink format, but does NOT check for orphan status. Run `mcp_gbrain_find_orphans()` periodically to catch pages that slipped through.
+
 ---
 
 ## 4. Post-Write Validation
-
 
 **Two approaches — use gbrain MCP when possible:**
 
@@ -184,85 +257,29 @@ For existing files or when gbrain is unavailable:
 
 ```bash
 # Single file mode
-python3 ~/.hermes/skills/productivity/brain-folder-organization/scripts/validate-brain-page.py ~/brain/persons/eddie.md
+python3 ~/.hermes/skills/brain-compliance/scripts/validate-brain-page.py ~/brain/persons/eddie.md
 
 # Batch scan a whole folder
-python3 ~/.hermes/skills/productivity/brain-folder-organization/scripts/validate-brain-page.py ~/brain/persons/ --batch
+python3 ~/.hermes/skills/brain-compliance/scripts/validate-brain-page.py ~/brain/persons/ --batch
 
 # JSON output for programmatic reporting
-python3 ~/.hermes/skills/productivity/brain-folder-organization/scripts/validate-brain-page.py ~/brain/ --batch --json
+python3 ~/.hermes/skills/brain-compliance/scripts/validate-brain-page.py ~/brain/ --batch --json
 ```
 
 If violations are reported, fix them before delivering the result to the user.
 
 **Validator checks performed:**
 1. **Frontmatter** — valid YAML, `title:` present, no unquoted `@` values
-2. **Tags** — correct `tags_must_contain` for the entity type (e.g. `person` for `persons/`)
+2. **Tags** — correct `tags_must_contain` for the entity type (e.g. `person` for `people/`)
 3. **Required fields** — all mandatory fields present per entity type
 4. **Slug** — lowercase, hyphenated format
 5. **Heading** — at least one `# level-1 heading` in the body
 6. **Wikilinks** — no bare display names (single-file mode only)
 7. **Title/heading match** — `title:` field matches first `# Heading`
 
-## Related Skills
-
-
-- `brain-folder-organization` — Folder conventions, cron-to-brain writing pattern, the compliance gate checklist
-- `brain-crosslinking` — **Reactive complement**: fixes broken wikilinks, missing titles, and orphan pages after they've been created. Run after compliance validation when fixing legacy files.
-- `liteparse` — PDF/document parsing for extracting entity data from attachments before writing brain pages
-
-## Reference Files
-
-
-- `references/cron-to-compliance-workflow.md` — End-to-end example of how cron jobs write brain pages and validate compliance
-- `brain-folder-organization` skill → `references/brain-page-validator-reference.md` — Full validator reference: all 6 checks, how to interpret each violation type, batch mode output format, per-folder required fields
-
-## Quick Reference Card
-
-
-| Entity | Folder | Required Fields | Slug Ex. |
-|--------|--------|----------------|----------|
-| Person | `persons/` | title, tags, first_seen, source, company, role | `john-doe.md` |
-| Company | `companies/` | title, tags, industry, source, first_seen, website | `acme-corp.md` |
-| Deal | `deals/` | title, tags, stage, owner, customer, partner, industry, amount, contact_name, contact_email, relationship, close_date, priority, mrr, created | `your-company-aeon.md` |
-| Daily | `daily/` | title, type, date, tags | `2026-06-21.md` |
-| Meeting | `meetings/` | title, type, date, source, source_id | `client-review.md` |
-| Wiki | `wiki/` | title | `overview.md` |
-
 ---
 
-## 6. Cron Jobs — Post-Write Requirement
-
-
-Every cron job that writes a brain page MUST include a "Validate Compliance" step after the write step. Use this pattern:
-
-```markdown
-### Final Step: Validate Compliance
-Run the compliance check using gbrain MCP tools (preferred) or the local validator:
-```bash
-# Preferred: gbrain-native validation
-mcp_gbrain_get_health
-mcp_gbrain_schema_lint(pack="active")
-
-# Alternative: if gbrain unavailable, run the validator
-python3 ~/.hermes/skills/brain-folder-organization/scripts/validate-brain-page.py ~/brain/path/to/file.md
-```
-If any violations are reported, fix them.
-```
-
----
-
-## Pitfalls
-
-
-- ❌ **Don't skip frontmatter** — every brain file needs at least `title:` and `tags:`
-- ❌ **Don't use bare wikilinks** — always `[[folder/slug|Display]]`
-- ❌ **Don't create files with uppercase or spaces in filenames**
-- ❌ **Don't skip the post-write validation** — run it every time
-- ❌ **Don't write person/company/deal files to wrong folders** — each type has a dedicated folder
-
-## 4. Enforcement Architecture (3 Layers)
-
+## 5. Enforcement Architecture (3 Layers)
 
 ```
 NEW BRAIN PAGE CREATED
@@ -295,7 +312,7 @@ NEW BRAIN PAGE CREATED
 
 ### Layer 1: Agent Gate
 
-5 brain-writing crons load `brain-compliance` skill + validate as final step:
+Brain-writing crons load `brain-compliance` skill + validate as final step:
 
 | Cron | Folder | Skills |
 |------|--------|--------|
@@ -324,19 +341,37 @@ Emergency bypass: `git commit --no-verify`
 ### Layer 3: Batch Audit
 
 ```bash
-python3 ~/.hermes/skills/gbrain/brain-compliance/scripts/validate-brain-page.py ~/brain --batch
+python3 ~/.hermes/skills/brain-compliance/scripts/validate-brain-page.py ~/brain --batch
 ```
 
 ---
 
-## 5. Compliance Baseline (2026-06-21)
+## 6. Cron Jobs — Post-Write Requirement
 
+Every cron job that writes a brain page MUST include a "Validate Compliance" step after the write step. Use this pattern:
 
-| Folder | Compliant | Issues |
-|--------|:---:|--------|
-| `people/` | 98.5% | Minor: missing title in ~100 pages |
-| `data/` | 99% | Clean |
-| `products/` | 82% | Task pages with SAM-IDs, minor format issues |
-| `companies/` | 0.1% | Legacy pages without `title:` field |
-| `deals/` | 0.3% | Title/heading mismatches in legacy deals |
-| **Overall** | **69%** | Mostly legacy slug/title issues |
+```markdown
+### Final Step: Validate Compliance
+Run the compliance check using gbrain MCP tools (preferred) or the local validator:
+```bash
+# Preferred: gbrain-native validation
+mcp_gbrain_get_health
+mcp_gbrain_schema_lint(pack="active")
+
+# Alternative: if gbrain unavailable, run the validator
+python3 ~/.hermes/skills/brain-compliance/scripts/validate-brain-page.py ~/brain/path/to/file.md
+```
+If any violations are reported, fix them.
+```
+
+---
+
+## Pitfalls
+
+- ❌ **Don't skip frontmatter** — every brain file needs at least `title:` and `tags:`
+- ❌ **Don't use bare wikilinks** — always `[[folder/slug|Display]]`
+- ❌ **Don't create files with uppercase or spaces in filenames**
+- ❌ **Don't skip the post-write validation** — run it every time
+- ❌ **Don't write person/company/deal files to wrong folders** — each type has a dedicated folder
+- ❌ **Don't skip orphan prevention** — new pages without inbound links drag the brain score down
+- ❌ **Don't use `link_source` values `markdown`, `frontmatter`, `mentions`, or `wikilink-resolved`** — these are reserved by gbrain and will be rejected

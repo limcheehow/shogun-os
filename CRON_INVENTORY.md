@@ -45,6 +45,21 @@ Cron templates at `skills/department-scrum/templates/` — copy and fill placeho
 | hr-manager | Jibble Attendance | Weekdays 9:30AM |
 | hr-manager | Jibble Timesheet | Weekly Mon 10AM |
 
+## Shared Script Crons (from `scripts/`)
+
+These scripts are shared across profiles and run via the default profile's cron infrastructure:
+
+| Script | Schedule | Type | Purpose |
+|--------|----------|------|---------|
+| **email-classify-cron-run.py** | `*/30 * * * *` | deterministic (no_agent) | Classify new email batches, tag categories, detect high-risk items |
+| **gmail-draft.py** | On-demand (CLI) | — | Create Gmail drafts via API (never sends) |
+| **support-email-poller.py** | `0 9-18 * * 1-5` | deterministic (no_agent) | Poll support mailbox, create/update tickets, detect customer replies |
+| **session-db-health-check.sh** | `0 7 * * *` | deterministic (no_agent) | Check Postgres/SQLite health + gateway processes |
+| **brain_compliance_helper.py** | On-demand (imported) | — | Shared module for orphan prevention + compliance enforcement |
+
+> **Note:** `email-classify-cron-run.py` replaces the legacy `classify-emails-batch.sh` and `classify-emails-batch-v2.sh` (archived in `scripts/.archived/`).
+> `gmail-draft.py` replaces the legacy `gmail-draft-batch.py` (archived in `scripts/.archived/`).
+
 ## Cron Count Summary
 
 | Profile | Deterministic (no_agent) | Agent (LLM) | Total |
