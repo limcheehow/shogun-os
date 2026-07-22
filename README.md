@@ -106,9 +106,11 @@ Shogun OS profiles are organized by **industry vertical**. Every company gets sh
 | **Shared** (every company) | Jinzai, Koku, Kura, Kizuna, Haiku, Kata, Boei, Takumi, Benkei | HR, Finance, Procurement, CRM, Marketing, Compliance, Support, Engineering, Executive |
 | **General** (services/software) | Gorobei, Shi | Project management, Product management → [`profiles-general.md`](profiles-general.md) |
 | **Manufacturing** (factory/OEM) | Kojo, Kensa, Shuri, Soko, Anzen | Production, Quality, Maintenance, Warehouse, HSE → [`profiles-manufacturing.md`](profiles-manufacturing.md) |
+| **Retail** (stores/e-commerce) | Tenpo, Shohin, Denshi, Kokyaku, Ryutsu, Hyoji | Stores, Merchandising, E-commerce, CRM-Loyalty, Supply Chain, VM → [`profiles-retail.md`](profiles-retail.md) |
 
 > **Deploy:** `./install.sh --deploy all --industry manufacturing` — creates 13 profiles total.
 > **Deploy:** `./install.sh --deploy all --industry general` — creates 10 profiles total.
+> **Deploy:** `./install.sh --deploy all --industry retail` — creates 14 profiles total.
 
 ## Architecture
 

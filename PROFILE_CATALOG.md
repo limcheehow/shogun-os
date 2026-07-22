@@ -114,6 +114,73 @@ These profiles handle factory floor operations, quality control, maintenance, wa
 
 ---
 
+## Retail Industry (Stores, E-commerce, Omnichannel)
+
+These profiles handle stores, merchandising, e-commerce, CRM/loyalty, supply chain, and visual merchandising.
+
+### Stores — Tenpo (店舗 — "Shop")
+
+| Field | Value |
+|-------|-------|
+| Persona | Tenpo — Store operations, daily sales, customer experience |
+| gbrain source | `stores/` |
+| Skills | `store-sales-dashboard`, `store-staff-scheduling`, `store-replenishment` |
+| Shared | `department-scrum`, `company-workflow`, `brain-compliance`, `slack-formatting` |
+| Scrum | ✅ 3-tier |
+| Extra Crons | Daily sales report (6AM), staff scheduling (Mon 8AM) |
+
+### Merchandising — Shohin (商品 — "Goods")
+
+| Field | Value |
+|-------|-------|
+| Persona | Shohin — Buying, assortment, vendor negotiation, pricing |
+| gbrain source | `merchandising/` |
+| Skills | `assortment-planning`, `vendor-negotiation`, `promo-planning` |
+| Shared | `company-workflow`, `brain-compliance`, `slack-formatting` |
+| Extra Crons | Slow-movers report (Mon 6AM), vendor contract expiry (Mon 9AM) |
+
+### E-commerce — Denshi (電子 — "Digital")
+
+| Field | Value |
+|-------|-------|
+| Persona | Denshi — Online store, Shopee/Lazada, listings, orders |
+| gbrain source | `ecommerce/` |
+| Skills | `ecommerce-listing`, `ecommerce-order-management`, `marketplace-analytics` |
+| Shared | `company-workflow`, `brain-compliance`, `slack-formatting` |
+| Extra Crons | New orders check (hourly 9-18), listing compliance (7AM) |
+
+### CRM / Loyalty — Kokyaku (顧客 — "Customer")
+
+| Field | Value |
+|-------|-------|
+| Persona | Kokyaku — Loyalty programs, customer segments, retention |
+| gbrain source | `crm-retail/` |
+| Skills | `loyalty-program`, `customer-segmentation` |
+| Shared | `company-workflow`, `brain-compliance`, `slack-formatting` |
+| Extra Crons | Points expiry review (daily 6AM) |
+
+### Supply Chain — Ryutsu (流通 — "Distribution")
+
+| Field | Value |
+|-------|-------|
+| Persona | Ryutsu — Warehousing, distribution, store replenishment |
+| gbrain source | `supplychain/` |
+| Skills | `warehouse-distribution`, `store-replenishment` |
+| Shared | `company-workflow`, `brain-compliance`, `slack-formatting` |
+| Extra Crons | Replenishment orders (daily 6AM) |
+
+### Visual Merchandising — Hyoji (表示 — "Display")
+
+| Field | Value |
+|-------|-------|
+| Persona | Hyoji — Store layouts, displays, planograms, signage |
+| gbrain source | `vm/` |
+| Skills | `planogram-compliance`, `promo-planning` |
+| Shared | `company-workflow`, `brain-compliance`, `slack-formatting` |
+| Extra Crons | Planogram compliance audit (Mon 7AM) |
+
+---
+
 ## Detail: Shared Profiles
 
 ### 1. HR — Jinzai (人材 — "Talent")

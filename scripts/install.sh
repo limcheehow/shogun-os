@@ -43,6 +43,9 @@ GENERAL_EXTRA_TYPES="project-manager product"
 MANUFACTURING_EXTRA="production-manager quality-manager maintenance-manager warehouse-manager hse-manager"
 MANUFACTURING_EXTRA_TYPES="production quality maintenance warehouse hse"
 
+RETAIL_EXTRA="stores-manager merchandising-manager ecommerce-manager crm-retail-manager supplychain-manager vm-manager"
+RETAIL_EXTRA_TYPES="stores merchandising ecommerce crm-retail supplychain vm"
+
 # ── Color helpers ──────────────────────────────────────────────────────
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -568,6 +571,7 @@ section_deploy() {
       info "Select your industry:"
       echo "    1) General (services, consulting, software)"
       echo "    2) Manufacturing (factory, production, OEM)"
+      echo "    3) Retail (stores, e-commerce, omnichannel)"
       read -p "    Choice [1]: " INDUSTRY
       INDUSTRY=${INDUSTRY:-1}
     fi
@@ -581,6 +585,10 @@ section_deploy() {
       profiles="$profiles $MANUFACTURING_EXTRA"
       types="$types $MANUFACTURING_EXTRA_TYPES"
       info "Manufacturing profiles included: production, quality, maintenance, warehouse, HSE"
+    elif [[ "$INDUSTRY" == "3" ]]; then
+      profiles="$profiles $RETAIL_EXTRA"
+      types="$types $RETAIL_EXTRA_TYPES"
+      info "Retail profiles included: stores, merchandising, e-commerce, CRM-retail, supply chain, VM"
     else
       profiles="$profiles $GENERAL_EXTRA"
       types="$types $GENERAL_EXTRA_TYPES"
