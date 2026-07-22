@@ -14,7 +14,7 @@ Sample query: `{"domain": "your-domain.com"}`
 Returns: full organization data by domain. Fast single-lookup.
 
 ### `people/match` — ✅ Works
-Sample query: `{"first_name": "Chee How", "last_name": "Lim", "organization_name": "Your Company"}`
+Sample query: `{"first_name": "Admin", "last_name": "Lim", "organization_name": "Your Company"}`
 Returns: matched person record with ID, name (Chee Lim), email (your-user@your-domain.com, verified), location (Subang Jaya, Selangor, Malaysia).
 **Use for:** Quick person lookup when you have name + company. Returns best match, not a list.
 **Note:** Title and LinkedIn URL may be null for people not extensively indexed in Apollo.
@@ -96,7 +96,7 @@ curl -s "https://api.apollo.io/api/v1/people/match" \
 
 | Person | Email | Status | Title/Headline | Employment History | LinkedIn |
 |--------|-------|--------|---------------|-------------------|----------|
-| Chee How Lim @ Your Company | your-user@your-domain.com | verified | ❌ null | ❌ sparse | ❌ null |
+| Admin Lim @ Your Company | your-user@your-domain.com | verified | ❌ null | ❌ sparse | ❌ null |
 | Patrick Sim @ Secret Recipe | ❌ null | unavailable | ✅ Group CEO at Secret Recipe | ✅ Full career: PwC→Deloitte→BDO→Secret Recipe (2013→CEO) | ❌ null |
 | Flora Chee @ H Space | flora@hspace.co | verified | ❌ null | ❌ sparse | ❌ null |
 

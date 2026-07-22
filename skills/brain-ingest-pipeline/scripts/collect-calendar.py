@@ -33,7 +33,7 @@ ALL_ACCOUNTS = [
 def short_name(email: str) -> str:
     name = email.split("@")[0]
     name_map = {
-        "user": "Chee How", "syazwan": "Syazwan", "fitri": "Fitri",
+        "user": "Admin", "syazwan": "Syazwan", "fitri": "Fitri",
         "ashraf": "Ashraf", "iskandar": "Iskandar", "liyana": "Liyana",
         "hana": "Hana", "sarah": "Sarah", "kunna": "Kunnasilan",
         "anwar": "Anwar",

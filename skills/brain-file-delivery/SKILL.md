@@ -55,7 +55,7 @@ Use the **3-step upload API** (files.upload is DEPRECATED). The Slack token live
 TOKEN=$(grep '^SLACK_BOT_TOKEN=' ~/.hermes/profiles/default/.env | head -1 | cut -d= -f2- | tr -d '"' | tr -d "'")
 ```
 
-The default Slack home channel for this profile is `U0XXXXXXX` (Chee How DM). Use the `channel_id` from the session context at the top of each turn.
+The default Slack home channel for this profile is `U0XXXXXXX` (Admin DM). Use the `channel_id` from the session context at the top of each turn.
 
 ### Step 1-3: Upload via Python (preferred — single script)
 
@@ -154,7 +154,7 @@ After every brain file write:
 
 Delivered to:
 • Telegram → attached below
-• Slack → uploaded to Chee How DM
+• Slack → uploaded to Admin DM
 
 MEDIA:/home/your-company/brain/people/alice-wong.md
 ```

@@ -420,7 +420,7 @@ For smaller/private companies, capture what's available (website, industry, loca
 
 - **Internal Your Company/ITMAX staff** — Jason Cham, Azmin Farhana, Dean Hariz, Kunna, Sarah Ghalibah, Syazwan, Paul, Anwar, Kayana, Iskandar, and anyone @your-domain.com
 - **noreply / notifications / no-reply** senders — automated systems
-- **CH himself** — Chee How Lim in events
+- **CH himself** — Admin Lim in events
 - **Newsletters** — unless clearly business-relevant
 - **Recurring weekly syncs** — already enriched, just add timeline entry
 - **All-day calendar events** — "Home", "Office", "Out of office", "Birthday"

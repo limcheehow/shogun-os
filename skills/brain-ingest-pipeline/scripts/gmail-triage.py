@@ -77,9 +77,9 @@ PROMOTION_KEYWORDS = re.compile(
 
 
 def short_name(email: str) -> str:
-    """your-user@your-domain.com → Chee How"""
+    """your-user@your-domain.com → Admin"""
     name = email.split("@")[0]
-    name_map = {"user": "Chee How", "syazwan": "Syazwan", "fitri": "Fitri",
+    name_map = {"user": "Admin", "syazwan": "Syazwan", "fitri": "Fitri",
                 "ashraf": "Ashraf", "iskandar": "Iskandar", "liyana": "Liyana"}
     return name_map.get(name, name.capitalize())
 
