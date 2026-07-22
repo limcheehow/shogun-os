@@ -33,7 +33,7 @@ Gmail, Calendar, Drive, Contacts, Sheets, and Docs — through Hermes-managed OA
 - `references/docs-batch-update.md` — Writing Google Docs content via batchUpdate REST API (scope upgrade, full/partial replace, pitfalls)
 - `references/docx-table-edit.md` — Editing DOCX table cells via ZIP-in-ZIP XML manipulation; Drive download → edit → re-upload pattern; filled compliance matrix workflow
 - `references/docs-brain-sync-pattern.md` — Full-replace content sync from a markdown brain file to a Google Doc via batchUpdate; includes no_agent cron setup, token handling, and verification checks
-- `references/google-dwd-auth.md` — Google Domain-Wide Delegation (DWD) auth pattern: service account impersonation as an alternative to individual OAuth. Covers when to use DWD, code patterns, multi-scope management, and troubleshooting. References the canonical `google-dwd` recipe at `~/company-os/recipes/google-dwd.md`.
+- `references/google-dwd-auth.md` — Google Domain-Wide Delegation (DWD) auth pattern: service account impersonation as an alternative to individual OAuth. Covers when to use DWD, code patterns, multi-scope management, and troubleshooting. References the canonical `google-dwd` recipe at `~/shogun-os/recipes/google-dwd.md`.
 - `references/doc-append-style-guide.md` — **Appending content to Google Docs: content voice/tone matching, heading hierarchy mirroring, and formatting consistency rules. Read before writing new sections into an existing doc.**
 - `references/drive-upload-pattern.md` — Uploading local files to a Drive folder via `files().create()` with `MediaFileUpload`; reusable for receipt/document ingestion workflows
 - `references/google-token-watchdog.md` — Proactive token refresh watchdog for when auto-refresh isn't working

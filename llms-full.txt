@@ -5,13 +5,13 @@
 > tools, memory, and autonomy. Built on Hermes Agent + GBrain.
 
 This file concatenates core Shogun OS documentation for single-fetch ingestion.
-For the link-only index, see `llms.txt`. Source of truth: https://github.com/limcheehow/company-os.
+For the link-only index, see `llms.txt`. Source of truth: https://github.com/limcheehow/shogun-os.
 
 
 ---
 # AGENTS.md
 
-Source: https://raw.githubusercontent.com/limcheehow/company-os/main/AGENTS.md
+Source: https://raw.githubusercontent.com/limcheehow/shogun-os/main/AGENTS.md
 
 # Agents working on Shogun OS
 
@@ -40,7 +40,7 @@ Shogun OS is NOT a single piece of software. It is a **reference architecture** 
 
 ```
 Retrieve and follow the instructions at:
-https://raw.githubusercontent.com/limcheehow/company-os/main/INSTALL_FOR_AGENTS.md
+https://raw.githubusercontent.com/limcheehow/shogun-os/main/INSTALL_FOR_AGENTS.md
 ```
 
 The full protocol covers: prerequisites, Google DWD, gbrain init, profile creation, Slack bot setup, cron wiring, model configuration, and verification.
@@ -48,7 +48,7 @@ The full protocol covers: prerequisites, Google DWD, gbrain init, profile creati
 ## File Layout
 
 ```
-company-os/
+shogun-os/
 ├── ARCHITECTURE.md         # System design (read after this)
 ├── SETUP.md                # Human-readable setup playbook
 ├── PROFILE_CATALOG.md      # All 10 profiles
@@ -152,7 +152,7 @@ For full verification (includes MCP connectivity tests):
 ---
 # INSTALL_FOR_AGENTS.md
 
-Source: https://raw.githubusercontent.com/limcheehow/company-os/main/INSTALL_FOR_AGENTS.md
+Source: https://raw.githubusercontent.com/limcheehow/shogun-os/main/INSTALL_FOR_AGENTS.md
 
 # Shogun OS — Install Protocol for AI Agents
 
@@ -187,7 +187,7 @@ bun install -g github:garrytan/gbrain
 ## Phase 1: Clone and Install
 
 ```bash
-git clone https://github.com/limcheehow/company-os.git
+git clone https://github.com/limcheehow/shogun-os.git
 cd company-os
 ./scripts/install.sh
 ```
@@ -446,7 +446,7 @@ hermes -p hr-manager --exec "mcp_gbrain_whoami"
 ---
 # ARCHITECTURE.md
 
-Source: https://raw.githubusercontent.com/limcheehow/company-os/main/ARCHITECTURE.md
+Source: https://raw.githubusercontent.com/limcheehow/shogun-os/main/ARCHITECTURE.md
 
 # Architecture
 
@@ -712,7 +712,7 @@ mcp_gbrain_* tools:
 ---
 # SETUP.md
 
-Source: https://raw.githubusercontent.com/limcheehow/company-os/main/SETUP.md
+Source: https://raw.githubusercontent.com/limcheehow/shogun-os/main/SETUP.md
 
 # Setup Playbook
 
@@ -1057,7 +1057,7 @@ hermes cron resume <job-id>
 ---
 # PROFILE_CATALOG.md
 
-Source: https://raw.githubusercontent.com/limcheehow/company-os/main/PROFILE_CATALOG.md
+Source: https://raw.githubusercontent.com/limcheehow/shogun-os/main/PROFILE_CATALOG.md
 
 # Profile Catalog
 
@@ -1229,7 +1229,7 @@ All 10 department profiles with personas, gbrain sources, skills, and cron jobs.
 ---
 # CRON_INVENTORY.md
 
-Source: https://raw.githubusercontent.com/limcheehow/company-os/main/CRON_INVENTORY.md
+Source: https://raw.githubusercontent.com/limcheehow/shogun-os/main/CRON_INVENTORY.md
 
 # Cron Inventory
 
@@ -1301,7 +1301,7 @@ Cron templates at `skills/department-scrum/templates/` — copy and fill placeho
 ---
 # SECURITY.md
 
-Source: https://raw.githubusercontent.com/limcheehow/company-os/main/SECURITY.md
+Source: https://raw.githubusercontent.com/limcheehow/shogun-os/main/SECURITY.md
 
 # Security Policy
 
@@ -1363,7 +1363,7 @@ Federated read is **read-only** from `shared/`. Profiles cannot accidentally wri
 
 ### During Install
 
-1. Clone the repo — verify via HTTPS from `github.com/limcheehow/company-os`
+1. Clone the repo — verify via HTTPS from `github.com/limcheehow/shogun-os`
 2. Inspect any script before running with `sudo` — company-os scripts use `sudo` only for systemd service installation
 3. Do NOT run as root — use the user's primary account
 

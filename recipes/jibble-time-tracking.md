@@ -40,7 +40,7 @@ mcp_servers:
 
 ```bash
 # Symlink the reference bridge into ~/.hermes/scripts/
-ln -sf ~/company-os/recipes/time-tracking/bridges/tt-bridge-jibble.py ~/.hermes/scripts/tt-bridge-jibble.py
+ln -sf ~/shogun-os/recipes/time-tracking/bridges/tt-bridge-jibble.py ~/.hermes/scripts/tt-bridge-jibble.py
 ```
 
 > See [`bridges/tt-bridge-jibble.py`](../time-tracking/bridges/tt-bridge-jibble.py) for the reference implementation.

@@ -22,7 +22,7 @@ Shogun OS is a **reference architecture** — not a shipped product. Contributio
 ## Repository Structure
 
 ```
-company-os/
+shogun-os/
 ├── scripts/              # Bash/Python provisioning scripts
 ├── skills/               # Reusable Hermes skills (SKILL.md format)
 ├── recipes/              # Integration recipes (gbrain-recipe format)

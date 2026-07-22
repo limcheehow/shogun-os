@@ -45,7 +45,7 @@ creds.refresh(google.auth.transport.requests.Request())
 
 ## Setup
 
-See `~/company-os/recipes/google-dwd.md` for the full playbook. Summary:
+See `~/shogun-os/recipes/google-dwd.md` for the full playbook. Summary:
 
 1. Create service account in Google Cloud Console → download JSON key
 2. Enable DWD in Workspace Admin Console → add client ID + scopes
@@ -99,7 +99,7 @@ The Workspace Admin Console DWD entry must have ALL of these scopes authorized, 
 
 ## Related
 
-- `~/company-os/recipes/google-dwd.md` — full setup playbook
-- `~/company-os/recipes/token-watchdog.md` — optional proactive refresh
-- `~/company-os/recipes/email-to-brain.md` — DWD variant example
-- `~/company-os/recipes/calendar-to-brain.md` — DWD variant example
+- `~/shogun-os/recipes/google-dwd.md` — full setup playbook
+- `~/shogun-os/recipes/token-watchdog.md` — optional proactive refresh
+- `~/shogun-os/recipes/email-to-brain.md` — DWD variant example
+- `~/shogun-os/recipes/calendar-to-brain.md` — DWD variant example

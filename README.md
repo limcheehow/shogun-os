@@ -275,7 +275,7 @@ Each runs as an isolated Hermes Agent profile with:
 Shipped in this repo, installable via Hermes skill tap:
 ```bash
 hermes skills tap add limcheehow/shogun-os
-hermes skills install company-os/company-workflow
+hermes skills install shogun-os/company-workflow
 ```
 
 ### Complete Setup Tooling

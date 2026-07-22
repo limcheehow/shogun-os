@@ -143,7 +143,7 @@ Complete Shogun OS tooling and documentation suite:
 
 #### Hub Publishing
 
-- Created `HUB.md` — Hermes skill tap manifest. Usage: `hermes skills tap add limcheehow/company-os`
+- Created `HUB.md` — Hermes skill tap manifest. Usage: `hermes skills tap add limcheehow/shogun-os`
 
 #### Docs Updated
 

@@ -30,7 +30,7 @@ Flatten the repo layout to align with Hermes Agent conventions and remove non-co
 ## New Layout
 
 ```
-company-os/
+shogun-os/
 ├── skills/                      ← All skills, flat
 │   ├── department-scrum/
 │   └── brain-ingest-pipeline/

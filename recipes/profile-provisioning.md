@@ -99,7 +99,7 @@ SOUL.md authoring patterns:
 
 ```bash
 # Install skills from the company-os repo
-ln -s /path/to/company-os/skills/<skill-name> ~/.hermes/profiles/<profile-name>/skills/
+ln -s /path/to/shogun-os/skills/<skill-name> ~/.hermes/profiles/<profile-name>/skills/
 ```
 
 ### Step 4: Enable and start the gateway

@@ -6,18 +6,18 @@ Add it as a custom skill source to install Shogun OS skills directly.
 ## Add as a Tap
 
 ```bash
-hermes skills tap add limcheehow/company-os
+hermes skills tap add limcheehow/shogun-os
 ```
 
 ## Install Skills
 
 ```bash
 # Browse available skills
-hermes skills search --source limcheehow/company-os
+hermes skills search --source limcheehow/shogun-os
 
 # Install specific skills
-hermes skills install limcheehow/company-os/department-scrum
-hermes skills install limcheehow/company-os/brain-ingest-pipeline
+hermes skills install limcheehow/shogun-os/department-scrum
+hermes skills install limcheehow/shogun-os/brain-ingest-pipeline
 ```
 
 ## Skills Available
@@ -70,7 +70,7 @@ skills/
 
 Shogun OS is a reference architecture for running an organization through Hermes Agent. Each department gets a dedicated AI agent with role-specific tools, memory, and autonomy.
 
-See the [full repo](https://github.com/limcheehow/company-os) for profiles, templates, install scripts, and documentation.
+See the [full repo](https://github.com/limcheehow/shogun-os) for profiles, templates, install scripts, and documentation.
 
 ## Architecture
 
