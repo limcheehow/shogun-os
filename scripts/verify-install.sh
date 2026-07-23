@@ -97,8 +97,6 @@ check_skill "plan" "skills/plan/SKILL.md"
 check_skill "verify-first" "skills/verify-first/SKILL.md"
 check_skill "search-router" "skills/search-router/SKILL.md"
 check_skill "company-workflow" "skills/company-workflow/SKILL.md"
-check_skill "google-workspace" "skills/google-workspace/SKILL.md"
-check_skill "lark-workspace" "skills/lark-workspace/SKILL.md"
 
 echo ""
 
@@ -136,11 +134,10 @@ check_script() {
 }
 
 # All scripts that install.sh would install
-check_script "send-scrum-dms.py"
-check_script "check-scrum-replies.py"
-check_script "gmail-triage.py"
-check_script "collect-calendar.py"
-check_script "switch-profile.py"
+check_script "init-gbrain.sh"
+check_script "wire-crons.py"
+check_script "verify-install.sh"
+check_script "verify-comprehensive.py"
 
 echo ""
 

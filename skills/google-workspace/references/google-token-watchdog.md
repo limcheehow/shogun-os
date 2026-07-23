@@ -134,9 +134,8 @@ else:
 ### Cron Job
 
 ```bash
-hermes cron create \
+hermes cron create "every 30m" \
   --name "Google Token Auto-Refresh" \
-  --schedule "every 30m" \
   --script google-token-refresh.sh \
   --no-agent \
   --deliver local

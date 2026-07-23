@@ -206,6 +206,18 @@ Migrate from per-profile SQLite to shared Postgres for multi-profile deployments
 
 All 15 production pitfalls from running department-scrum in production. Read this before deploying scrum for the first time. See `recipes/scrum-production-hardening.md` and `skills/department-scrum/references/production-pitfalls.md`.
 
+### 16. `time-tracking` — Provider Abstraction
+
+| Field | Value |
+|-------|-------|
+| Category | connector |
+| Setup time | 10 min |
+| Cost | $0 |
+| Depends on | — |
+| Cron | (none — reference) |
+
+Generic MCP contract for time-tracking providers (Jibble, Kami, etc.). Defines a universal interface so any profile can query attendance, timesheets, and clock-in status without hardcoding provider-specific logic. See `recipes/time-tracking/` for the contract and provider implementations.
+
 ## Installation Order
 
 ```
@@ -224,4 +236,5 @@ All 15 production pitfalls from running department-scrum in production. Read thi
 13. cron-management         # Ops — for backup/restore
 14. session-db-postgres     # Infra — for multi-profile deployments
 15. scrum-production-hardening  # Reference — read before going live with scrum
+16. time-tracking             # Reference — provider abstraction contract
 ```

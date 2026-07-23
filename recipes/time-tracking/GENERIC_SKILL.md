@@ -78,11 +78,10 @@ This skill teaches the agent how to handle time tracking queries and workflows u
 **Daily attendance check** (weekdays 9:30AM):
 
 ```bash
-hermes cron create \
+hermes cron create "30 9 * * 1-5" \
   --name "Daily Attendance Check" \
-  --schedule "30 9 * * 1-5" \
   --prompt "Run daily attendance check using tt_current_status and tt_get_entries. Report who's active, who's late, any anomalies." \
-  --skills "time-tracking" \
+  --skill "time-tracking" \
   --deliver origin
 ```
 

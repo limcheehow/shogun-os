@@ -159,9 +159,8 @@ PYEOF
 
 **Cron job**:
 ```bash
-hermes cron create \
+hermes cron create "*/30 * * * *" \
   --name "Google DWD Token Refresh" \
-  --schedule "*/30 * * * *" \
   --script google-dwd-refresh.sh \
   --deliver local \
   --no-agent

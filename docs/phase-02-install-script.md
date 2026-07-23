@@ -29,12 +29,12 @@ Create a comprehensive `install.sh` that deploys all Shogun OS assets into `~/.h
 | Skill scripts (flat) | `~/.hermes/scripts/` | Always — flattens all `*/scripts/*` files |
 | `scripts/switch-profile.py` | `~/.hermes/scripts/switch-profile.py` | Always |
 | `examples/brain-ingest-configs/gmail-batches.json` | `~/.hermes/config/gmail-batches.json` | Always |
-| `examples/scrum-configs/project-manager.yaml` | `~/.hermes/company-os-examples/scrum-configs/project-manager.yaml` | Always |
+| `examples/scrum-configs/project-manager.yaml` | `~/.hermes/shogun-os-examples/scrum-configs/project-manager.yaml` | Always |
 | SA-DWD symlink | `~/.hermes/service-account-key.json` → `~/.hermes/secrets/google-dwd-sa.json` | If SA key exists |
 
 ### Safety
 
-- **Backups** — existing files are backed up to `~/.hermes/.company-os-backup/<timestamp>/` before overwrite
+- **Backups** — existing files are backed up to `~/.hermes/.shogun-os-backup/<timestamp>/` before overwrite
 - **Source validation** — aborts if `skills/` directory is missing
 - **Dry-run** — preview without side effects
 - **Force flag** — skip backup prompt for automated installs
@@ -42,5 +42,5 @@ Create a comprehensive `install.sh` that deploys all Shogun OS assets into `~/.h
 ### Design Decisions
 
 1. **Scripts are installed flat** (not in subdirectories) — `~/.hermes/scripts/*.py` is where Hermes cron scripts look by default
-2. **Backup directory** is nested under `~/.hermes/.company-os-backup/` — keeps backups close to the assets they protect
+2. **Backup directory** is nested under `~/.hermes/.shogun-os-backup/` — keeps backups close to the assets they protect
 3. **Profile-specific install** is intentionally narrow: only `department-scrum` (needed by all) plus `brain-ingest-pipeline` for default/pipeline profiles

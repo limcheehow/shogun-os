@@ -176,7 +176,7 @@ which gbrain                    # GBrain installed (v0.42.x+)
 
 # 2. Clone this repo
 git clone https://github.com/limcheehow/shogun-os.git
-cd company-os
+cd shogun-os
 
 # 3. Install skills, scripts, and templates
 ./scripts/install.sh

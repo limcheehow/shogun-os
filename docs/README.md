@@ -23,3 +23,4 @@ This directory documents the phased development of Shogun OS, a Hermes Agent com
 - **Examples:** [`../examples/`](../examples/) — scrum configs, gmail batch configs
 - **Recipes:** [`../recipes/`](../recipes/) — integration guides
 - **Schema:** [`../schema/`](../schema/) — config schemas
+- **Microsoft 365 Integration:** [`../skills/devops/microsoft-integration/`](../skills/devops/microsoft-integration/) — Graph API client for mail, calendar, OneDrive, and directory

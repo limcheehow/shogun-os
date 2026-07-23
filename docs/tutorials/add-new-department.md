@@ -23,12 +23,12 @@ New Department
 Every department needs an isolated knowledge store:
 
 ```bash
-gbrain init-source legal --dir ~/brain/legal
+gbrain sources add legal --dir ~/brain/legal
 ```
 
 **Verify:**
 ```bash
-gbrain list-sources | grep legal
+gbrain sources list | grep legal
 # Expected: legal
 ```
 
@@ -178,7 +178,7 @@ To make the new department official in the Shogun OS repo:
 
 | Task | Command |
 |------|---------|
-| Create gbrain source | `gbrain init-source <dept> --dir ~/brain/<dept>` |
+| Create gbrain source | `gbrain sources add <dept> --dir ~/brain/<dept>` |
 | Add PROFILE_META entry | Edit `scripts/generate-profile.py` |
 | Add SOUL snippet | Edit `scripts/generate-profile.py` → `SOUL_SNIPPETS` |
 | Add extra crons | Edit `scripts/wire-crons.py` → `PROFILE_EXTRA_CRONS` |

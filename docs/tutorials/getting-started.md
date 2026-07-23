@@ -37,7 +37,7 @@ which hermes && which gbrain
 
 ```bash
 git clone https://github.com/limcheehow/shogun-os.git
-cd company-os
+cd shogun-os
 ```
 
 ## Step 3: Run the Installer
@@ -79,7 +79,7 @@ This creates 11 gbrain sources. The default profile's brain is your starting poi
 
 **Verify:**
 ```bash
-gbrain list-sources
+gbrain sources list
 # Expected: shared, hr, finance, projects, procurement, products, crm,
 #            marketing, compliance, engineering, support
 ```
@@ -119,9 +119,8 @@ Your department agent can work through the terminal, but for team use, it needs 
 Add tokens to the profile's `.env`:
 ```bash
 cat >> ~/.hermes/profiles/project-manager/.env << 'EOF'
-SLACK_BOT_TOKEN=xoxb-your-token-here
+SLACK_BOT_TOKEN=«redacted:xox…»
 SLACK_APP_TOKEN=xapp-your-token-here
-DASHSCOPE_API_KEY=sk-your-key-here
 EOF
 ```
 
@@ -204,5 +203,5 @@ Once your first agent is running:
 | `gbrain` not found | `bun install -g github:garrytan/gbrain` |
 | Profile creation fails | `hermes profile create project-manager` first, then run generate-profile.py |
 | Slack bot doesn't reply | Invite to channel: `/invite @Gorobei`. Check gateway: `hermes gateway status` |
-| No LLM provider error | Add `DASHSCOPE_API_KEY` to profile's `.env` (profiles don't inherit main) |
-| gbrain MCP not responding | Ensure gbrain is installed and `gbrain serve` works standalone |
+|| No LLM provider error | Profiles use the default model config — no per-profile API key needed. Check `~/.hermes/config.yaml` model section |
+|| gbrain MCP not responding | Ensure gbrain is installed and `gbrain mcp` works standalone |

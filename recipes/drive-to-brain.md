@@ -240,9 +240,8 @@ In the **default** profile:
 
 **Drive sync** (weekdays at 12PM, 4PM, 8PM):
 ```bash
-hermes cron create \
+hermes cron create "0 12,16,20 * * 1-5" \
   --name "Drive Sync" \
-  --schedule "0 12,16,20 * * 1-5" \
   --script drive-sync.py \
   --no-agent \
   --deliver local
@@ -250,9 +249,8 @@ hermes cron create \
 
 **Drive enrichment** (weekdays at 1PM, 5PM):
 ```bash
-hermes cron create \
+hermes cron create "0 13,17 * * 1-5" \
   --name "Drive Enrichment" \
-  --schedule "0 13,17 * * 1-5" \
   --prompt "$(cat <<'PROMPT'
 ## Drive Enrichment — Extract Entities from New Documents
 
@@ -267,7 +265,7 @@ For each NEW document (check by modified time in state):
 6. Deliver a summary: "Synced N documents. Extracted M entities."
 PROMPT
 )" \
-  --skills "gbrain-operations" \
+  --skill "gbrain-operations" \
   --enabled-toolsets "terminal,file,search" \
   --deliver origin
 ```

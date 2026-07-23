@@ -1,6 +1,6 @@
 # Shogun OS — Claude Code Context
 
-You are working on the `company-os` repo — a reference architecture for deploying multi-agent AI operations across departments using Hermes Agent + GBrain.
+You are working on the `shogun-os` repo — a reference architecture for deploying multi-agent AI operations across departments using Hermes Agent + GBrain.
 
 ## Orientation
 

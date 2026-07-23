@@ -32,7 +32,7 @@ bun install -g github:garrytan/gbrain
 
 ```bash
 git clone https://github.com/limcheehow/shogun-os.git
-cd company-os
+cd shogun-os
 ./scripts/install.sh
 ```
 
@@ -53,8 +53,6 @@ Shogun OS needs these secrets. Collect them from the user before proceeding:
 
 | Key | Where to get it |
 |-----|----------------|
-| `DASHSCOPE_API_KEY` | Alibaba Cloud Primary Provider console (for deepseek-v4-flash) |
-| `OPENROUTER_API_KEY` | Backup Provider dashboard (fallback provider) |
 | `SUPABASE_URL` | Supabase project settings (for gbrain) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase project settings |
 | `TELEGRAM_BOT_TOKEN` | BotFather on Telegram (if using Telegram gateway) |
@@ -66,8 +64,6 @@ For each Slack bot (one per department), the user needs:
 Write secrets to `~/.hermes/.env`:
 ```bash
 cat >> ~/.hermes/.env << 'EOF'
-DASHSCOPE_API_KEY=sk-...
-OPENROUTER_API_KEY=sk-or-...
 SUPABASE_URL=https://...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
 EOF
@@ -98,7 +94,7 @@ This creates 11 gbrain sources:
 
 **STOP** — verify sources exist:
 ```bash
-gbrain list-sources
+gbrain sources list
 ```
 
 ---
@@ -106,7 +102,7 @@ gbrain list-sources
 ## Phase 4: Deploy Profiles
 
 ```bash
-./scripts/install.sh --deploy all
+./scripts/install.sh --deploy
 ```
 
 This creates 10 Hermes Agent profiles with SOUL.md, config.yaml, and .env stubs:
@@ -133,20 +129,16 @@ hermes profile list
 
 ## Phase 5: Configure Profiles
 
-### 5.1 Add API Keys to Profile .env Files
+### 5.1 Add Per-Profile Secrets
 
-Each profile has its own `.env` at `~/.hermes/profiles/<name>/.env` — profiles DO NOT inherit from main `.env`.
+Each profile has its own `.env` at `~/.hermes/profiles/<name>/.env` — profiles DO NOT inherit from the main `.env`.
+
+**Profiles use the default model config.** No per-profile API keys for the LLM provider are needed. The main `~/.hermes/.env` (or `~/.hermes/config.yaml` default profile) handles model configuration.
 
 For each profile that needs a Slack bot, add:
 ```bash
 SLACK_BOT_TOKEN=xoxb-...
 SLACK_APP_TOKEN=xapp-...
-```
-
-For all profiles, add:
-```bash
-DASHSCOPE_API_KEY=sk-...
-OPENROUTER_API_KEY=sk-or-...
 ```
 
 ### 5.2 Configure GBrain MCP
@@ -156,13 +148,10 @@ Each profile's config.yaml should have:
 mcp_servers:
   gbrain:
     command: gbrain
-    args: [serve]
-    env:
-      GBRAIN_SOURCE: "<dept>"  # e.g., "hr" for hr-manager
-      GBRAIN_FEDERATED_READ: "true"
+    args: [mcp]
 ```
 
-This is auto-configured by `generate-profile.py`. Verify with:
+This is auto-configured by `generate-profile.py` and `init-gbrain.sh`. Verify with:
 ```bash
 hermes config show --profile hr-manager mcp_servers
 ```
@@ -284,5 +273,5 @@ hermes -p hr-manager --exec "mcp_gbrain_whoami"
 | `.env` not inherited | Each profile has its own `.env` — copy keys explicitly |
 | Slack bot doesn't respond | Check `allowed_channels` in config.yaml, verify gateway is running |
 | Scrum crons not firing | Verify `scrum.yaml` exists in profile directory with real channel IDs |
-| gbrain MCP not found | Add to config.yaml: `mcp_servers.gbrain.command: gbrain` |
-| No LLM provider | Profile `.env` missing API key — copy from main `~/.hermes/.env` |
+| gbrain MCP not found | Add to config.yaml: `mcp_servers.gbrain.command: gbrain`, `mcp_servers.gbrain.args: [mcp]` |
+|| No LLM provider | Default profile config handles model settings — no per-profile API keys needed. Check `~/.hermes/config.yaml` model section |

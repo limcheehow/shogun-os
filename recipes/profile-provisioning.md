@@ -98,7 +98,7 @@ SOUL.md authoring patterns:
 ### Step 3: Install common skills
 
 ```bash
-# Install skills from the company-os repo
+# Install skills from the shogun-os repo
 ln -s /path/to/shogun-os/skills/<skill-name> ~/.hermes/profiles/<profile-name>/skills/
 ```
 
@@ -117,11 +117,10 @@ systemctl --user status hermes-gateway@<profile-name>.service
 
 ```bash
 # Switch to profile context
-hermes --profile <profile-name> cron create \
+hermes --profile <profile-name> cron create "0 9 * * *" \
   --name "Daily Task" \
-  --schedule "0 9 * * *" \
   --prompt "Your prompt here" \
-  --skills "relevant-skill" \
+  --skill "relevant-skill" \
   --deliver origin
 ```
 

@@ -61,8 +61,7 @@ done
 ## Cron Job via Hermes
 
 ```bash
-hermes cron create \
-  --schedule "0 */6 * * *" \
+hermes cron create "0 */6 * * *" \
   --script ~/.hermes/scripts/rclone-sync.sh \
   --name "rclone-drive-sync" \
   --prompt "Sync completed. Report the results."

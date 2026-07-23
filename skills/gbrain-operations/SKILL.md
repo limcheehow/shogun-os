@@ -11,7 +11,6 @@ triggers:
   - "gbrain embed"
   - "gbrain doctor"
   - "gbrain dream"
-  - "gbrain serve"
   - "gbrain mcp"
   - "gbrain brainstorm"
   - "gbrain capture"
@@ -47,7 +46,6 @@ Environment variables needed (set in `~/.hermes/.env` or profile `.env`):
 |----------|---------|
 | `SUPABASE_URL` | Postgres connection (for production gbrain) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
-| `OPENROUTER_API_KEY` | Embeddings (gbrain uses Backup Provider by default) |
 
 ---
 
@@ -59,7 +57,7 @@ Environment variables needed (set in `~/.hermes/.env` or profile `.env`):
 | Generate embeddings | `gbrain embed` | After sync, to update vector search |
 | Health check | `gbrain doctor` | Daily or when something feels wrong |
 | Clean cycle | `gbrain dream` | Nightly maintenance |
-| Serve MCP | `gbrain serve` | For Hermes MCP connectivity |
+| Serve MCP | `gbrain mcp` | For Hermes MCP connectivity |
 | Web UI | `gbrain web` | Browse brain in browser |
 | Publish site | `gbrain publish` | Export static site |
 
@@ -102,7 +100,7 @@ gbrain embed --stale
 gbrain embed --full
 ```
 
-**Embedding provider:** gbrain uses Backup Provider by default. Set `OPENROUTER_API_KEY` in the environment. To use a different provider:
+**Embedding provider:** gbrain uses Backup Provider by default. Set `OPENROUTER_API_KEY` in the main `~/.hermes/.env`. To use a different provider:
 
 ```bash
 # Use OpenAI
@@ -156,26 +154,25 @@ gbrain dream --timeout 300
 
 **Cron setup** (run nightly via default profile):
 ```bash
-hermes cron create \
+hermes cron create "0 2 * * *" \
   --name "gbrain-dream-cycle" \
-  --schedule "0 2 * * *" \
   --prompt "Run: cd /path/to/brain && gbrain dream" \
   --deliver local
 ```
 
-### gbrain serve
+### gbrain mcp (formerly gbrain serve)
 
 Starts the MCP server for Hermes integration.
 
 ```bash
 # Standard MCP serve
-gbrain serve
+gbrain mcp
 
 # With specific source
-GBRAIN_SOURCE="hr" gbrain serve
+GBRAIN_SOURCE="hr" gbrain mcp
 
 # With federated read
-GBRAIN_FEDERATED_READ=true gbrain serve
+GBRAIN_FEDERATED_READ=true gbrain mcp
 ```
 
 **Hermes config** (add to profile's `config.yaml` or `mcp_servers`):
@@ -183,10 +180,7 @@ GBRAIN_FEDERATED_READ=true gbrain serve
 mcp_servers:
   gbrain:
     command: gbrain
-    args: [serve]
-    env:
-      GBRAIN_SOURCE: "${GBRAIN_SOURCE}"
-      GBRAIN_FEDERATED_READ: "${GBRAIN_FEDERATED_READ:-true}"
+    args: [mcp]
 ```
 
 ### gbrain brainstorm
@@ -334,10 +328,10 @@ curl -s https://backup-provider.ai/api/v1/auth/key \
 **Troubleshooting:**
 ```bash
 # 1. Is gbrain running?
-ps aux | grep "gbrain serve"
+ps aux | grep "gbrain mcp"
 
 # 2. Start in foreground to see errors
-gbrain serve --verbose
+gbrain mcp --verbose
 
 # 3. Test connectivity from another terminal
 echo '{"jsonrpc":"2.0","id":1,"method":"ping"}' | nc -U /tmp/gbrain.sock 2>/dev/null
@@ -365,9 +359,8 @@ SCRIPT
 chmod +x ~/.hermes/scripts/brain-sync.sh
 
 # Schedule it
-hermes cron create \
+hermes cron create "*/15 * * * *" \
   --name "brain-auto-sync" \
-  --schedule "*/15 * * * *" \
   --script brain-sync.sh \
   --no-agent \
   --deliver local
@@ -378,9 +371,8 @@ hermes cron create \
 Nightly maintenance (runs on default profile):
 
 ```bash
-hermes cron create \
+hermes cron create "0 2 * * *" \
   --name "gbrain-dream-cycle" \
-  --schedule "0 2 * * *" \
   --prompt "Run the gbrain dream maintenance cycle. Execute: cd /path/to/brain && gbrain dream. This runs synthesis, consolidation, pruning, and optionally publishes the updated brain site. Keep the prompt concise — report only anomalies." \
   --deliver local
 ```

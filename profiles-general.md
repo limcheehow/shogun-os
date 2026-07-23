@@ -10,7 +10,7 @@ The general industry vertical adds 2 Samurai-themed department agents on top of 
 
 **Deploy:**
 ```bash
-./scripts/install.sh --deploy all --industry general
+./scripts/install.sh --deploy --industry general
 ```
 
 ---

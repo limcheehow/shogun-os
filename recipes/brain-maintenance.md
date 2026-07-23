@@ -154,33 +154,29 @@ chmod +x ~/.hermes/scripts/brain-compliance-check.sh
 
 ```bash
 # Daily health check
-hermes cron create \
+hermes cron create "0 6 * * *" \
   --name "Brain Health Check" \
-  --schedule "0 6 * * *" \
   --script brain-health-check.sh \
   --no-agent \
   --deliver local
 
 # Weekly orphan link campaign
-hermes cron create \
+hermes cron create "0 7 * * 1" \
   --name "Brain Link Campaign" \
-  --schedule "0 7 * * 1" \
   --script brain-link-campaign.sh \
   --no-agent \
   --deliver local
 
 # Weekly compliance validation
-hermes cron create \
+hermes cron create "0 8 * * 1" \
   --name "Brain Compliance Check" \
-  --schedule "0 8 * * 1" \
   --script brain-compliance-check.sh \
   --no-agent \
   --deliver local
 
 # Dream cycle (every 2 hours)
-hermes cron create \
+hermes cron create "0 */2 * * *" \
   --name "Brain Dream Cycle" \
-  --schedule "0 */2 * * *" \
   --script gbrain-dream-cycle.sh \
   --no-agent \
   --deliver local

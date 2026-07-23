@@ -49,8 +49,10 @@ hermes skills install limcheehow/shogun-os/brain-ingest-pipeline
 | `verify-first` | Behavioral overlay — verify before claiming |
 | `search-router` | Intelligent search routing |
 | `company-workflow` | Mandatory 6-gate workflow enforcement |
+| `document-processing` | Extract text from PDFs, scans, and documents with OCR |
 | `google-workspace` | Google Workspace API operations (Gmail, Calendar, Drive, Docs) |
 | `lark-workspace` | Lark/Feishu API operations (Calendar, messaging) |
+| `profile-management` | Manage Hermes profiles end-to-end — persona authoring, config, lifecycle |
 
 ## Repository Structure
 

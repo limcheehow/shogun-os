@@ -11,7 +11,7 @@
 #   ./install.sh --profile hr       # Install only HR-relevant assets
 #   ./install.sh --industry general   # Deploy general industry profiles
 #   ./install.sh --industry manufacturing  # Deploy manufacturing profiles
-#   ./install.sh --deploy all       # Install + generate all department profiles (prompts for industry)
+#   ./install.sh --deploy           # Install + generate all department profiles (prompts for industry)
 #   ./install.sh --deploy-profile hr-manager --type hr  # Deploy one profile
 #   ./install.sh --systemd          # Install systemd template units
 #   ./install.sh --help             # Show help
@@ -71,9 +71,9 @@ USAGE:
   ./install.sh --dry-run          Preview without making changes
   ./install.sh --force            Overwrite existing files without backup prompt
   ./install.sh --profile <name>   Install assets relevant to one profile
-  ./install.sh --deploy all       Full deploy: install + generate all profiles (prompts for industry)
-  ./install.sh --deploy all --industry general    Deploy general industry profiles
-  ./install.sh --deploy all --industry manufacturing  Deploy manufacturing profiles
+  ./install.sh --deploy           Full deploy: install + generate all profiles (prompts for industry)
+  ./install.sh --deploy --industry general    Deploy general industry profiles
+  ./install.sh --deploy --industry manufacturing  Deploy manufacturing profiles
   ./install.sh --deploy-profile <name> --type <type>  Deploy a single profile
   ./install.sh --systemd          Install systemd template units for gateway management
   ./install.sh --help             This message
@@ -82,14 +82,14 @@ EXAMPLES:
   ./install.sh
   ./install.sh --dry-run --profile project-manager
   ./install.sh --force
-  ./install.sh --deploy all --industry manufacturing
+  ./install.sh --deploy --industry manufacturing
   ./install.sh --deploy-profile hr-manager --type hr
   ./install.sh --deploy-profile production-manager --type production  # Manufacturing
   ./install.sh --systemd
 
 WHAT GETS INSTALLED:
-  Skills    → ~/.hermes/skills/              (27 skills)
-  Scripts   → ~/.hermes/scripts/             (20 repo scripts + 20 skill scripts)
+  Skills    → ~/.hermes/skills/              (All skills)
+  Scripts   → ~/.hermes/scripts/             (All scripts)
   Recipes   → ~/.hermes/recipes/             (13 recipes)
   Templates → ~/.hermes/templates/           (3 template files)
   Configs   → ~/.hermes/config/              (gmail batches, scrum examples)
@@ -99,7 +99,7 @@ WHAT GETS INSTALLED:
 NEXT STEPS AFTER INSTALL:
   1. Set up Google DWD:     see recipes/google-dwd.md
   2. Init gbrain:           scripts/init-gbrain.sh --yes
-  3. Deploy profiles:       ./install.sh --deploy all
+  3. Deploy profiles:       ./install.sh --deploy
   4. Wire scrum crons:      python3 scripts/wire-crons.py <profile> --apply
   5. Set up Slack bots:     see SETUP.md Phase 4
   6. Install systemd:       ./install.sh --systemd
@@ -126,7 +126,7 @@ done
 
 # ── Validate repo root ─────────────────────────────────────────────────
 if [[ ! -d "$REPO_ROOT/skills" ]]; then
-  err "Cannot find 'skills/' directory. Run this script from the company-os repo root."
+  err "Cannot find 'skills/' directory. Run this script from the shogun-os repo root."
   echo "  Expected: $REPO_ROOT/skills"
   exit 1
 fi
@@ -150,7 +150,7 @@ backup_existing() {
   if [[ -e "$src" && "$FORCE" != true && "$DRY_RUN" != true ]]; then
     local timestamp
     timestamp="$(date +%Y%m%d-%H%M%S)"
-    BACKUP_DIR="$HERMES_HOME/.company-os-backup/$timestamp"
+    BACKUP_DIR="$HERMES_HOME/.shogun-os-backup/$timestamp"
     mkdir -p "$BACKUP_DIR"
     cp -r "$src" "$BACKUP_DIR/" 2>/dev/null || true
     info "Backed up $src → $BACKUP_DIR/"
@@ -356,7 +356,7 @@ section_configs() {
 
   # All scrum config examples
   if [[ -d "$REPO_ROOT/examples/scrum-configs" ]]; then
-    local scrum_dst="$HERMES_HOME/company-os-examples/scrum-configs"
+    local scrum_dst="$HERMES_HOME/shogun-os-examples/scrum-configs"
     local scf
     while IFS= read -r scf; do
       local fname

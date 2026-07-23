@@ -799,7 +799,7 @@ def generate_soul(profile_name: str, profile_type: str, meta: dict) -> str:
         return f"""---
 name: {profile_name}
 type: hermes-profile
-source: company-os
+source: shogun-os
 profile_type: {profile_type}
 ---
 
@@ -810,7 +810,7 @@ profile_type: {profile_type}
     return f"""---
 name: {profile_name}
 type: hermes-profile
-source: company-os
+source: shogun-os
 profile_type: {profile_type}
 ---
 

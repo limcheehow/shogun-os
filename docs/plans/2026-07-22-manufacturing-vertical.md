@@ -339,7 +339,7 @@ Tasks across phases have dependencies (Phase 1 before Phase 2 before Phase 3 bef
 
 ## Verification
 
-1. `cd /home/tapway/company-os && python3 -m pytest tests/ -v` — all tests pass
+1. `cd /home/tapway/shogun-os && python3 -m pytest tests/ -v` — all tests pass
 2. `ls industries/manufacturing/profiles/` — 5 profiles exist
 3. `ls industries/manufacturing/skills/` — 10 skills exist
 4. `python3 scripts/verify-install.sh --quick` — no errors

@@ -1,5 +1,57 @@
 # Changelog
 
+## [3.1.0] — 2026-07-23
+
+### Documentation & CLI Fixes
+
+Major documentation update to catch up with the following fixes:
+
+#### Microsoft 365 Integration
+
+- **New skill at `skills/devops/microsoft-integration/`** — Graph API client (`msft_api.py`) for mail, calendar, OneDrive, and directory operations via OAuth 2.0 client credentials
+- **`docs/README.md` updated** — Added Microsoft 365 Integration to quick reference
+- **`CHANGELOG.md`** — This entry
+
+#### Removed Env Var References from Profile Templates
+
+- **`INSTALL_FOR_AGENTS.md`** — Removed `DASHSCOPE_API_KEY` and `OPENROUTER_API_KEY` from per-profile API keys (Phase 2 table, .env example, Phase 5.1). Profiles use the default model config — no per-profile API keys needed.
+- **`skills/gbrain-operations/SKILL.md`** — Removed `OPENROUTER_API_KEY` from prerequisites table; clarified it belongs in the main `~/.hermes/.env`
+- **`skills/gbrain-operations/SKILL.md`** — Removed `${GBRAIN_SOURCE}` and `${GBRAIN_FEDERATED_READ}` env vars from gbrain MCP config example (auto-configured by init-gbrain.sh)
+
+#### Fixed gbrain CLI Compatibility
+
+- **`INSTALL_FOR_AGENTS.md` (Phase 3)** — `gbrain list-sources` → `gbrain sources list`
+- **`docs/deployment-readiness-review.md`** — `gbrain init-source` → `gbrain sources add`
+- **`skills/gbrain-operations/SKILL.md`** — `gbrain serve` → `gbrain mcp` (command + args + troubleshooting references)
+
+#### Fixed hermes cron create CLI Syntax
+
+- **`--schedule` removed** — Schedule is now a POSITIONAL argument (first arg after `cron create`). Updated across all recipes and skills:
+  - `recipes/brain-maintenance.md` (4 crons)
+  - `recipes/drive-to-brain.md` (2 crons)
+  - `recipes/jibble-time-tracking.md` (2 crons)
+  - `recipes/profile-provisioning.md` (1 cron)
+  - `recipes/time-tracking/GENERIC_SKILL.md` (1 cron)
+  - `skills/gbrain-operations/SKILL.md` (3 crons)
+  - `skills/google-workspace/references/rclone-sync-cron.md`
+  - `skills/google-workspace/references/google-token-watchdog.md`
+  - `skills/google-workspace/references/google-dwd-setup.md`
+- **`--skills` → `--skill`** — Updated across all recipes and skills
+
+#### Fixed install.sh --deploy Syntax
+
+- **`--deploy all` → `--deploy`** — `--deploy` is boolean, `--deploy all` is invalid. Updated in:
+  - `INSTALL_FOR_AGENTS.md` (Phase 4)
+  - `profiles-general.md`
+  - `docs/deployment-readiness-review.md` (closure criteria)
+
+#### Documentation
+
+- **`docs/deployment-readiness-review.md`** — Updated G1 phantom skills entry to reflect v2.3.0 fix; updated 0.1 execution plan item to checked status
+- **`AGENTS.md`** — Updated `gbrain init-source` → `gbrain sources add` in common tasks
+
+---
+
 ## [3.0.0] — 2026-07-11
 
 ### Production Hardening + Workflow Enforcement + Expanded Skill Catalog

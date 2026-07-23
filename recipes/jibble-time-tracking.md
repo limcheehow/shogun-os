@@ -197,9 +197,8 @@ In the **hr-manager** profile:
 
 **Daily attendance check** (weekdays 9:30AM):
 ```bash
-hermes cron create \
+hermes cron create "30 9 * * 1-5" \
   --name "Jibble Daily Attendance" \
-  --schedule "30 9 * * 1-5" \
   --prompt "$(cat <<'PROMPT'
 ## Jibble Daily Attendance Check
 
@@ -213,16 +212,15 @@ Flag anyone who hasn't clocked in by 9:30AM.
 Deliver a brief report to the HR channel.
 PROMPT
 )" \
-  --skills "jibble-time-tracking" \
+  --skill "jibble-time-tracking" \
   --enabled-toolsets "terminal" \
   --deliver origin
 ```
 
 **Weekly timesheet roundup** (Monday 10AM):
 ```bash
-hermes cron create \
+hermes cron create "0 10 * * 1" \
   --name "Jibble Weekly Timesheet" \
-  --schedule "0 10 * * 1" \
   --prompt "$(cat <<'PROMPT'
 ## Jibble Weekly Timesheet Roundup
 
@@ -236,7 +234,7 @@ Compile a summary:
 Deliver to the HR channel as a formatted table.
 PROMPT
 )" \
-  --skills "jibble-time-tracking" \
+  --skill "jibble-time-tracking" \
   --enabled-toolsets "terminal" \
   --deliver origin
 ```

@@ -45,17 +45,17 @@ gbrain init
 ### 2.2 Create Sources
 
 ```bash
-gbrain init-source shared
-gbrain init-source hr
-gbrain init-source finance
-gbrain init-source projects
-gbrain init-source procurement
-gbrain init-source products
-gbrain init-source crm
-gbrain init-source marketing
-gbrain init-source compliance
-gbrain init-source engineering
-gbrain init-source support
+gbrain sources add shared
+gbrain sources add hr
+gbrain sources add finance
+gbrain sources add projects
+gbrain sources add procurement
+gbrain sources add products
+gbrain sources add crm
+gbrain sources add marketing
+gbrain sources add compliance
+gbrain sources add engineering
+gbrain sources add support
 ```
 
 Each source becomes its own folder under `~/brain/`.
