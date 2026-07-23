@@ -664,7 +664,7 @@ print_summary() {
   echo -e "${GREEN}  Next Steps:${NC}"
   echo -e "    1. Set up Google DWD:  ${CYAN}see recipes/google-dwd.md${NC}"
   echo -e "    2. Init gbrain:         ${CYAN}scripts/init-gbrain.sh --yes${NC}"
-  echo -e "    3. Deploy profiles:     ${CYAN}./install.sh --deploy all${NC}"
+  echo -e "    3. Deploy profiles:     ${CYAN}./install.sh --deploy${NC}"
   echo -e "    4. Wire scrum crons:    ${CYAN}python3 scripts/wire-crons.py <profile> --apply${NC}"
   echo -e "    5. Set up Slack bots:   ${CYAN}see SETUP.md Phase 4${NC}"
   echo -e "    6. Install systemd:     ${CYAN}./install.sh --systemd${NC}"
