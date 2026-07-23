@@ -1,6 +1,6 @@
 # Changelog
 
-## [3.1.0] — 2026-07-23
+## [3.7.0] — 2026-07-23
 
 ### Documentation & CLI Fixes
 
