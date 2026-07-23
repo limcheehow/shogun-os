@@ -66,7 +66,7 @@ shogun-os/
 
 ```bash
 # 1. Create gbrain source
-gbrain init-source <dept> --dir ~/brain/<dept>
+gbrain sources add <dept> --path ~/brain/<dept>
 
 # 2. Create Hermes profile
 hermes profile create <dept>-manager

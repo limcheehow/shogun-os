@@ -162,7 +162,6 @@ for source_entry in "${SOURCES[@]}"; do
   IFS=':' read -r source_name source_desc <<< "$source_entry"
 
   source_dir="$BRAIN_DIR/$source_name"
-  init_cmd="init-source $source_name"
 
   if [[ "$DRY_RUN" == true ]]; then
     ok "[DRY-RUN] Would create source: $source_name → $source_dir"
