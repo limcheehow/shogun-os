@@ -138,7 +138,6 @@ check_script() {
 # All scripts that install.sh would install
 check_script "send-scrum-dms.py"
 check_script "check-scrum-replies.py"
-check_script "test-scrum-cross-dept.py"
 check_script "gmail-triage.py"
 check_script "collect-calendar.py"
 check_script "switch-profile.py"
@@ -171,7 +170,7 @@ echo ""
 echo -e "${CYAN}━━━ Symlinks ━━━${NC}"
 
 if [[ -L "$HERMES_HOME/service-account-key.json" ]]; then
-  local target
+  target
   target="$(readlink "$HERMES_HOME/service-account-key.json")"
   if [[ -f "$target" ]]; then
     ok "SA-DWD symlink: $HERMES_HOME/service-account-key.json → $target"

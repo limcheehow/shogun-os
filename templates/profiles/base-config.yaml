@@ -1,19 +1,13 @@
 # ── Base Profile Config — Standard Department ──
 # Generated from templates/profiles/base-config.yaml
-# Override model by running: python3 scripts/switch-profile.py <name> --model <preset>
+# All profiles use the default Hermes model config (inherited from main config).
+# Override model by editing this file directly.
 
 model:
   default: deepseek-v4-flash
   provider: custom
-  base_url: ${PRIMARY_PROVIDER_BASE_URL}
-  api_key: ${PRIMARY_PROVIDER_API_KEY}
-  api_mode: chat_completions
 
-fallback_providers:
-  - provider: ${BACKUP_PROVIDER_NAME}
-    model: ${BACKUP_PROVIDER_MODEL}
-
-auxiliary: ${AUXILIARY_MODEL}
+fallback_providers: []
 
 providers: {}
 

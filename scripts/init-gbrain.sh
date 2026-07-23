@@ -176,10 +176,14 @@ for source_entry in "${SOURCES[@]}"; do
   fi
 
   # Initialize gbrain source
-  if gbrain list-sources 2>/dev/null | grep -q "^$source_name"; then
+  if gbrain sources list 2>/dev/null | grep -q "id: $source_name"; then
     ok "Source already exists: $source_name"
   else
-    if gbrain init-source "$source_name" --dir "$source_dir" 2>&1; then
+    # 'gbrain sources add' requires each path to be a git repo
+    if [ ! -d "$source_dir/.git" ]; then
+      cd "$source_dir" && git init -q && git commit --allow-empty -q -m "init"
+    fi
+    if gbrain sources add "$source_name" --path "$source_dir" 2>&1; then
       ok "Created source: $source_name ($source_desc)"
     else
       warn "Failed to create source: $source_name"
@@ -210,7 +214,7 @@ echo -e "${CYAN}━━━ Verification ━━━${NC}"
 if [[ "$DRY_RUN" != true ]]; then
   if command -v gbrain &> /dev/null; then
     local count
-    count=$(gbrain list-sources 2>/dev/null | wc -l) || count="?"
+    count=$(gbrain sources list 2>/dev/null | grep -c "id:") || count="?"
     ok "gbrain sources: $count"
     gbrain doctor 2>&1 | head -5 || true
   fi
@@ -228,7 +232,7 @@ echo -e "    Sources:  ${#SOURCES[@]} department sources"
 echo -e "    Brain:    ${BRAIN_DIR}/{shared,hr,finance,...}/"
 echo ""
 echo -e "${GREEN}  Next Steps:${NC}"
-echo -e "    1. Deploy profiles:  ${CYAN}./install.sh --deploy all${NC}"
+echo -e "    1. Deploy profiles:  ${CYAN}./install.sh --deploy${NC}"
 echo -e "    2. Set up Slack bots: ${CYAN}see SETUP.md Phase 4${NC}"
 echo -e "    3. Wire crons:        ${CYAN}python3 scripts/wire-crons.py <profile> --apply${NC}"
 echo ""

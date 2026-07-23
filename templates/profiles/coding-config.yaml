@@ -1,14 +1,13 @@
 # ── Coding Agent Profile Config ──
 # Optimized for code generation tasks
 # Generated from templates/profiles/coding-config.yaml
+# Uses the default Hermes model config.
 
 model:
-  default: ${CODING_MODEL}
-  provider: ${CODING_PROVIDER}
+  default: deepseek-v4-flash
+  provider: custom
 
-fallback_providers:
-  - provider: ${BACKUP_PROVIDER_NAME}
-    model: ${BACKUP_PROVIDER_MODEL}
+fallback_providers: []
 
 providers: {}
 

@@ -264,14 +264,14 @@ def format_cron_commands(crons, deliver):
         cmd_parts = [
             "hermes cron create",
             f"--name \"{cron['name']}\"",
-            f"--schedule \"{cron['schedule']}\"",
         ]
         if cron["skills"]:
-            cmd_parts.append(f"--skills \"{','.join(cron['skills'])}\"")
+            for s in cron["skills"]:
+                cmd_parts.append(f"--skill \"{s}\"")
         if deliver:
             cmd_parts.append(f"--deliver \"{deliver}\"")
-        # Append the prompt as the positional argument
-        cmd = " \\\n  ".join(cmd_parts) + f" \\\n  \"{cron['prompt']}\""
+        # schedule and prompt are positional, at the end
+        cmd = " \\\n  ".join(cmd_parts) + f" \\\n  \"{cron['schedule']}\" \\\n  \"{cron['prompt']}\""
         commands.append(cmd)
     return commands
 
@@ -281,13 +281,14 @@ def apply_crons(crons, deliver, dry_run=False):
     applied = 0
     failed = 0
     for cron in crons:
-        cmd = ["hermes", "cron", "create",
-               "--name", cron["name"],
-               "--schedule", cron["schedule"]]
+        cmd = ["hermes", "cron", "create", "--name", cron["name"]]
         if cron["skills"]:
-            cmd.extend(["--skills", ",".join(cron["skills"])])
+            for s in cron["skills"]:
+                cmd.extend(["--skill", s])
         if deliver:
             cmd.extend(["--deliver", deliver])
+        # schedule is positional
+        cmd.append(cron["schedule"])
         cmd.append(cron["prompt"])
 
         if dry_run:
