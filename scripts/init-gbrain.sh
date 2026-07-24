@@ -15,7 +15,19 @@
 
 set -euo pipefail
 
-VERSION="1.0.0"
+VERSION="1.1.0"
+
+# Resolve Python interpreter (python3 absent/unusable on Windows)
+if command -v python >/dev/null 2>&1 && python -c 'import sys' >/dev/null 2>&1; then
+  PYTHON=python
+elif command -v python3 >/dev/null 2>&1 && python3 -c 'import sys' >/dev/null 2>&1; then
+  PYTHON=python3
+elif command -v py >/dev/null 2>&1; then
+  PYTHON="py -3"
+else
+  PYTHON=python
+fi
+
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 BRAIN_DIR="${BRAIN_DIR:-$HOME/brain}"
 GBRAIN_SOURCE="${GBRAIN_SOURCE:-default}"
@@ -231,6 +243,94 @@ else
   fi
 fi
 
+# ── Model Tier Configuration ──────────────────────────────────────────
+
+echo ""
+echo -e "${CYAN}━━━ Model Tier Configuration ━━━${NC}"
+
+# Read Hermes default model and resolve a gbrain-compatible model string.
+# gbrain's internal tier defaults (anthropic:claude-sonnet-4-6) consume
+# a separate ANTHROPIC_API_KEY. Instead, inherit the user's default model
+# so gbrain uses the same API key and provider as Hermes.
+#
+# Provider resolution logic:
+#   - If the Hermes provider is a known gbrain provider (openrouter,
+#     anthropic, openai, google), pass it through as-is.
+#   - If the provider is "custom" (DashScope etc.), use the first
+#     fallback provider's model instead — it's routed through a known
+#     provider (typically openrouter) and shares the same API key.
+#   - If nothing resolves, leave gbrain's built-in defaults untouched.
+
+GBRAIN_MODEL=""
+
+if [[ "$DRY_RUN" != true ]]; then
+  GBRAIN_MODEL=$("$PYTHON" -c "
+import sys, yaml, os
+
+hermes_home = os.environ.get('HERMES_HOME', os.path.expanduser('~/.hermes'))
+config_path = os.path.join(hermes_home, 'config.yaml')
+
+if not os.path.exists(config_path):
+    sys.exit(0)
+
+with open(config_path) as f:
+    cfg = yaml.safe_load(f) or {}
+
+model_cfg = cfg.get('model', {})
+provider = (model_cfg.get('provider') or '').strip()
+model_name = (model_cfg.get('default') or '').strip()
+
+KNOWN_PROVIDERS = {'openrouter', 'anthropic', 'openai', 'google', 'deepseek', 'mistral', 'groq'}
+
+if provider and model_name:
+    if provider in KNOWN_PROVIDERS:
+        result = f'{provider}:{model_name}'
+    else:
+        # Custom provider — use the fallback model instead
+        fallbacks = cfg.get('fallback_providers', [])
+        for fb in (fallbacks if isinstance(fallbacks, list) else []):
+            fb_provider = (fb.get('provider') or '').strip()
+            fb_model = (fb.get('model') or '').strip()
+            if fb_provider in KNOWN_PROVIDERS and fb_model:
+                result = f'{fb_provider}:{fb_model}'
+                break
+        else:
+            # Last resort: emit the model name alone, let gbrain resolve it
+            result = model_name
+    print(result)
+" 2>/dev/null || echo "")
+fi
+
+if [[ -n "$GBRAIN_MODEL" ]]; then
+  # Check if gbrain already has a custom tier config (user may have set one)
+  EXISTING_REASONING=$("$GBRAIN_BIN" config show 2>/dev/null | "$PYTHON" -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    print(data.get('models', {}).get('tier', {}).get('reasoning', ''))
+except:
+    print('')
+" 2>/dev/null || echo "")
+
+  if [[ -n "$EXISTING_REASONING" ]]; then
+    info "GBrain tier.reasoning already set: $EXISTING_REASONING (keeping)"
+  else
+    if [[ "$DRY_RUN" == true ]]; then
+      ok "[DRY-RUN] Would set gbrain tier.reasoning = $GBRAIN_MODEL"
+    else
+      for tier in reasoning utility subagent; do
+        if "$GBRAIN_BIN" config set "models.tier.$tier" "$GBRAIN_MODEL" 2>&1; then
+          ok "GBrain tier.$tier → $GBRAIN_MODEL"
+        else
+          warn "Failed to set models.tier.$tier"
+        fi
+      done
+    fi
+  fi
+else
+  info "Using gbrain built-in tier defaults (no Hermes model found to inherit)"
+fi
+
 # ── Verify ─────────────────────────────────────────────────────────────
 
 echo ""
@@ -254,6 +354,7 @@ fi
 echo -e "${GREEN}  GBrain Init Complete${NC}"
 echo -e "    Sources:  ${#SOURCES[@]} department sources"
 echo -e "    Brain:    ${BRAIN_DIR}/{shared,hr,finance,...}/"
+echo -e "    Model:    ${GBRAIN_MODEL:-built-in defaults} (inherited from Hermes)"
 echo ""
 echo -e "${GREEN}  Next Steps:${NC}"
 echo -e "    1. Deploy profiles:  ${CYAN}./install.sh --deploy${NC}"

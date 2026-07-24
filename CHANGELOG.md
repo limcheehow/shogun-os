@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.8.2] — 2026-07-24
+
+### GBrain Model Tier Inheritance
+
+- **`scripts/init-gbrain.sh`** — now reads the user's Hermes default model and sets gbrain `models.tier.{reasoning,utility,subagent}` to match, instead of using gbrain's built-in defaults (`anthropic:claude-sonnet-4-6`) which consume a separate Anthropic API key.
+- Provider resolution: if the Hermes provider is a known gbrain provider (`openrouter`, `anthropic`, `openai`, `google`), passes it through. If the provider is `custom` (DashScope etc.), falls back to the first fallback provider's model. If already custom-configured, leaves it untouched.
+- Python interpreter resolver added to `init-gbrain.sh` for Windows compatibility.
+- Bumped to v1.1.0.
+
+## [3.8.1] — 2026-07-24
+
+### Merge: Windows/Hermes/GBrain v0.42 Compatibility + Verification Suite
+
+- **Profile generation:** model inheritance from active default, Windows symlink fallback, `.env` merge on `--force`, `gbrain serve` MCP command, project-manager/Gorobei type added
+- **GBrain init:** v0.42 git repo compat (tracked README.md), JSON source detection, federation persistence via CLI
+- **Cron wiring:** profile-scoped commands (`hermes -p <profile> cron create`), non-zero exit on failure, path resolution
+- **Verification:** fixed fatal errors, Python interpreter resolver, Windows path normalization, GBrain MCP test
+- **Installer:** proper profile existence check, deploy status tracking
+- **15 new tests** covering Windows generation, federation, profile-scoped crons
+
 ## [3.8.0] — 2026-07-24
 
 ### Customer Communication Platform — Kizuna (CRM) Post-Install
