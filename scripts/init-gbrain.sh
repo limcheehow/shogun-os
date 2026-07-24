@@ -82,8 +82,20 @@ echo -e "${CYAN}  Shogun OS — GBrain Init v${VERSION}${NC}"
 echo -e "${CYAN}══════════════════════════════════════════════════════${NC}"
 echo ""
 
-if ! command -v gbrain &> /dev/null; then
-  err "gbrain CLI not found in PATH"
+# Resolve gbrain path (bun global install may not be on the non-interactive PATH)
+if command -v gbrain &> /dev/null; then
+  GBRAIN_BIN="gbrain"
+else
+  for cand in "$HOME/.bun/bin/gbrain" "$HOME/.bun/bin/gbrain.exe" "/usr/local/bin/gbrain"; do
+    if [[ -x "$cand" ]]; then
+      GBRAIN_BIN="$cand"
+      break
+    fi
+  done
+fi
+
+if [[ -z "${GBRAIN_BIN:-}" ]]; then
+  err "gbrain CLI not found in PATH or common install locations"
   info "Install gbrain (latest stable):"
   info "  bun install -g github:garrytan/gbrain"
   info ""
@@ -93,7 +105,7 @@ if ! command -v gbrain &> /dev/null; then
   exit 1
 fi
 
-GBRAIN_VERSION=$(gbrain --version 2>&1 | head -1)
+GBRAIN_VERSION=$("$GBRAIN_BIN" --version 2>&1 | head -1)
 ok "gbrain found: $GBRAIN_VERSION"
 
 # Extract major.minor version
@@ -148,7 +160,7 @@ else
     ok "gbrain already initialized at $BRAIN_DIR"
   else
     info "Initializing gbrain..."
-    gbrain init --dir "$BRAIN_DIR" 2>&1 || warn "gbrain init may have already been run"
+    "$GBRAIN_BIN" init --dir "$BRAIN_DIR" 2>&1 || warn "gbrain init may have already been run"
     ok "gbrain initialized at $BRAIN_DIR"
   fi
 fi
@@ -175,14 +187,21 @@ for source_entry in "${SOURCES[@]}"; do
   fi
 
   # Initialize gbrain source
-  if gbrain sources list 2>/dev/null | grep -q "id: $source_name"; then
+  if "$GBRAIN_BIN" sources list --json 2>/dev/null | grep -q "\"id\": \"$source_name\""; then
     ok "Source already exists: $source_name"
   else
-    # 'gbrain sources add' requires each path to be a git repo
+    # 'gbrain sources add' requires a git repo with at least one committed,
+    # tracked file (an empty commit no longer qualifies in gbrain v0.42.x).
+    # Use a temporary identity so commit works even if git user.* is unset.
     if [ ! -d "$source_dir/.git" ]; then
-      cd "$source_dir" && git init -q && git commit --allow-empty -q -m "init"
+      git -C "$source_dir" init -q
     fi
-    if gbrain sources add "$source_name" --path "$source_dir" 2>&1; then
+    if ! git -C "$source_dir" ls-tree -r --name-only HEAD 2>/dev/null | grep -q .; then
+      printf '# %s\n\n%s\n' "$source_name" "$source_desc" > "$source_dir/README.md"
+      git -C "$source_dir" -c user.name="Shogun OS Installer" -c user.email="installer@localhost" add README.md
+      git -C "$source_dir" -c user.name="Shogun OS Installer" -c user.email="installer@localhost" commit -q -m "init"
+    fi
+    if "$GBRAIN_BIN" sources add "$source_name" --path "$source_dir" 2>&1; then
       ok "Created source: $source_name ($source_desc)"
     else
       warn "Failed to create source: $source_name"
@@ -196,13 +215,20 @@ echo ""
 echo -e "${CYAN}━━━ Federated Read Configuration ━━━${NC}"
 
 if [[ "$DRY_RUN" == true ]]; then
-  ok "[DRY-RUN] Would enable federated read for all non-shared sources"
+  ok "[DRY-RUN] Would federate shared and isolate default"
 else
-  # Enable federated read globally
-  export GBRAIN_FEDERATED_READ=true
-  info "GBRAIN_FEDERATED_READ=true set (add to profile .env or config.yaml)"
+  if "$GBRAIN_BIN" sources federate shared 2>&1; then
+    ok "Shared source is federated for cross-source reads"
+  else
+    err "Failed to federate shared source"
+    exit 1
+  fi
 
-  ok "Federated read configured — every profile can read shared/ source"
+  if "$GBRAIN_BIN" sources unfederate default 2>&1; then
+    ok "Legacy default source isolated from department searches"
+  else
+    warn "Could not isolate default source (it may not exist)"
+  fi
 fi
 
 # ── Verify ─────────────────────────────────────────────────────────────
@@ -211,11 +237,10 @@ echo ""
 echo -e "${CYAN}━━━ Verification ━━━${NC}"
 
 if [[ "$DRY_RUN" != true ]]; then
-  if command -v gbrain &> /dev/null; then
-    local count
-    count=$(gbrain sources list 2>/dev/null | grep -c "id:") || count="?"
+  if [[ -n "${GBRAIN_BIN:-}" ]]; then
+    count=$("$GBRAIN_BIN" sources list --json 2>/dev/null | grep -c '"id":') || count="?"
     ok "gbrain sources: $count"
-    gbrain doctor 2>&1 | head -5 || true
+    "$GBRAIN_BIN" doctor 2>&1 | head -5 || true
   fi
 fi
 
@@ -233,7 +258,7 @@ echo ""
 echo -e "${GREEN}  Next Steps:${NC}"
 echo -e "    1. Deploy profiles:  ${CYAN}./install.sh --deploy${NC}"
 echo -e "    2. Set up Slack bots: ${CYAN}see SETUP.md Phase 4${NC}"
-echo -e "    3. Wire crons:        ${CYAN}python3 scripts/wire-crons.py <profile> --apply${NC}"
+echo -e "    3. Wire crons:        ${CYAN}python scripts/wire-crons.py <profile> --apply${NC}"
 echo ""
 echo -e "  Profile.env config (add to each profile's .env):"
 echo -e "    ${CYAN}export GBRAIN_FEDERATED_READ=true${NC}"

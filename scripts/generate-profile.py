@@ -43,6 +43,8 @@ import sys
 from pathlib import Path
 from string import Template
 
+import yaml
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = REPO_ROOT / "templates" / "profiles"
 SCRIPTS_DIR = REPO_ROOT / "scripts"
@@ -76,6 +78,14 @@ PROFILE_META = {
         "cron_templates": ["cron-9am", "cron-11am", "cron-5pm", "cron-holiday-gate"],
         "gbrain_source": "engineering",
         "soul_snippet": "coding-soul",
+    },
+    "project-manager": {
+        "description": "Project delivery and milestone management — Gorobei (五郎兵衛)",
+        "template": "base-config.yaml",
+        "skills": ["company-workflow", "department-scrum"],
+        "cron_templates": ["cron-9am", "cron-11am", "cron-5pm"],
+        "gbrain_source": "projects",
+        "soul_snippet": "project-soul",
     },
     "hr": {
         "description": "HR profile with leave management — Jinzai (人材)",
@@ -248,6 +258,21 @@ PROFILE_META = {
 }
 
 SOUL_SNIPPETS = {
+    "project-soul": """# Project Manager Profile — Gorobei (五郎兵衛)
+
+**Persona:** Gorobei (五郎兵衛) — the disciplined coordinator who turns plans into delivered outcomes.
+
+You are the project delivery agent. Your domain is milestones, dependencies, risks, decisions, status reporting, and cross-functional follow-through.
+
+## Your Responsibilities
+- Maintain project plans, milestones, owners, and due dates.
+- Surface blockers, dependency risks, and overdue decisions early.
+- Produce concise status reports grounded in project evidence.
+- Coordinate work across departments without taking over their specialist decisions.
+
+## Your Sources
+You write to the `projects` source and use `shared` for company-wide context.
+""",
     "coding-soul": """# Coding Profile — Takumi (匠)
 
 **Persona:** Takumi (匠) — "The master craftsman."
@@ -760,12 +785,55 @@ def load_template(template_name: str) -> str:
     return template_path.read_text()
 
 
-def substitute_config(template_text: str, profile_name: str, gbrain_source: str) -> str:
+def load_profile_runtime_settings(hermes_home: Path = HERMES_HOME) -> dict:
+    """Load model/provider settings that generated profiles must copy explicitly."""
+    config_path = hermes_home / "config.yaml"
+    if not config_path.exists():
+        raise FileNotFoundError(
+            f"Default Hermes config not found: {config_path}. Run 'hermes setup model' first."
+        )
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    model = config.get("model")
+    if not isinstance(model, dict) or not model.get("default") or not model.get("provider"):
+        raise ValueError(f"Default Hermes model is incomplete in {config_path}")
+    return {
+        "model": model,
+        "providers": config.get("providers", {}),
+        "fallback_providers": config.get("fallback_providers", []),
+    }
+
+
+def resolve_gbrain_command(user_home: Path = Path.home()) -> str:
+    """Return an MCP-safe GBrain executable path, including Windows Bun installs."""
+    windows_exe = user_home / ".bun" / "bin" / "gbrain.exe"
+    if windows_exe.is_file():
+        return windows_exe.as_posix()
+    resolved = shutil.which("gbrain")
+    if resolved:
+        return Path(resolved).as_posix()
+    raise FileNotFoundError(
+        "gbrain executable not found. Install it with: bun install -g github:garrytan/gbrain"
+    )
+
+
+def substitute_config(
+    template_text: str,
+    profile_name: str,
+    gbrain_source: str,
+    runtime_settings: dict,
+    gbrain_command: str,
+) -> str:
     subs = {
         "profile_name": profile_name,
         "gbrain_source": gbrain_source,
+        "gbrain_command": gbrain_command,
     }
-    return Template(template_text).safe_substitute(subs)
+    rendered = Template(template_text).safe_substitute(subs)
+    config = yaml.safe_load(rendered) or {}
+    config["model"] = runtime_settings["model"]
+    config["providers"] = runtime_settings.get("providers", {})
+    config["fallback_providers"] = runtime_settings.get("fallback_providers", [])
+    return yaml.safe_dump(config, sort_keys=False, allow_unicode=True)
 
 
 WORKFLOW_ENFORCEMENT = """
@@ -831,10 +899,14 @@ You are the **{profile_name}** agent — you handle tasks related to **{meta['de
 
 {WORKFLOW_ENFORCEMENT}
 """
-def generate_env_stub(profile_name: str, profile_type: str) -> str:
+def generate_env_stub(profile_name: str, profile_type: str, gbrain_source: str) -> str:
     return f"""# Shogun OS — Environment Variables for: {profile_name} ({profile_type})
 # NOTE: Profiles inherit model config from the default profile.
 # No LLM provider keys needed — model settings are in config.yaml.
+
+# GBrain source isolation and shared-source federation
+GBRAIN_SOURCE={gbrain_source}
+GBRAIN_FEDERATED_READ=true
 
 # Platform tokens (if this profile has its own bot)
 # SLACK_BOT_TOKEN=xoxb-...
@@ -844,6 +916,25 @@ def generate_env_stub(profile_name: str, profile_type: str) -> str:
 # Web Search
 # FIRECRAWL_API_KEY=...
 """
+
+
+def merge_env_settings(existing: str, gbrain_source: str) -> str:
+    """Persist required GBrain settings without deleting profile credentials."""
+    managed = {"GBRAIN_SOURCE", "GBRAIN_FEDERATED_READ"}
+    kept = []
+    for line in existing.splitlines():
+        key = line.split("=", 1)[0].strip() if "=" in line else ""
+        if key not in managed:
+            kept.append(line)
+    while kept and not kept[-1].strip():
+        kept.pop()
+    kept.extend([
+        "",
+        "# GBrain source isolation and shared-source federation",
+        f"GBRAIN_SOURCE={gbrain_source}",
+        "GBRAIN_FEDERATED_READ=true",
+    ])
+    return "\n".join(kept) + "\n"
 
 
 def link_skills(profile_dir: Path, skills_to_link: list[str], dry_run: bool):
@@ -865,18 +956,32 @@ def link_skills(profile_dir: Path, skills_to_link: list[str], dry_run: bool):
             continue
 
         if not dry_run:
-            os.symlink(str(skill_src.resolve()), str(skill_dst))
-        ok(f"Linked skill: {skill_name}")
+            try:
+                os.symlink(str(skill_src.resolve()), str(skill_dst))
+                ok(f"Linked skill: {skill_name}")
+            except OSError:
+                # Windows commonly denies symlink creation unless Developer Mode
+                # or elevated privileges are enabled. A directory copy preserves
+                # profile isolation and keeps deployment non-interactive.
+                shutil.copytree(skill_src, skill_dst)
+                ok(f"Copied skill (symlink unavailable): {skill_name}")
+        else:
+            ok(f"Linked skill: {skill_name}")
 
 
-def write_file_safe(path: Path, content: str, dry_run: bool):
-    if path.exists():
+def write_file_safe(path: Path, content: str, dry_run: bool, force: bool = False):
+    if path.exists() and not force:
         warn(f"File exists: {path}")
         return False
     if not dry_run:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content)
+        path.write_text(content, encoding="utf-8")
     return True
+
+
+def resolve_gbrain_source(profile_name: str, meta: dict, explicit: str | None) -> str:
+    """Resolve an explicit source override or the profile type's registered source."""
+    return explicit or meta.get("gbrain_source") or profile_name
 
 
 def main():
@@ -898,7 +1003,9 @@ def main():
 
     args = parser.parse_args()
     meta = PROFILE_META[args.type]
-    gbrain_source = args.gbrain_source or args.profile_name
+    gbrain_source = resolve_gbrain_source(args.profile_name, meta, args.gbrain_source)
+    runtime_settings = load_profile_runtime_settings()
+    gbrain_command = resolve_gbrain_command()
     profile_dir = PROFILES_DIR / args.profile_name
 
     print()
@@ -934,11 +1041,17 @@ def main():
     # ── Generate files ──────────────────────────────────────────────────
     # 1. Config
     config_text = load_template(meta["template"])
-    config_text = substitute_config(config_text, args.profile_name, gbrain_source)
+    config_text = substitute_config(
+        config_text,
+        args.profile_name,
+        gbrain_source,
+        runtime_settings,
+        gbrain_command,
+    )
     config_path = profile_dir / "config.yaml"
     if args.dry_run:
         ok(f"[DRY-RUN] Would create: {config_path}")
-    elif write_file_safe(config_path, config_text, dry_run=False) or args.force:
+    elif write_file_safe(config_path, config_text, dry_run=False, force=args.force):
         ok(f"Created: config.yaml")
 
     # 2. SOUL.md
@@ -946,20 +1059,23 @@ def main():
     soul_path = profile_dir / "SOUL.md"
     if args.dry_run:
         ok(f"[DRY-RUN] Would create: {soul_path}")
-    elif write_file_safe(soul_path, soul_text, dry_run=False) or args.force:
+    elif write_file_safe(soul_path, soul_text, dry_run=False, force=args.force):
         ok(f"Created: SOUL.md")
 
-    # 3. .env stub
+    # 3. .env — merge managed settings without erasing platform credentials
     env_path = profile_dir / ".env"
-    if not env_path.exists() or args.force:
-        env_text = generate_env_stub(args.profile_name, args.type)
-        if args.dry_run:
-            ok(f"[DRY-RUN] Would create: {env_path}")
-        else:
-            env_path.write_text(env_text)
-            ok(f"Created: .env stub")
+    if args.dry_run:
+        ok(f"[DRY-RUN] Would create or update: {env_path}")
+    elif env_path.exists():
+        existing_env = env_path.read_text(encoding="utf-8")
+        env_path.write_text(
+            merge_env_settings(existing_env, gbrain_source), encoding="utf-8"
+        )
+        ok("Updated: .env (credentials preserved)")
     else:
-        warn(f"Already exists: .env (skip — already configured)")
+        env_text = generate_env_stub(args.profile_name, args.type, gbrain_source)
+        env_path.write_text(env_text, encoding="utf-8")
+        ok("Created: .env stub")
 
     # 4. Skill symlinks
     link_skills(profile_dir, meta["skills"], dry_run=args.dry_run)

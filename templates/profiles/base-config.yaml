@@ -1,11 +1,10 @@
 # ── Base Profile Config — Standard Department ──
 # Generated from templates/profiles/base-config.yaml
-# All profiles use the default Hermes model config (inherited from main config).
-# Override model by editing this file directly.
+# The generator replaces this placeholder with the active default Hermes model.
 
 model:
-  default: deepseek-v4-flash
-  provider: custom
+  default: placeholder
+  provider: placeholder
 
 fallback_providers: []
 
@@ -14,6 +13,6 @@ providers: {}
 # MCP servers are auto-synced by: python3 scripts/switch-profile.py mcp-sync
 mcp_servers:
   gbrain:
-    command: gbrain
-    args: [mcp]
+    command: $gbrain_command
+    args: [serve]
   # Profile-specific MCP servers go here

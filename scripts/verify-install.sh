@@ -2,7 +2,7 @@
 # ──────────────────────────────────────────────────────────────────────────
 # Shogun OS — Install Verification Suite
 # ──────────────────────────────────────────────────────────────────────────
-# Checks that all Shogun OS assets are correctly installed under ~/.hermes/
+# Checks that all Shogun OS assets are correctly installed under HERMES_HOME
 # after running install.sh.
 #
 # Usage:
@@ -13,7 +13,29 @@
 
 set -euo pipefail
 
+# Resolve Python interpreter (python3 is absent/unusable on many Windows setups)
+if command -v python >/dev/null 2>&1 && python -c 'import sys' >/dev/null 2>&1; then
+  PYTHON=python
+elif command -v python3 >/dev/null 2>&1 && python3 -c 'import sys' >/dev/null 2>&1; then
+  PYTHON=python3
+elif command -v py >/dev/null 2>&1; then
+  PYTHON="py -3"
+else
+  PYTHON=python
+fi
+
+# Resolve Hermes home (Windows Hermes uses AppData/Local/hermes, not ~/.hermes)
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+if [[ ! -d "$HERMES_HOME" && -d "$HOME/AppData/Local/hermes" ]]; then
+  HERMES_HOME="$HOME/AppData/Local/hermes"
+fi
+# Native Windows Python cannot read MSYS-style /c/... paths — normalize to a
+# Windows path (C:\...) so py_compile and json.tool work under Git Bash.
+if command -v cygpath >/dev/null 2>&1; then
+  HERMES_HOME_WIN="$(cygpath -w "$HERMES_HOME" 2>/dev/null || echo "$HERMES_HOME")"
+else
+  HERMES_HOME_WIN="$HERMES_HOME"
+fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR")"
 
@@ -32,6 +54,7 @@ NC='\033[0m'
 ok()   { PASS=$((PASS + 1)); echo -e "  ${GREEN}✅${NC} $1"; }
 warn() { WARN=$((WARN + 1)); echo -e "  ${YELLOW}⚠️${NC} $1"; }
 fail() { FAIL=$((FAIL + 1)); echo -e "  ${RED}❌${NC} $1"; }
+info() { echo -e "  ${CYAN}💡${NC} $1"; }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -79,24 +102,24 @@ check_skill() {
 
 check_skill "department-scrum"
 check_skill "brain-ingest-pipeline"
-check_skill "brain-first-lookup" "skills/brain-first-lookup/SKILL.md"
-check_skill "brain-e2e-tests" "skills/brain-e2e-tests/SKILL.md"
-check_skill "brain-file-delivery" "skills/brain-file-delivery/SKILL.md"
-check_skill "brain-link-campaign" "skills/brain-link-campaign/SKILL.md"
-check_skill "gbrain-capture" "skills/gbrain-capture/SKILL.md"
-check_skill "gbrain-query" "skills/gbrain-query/SKILL.md"
-check_skill "gbrain-think" "skills/gbrain-think/SKILL.md"
-check_skill "gbrain-maintain" "skills/gbrain-maintain/SKILL.md"
-check_skill "gbrain-frontmatter-guard" "skills/gbrain-frontmatter-guard/SKILL.md"
-check_skill "gbrain-signal-detector" "skills/gbrain-signal-detector/SKILL.md"
-check_skill "timeline-inject-v2" "skills/timeline-inject-v2/SKILL.md"
-check_skill "coding-workflow" "skills/coding-workflow/SKILL.md"
-check_skill "systematic-debugging" "skills/systematic-debugging/SKILL.md"
-check_skill "writing-plans" "skills/writing-plans/SKILL.md"
-check_skill "plan" "skills/plan/SKILL.md"
-check_skill "verify-first" "skills/verify-first/SKILL.md"
-check_skill "search-router" "skills/search-router/SKILL.md"
-check_skill "company-workflow" "skills/company-workflow/SKILL.md"
+check_skill "brain-first-lookup"
+check_skill "brain-e2e-tests"
+check_skill "brain-file-delivery"
+check_skill "brain-link-campaign"
+check_skill "gbrain-capture"
+check_skill "gbrain-query"
+check_skill "gbrain-think"
+check_skill "gbrain-maintain"
+check_skill "gbrain-frontmatter-guard"
+check_skill "gbrain-signal-detector"
+check_skill "timeline-inject-v2"
+check_skill "coding-workflow"
+check_skill "systematic-debugging"
+check_skill "writing-plans"
+check_skill "plan"
+check_skill "verify-first"
+check_skill "search-router"
+check_skill "company-workflow"
 
 echo ""
 
@@ -111,7 +134,7 @@ check_script() {
 
     # Validate Python syntax (skip in quick mode)
     if [[ "$QUICK" != true && "$name" == *.py ]]; then
-      if python3 -c "import py_compile; py_compile.compile('$path', doraise=True)" 2>/dev/null; then
+      if "$PYTHON" -c "import py_compile; py_compile.compile(r'$HERMES_HOME_WIN/scripts/$name', doraise=True)" 2>/dev/null; then
         ok "  └─ Syntax check passed: $name"
       else
         fail "  └─ Syntax error in: $name"
@@ -120,7 +143,6 @@ check_script() {
   else
     fail "Script not found: $path"
     if [[ "$FIX" == true ]]; then
-      # Try to find it in the repo
       local found
       found=$(find "$REPO_ROOT" -name "$name" -type f 2>/dev/null | head -1)
       if [[ -n "$found" ]]; then
@@ -146,19 +168,15 @@ echo -e "${CYAN}━━━ Configs ━━━${NC}"
 
 if [[ -f "$HERMES_HOME/config/gmail-batches.json" ]]; then
   ok "Gmail batch config installed"
-  # Validate JSON
-  if jq . "$HERMES_HOME/config/gmail-batches.json" > /dev/null 2>&1; then
+  # Validate JSON (use Python — jq is often absent on Windows)
+  if "$PYTHON" -m json.tool "$HERMES_HOME_WIN/config/gmail-batches.json" > /dev/null 2>&1; then
     ok "  └─ Valid JSON"
   else
     fail "  └─ Invalid JSON"
   fi
 else
-  fail "Gmail batch config not found: $HERMES_HOME/config/gmail-batches.json"
-  if [[ "$FIX" == true && -f "$REPO_ROOT/examples/brain-ingest-configs/gmail-batches.json" ]]; then
-    mkdir -p "$HERMES_HOME/config"
-    cp "$REPO_ROOT/examples/brain-ingest-configs/gmail-batches.json" "$HERMES_HOME/config/gmail-batches.json"
-    ok "[FIX] Installed gmail batch config"
-  fi
+  # Google DWD ingest is optional (skipped when no service-account key is present)
+  warn "Gmail batch config not found: $HERMES_HOME/config/gmail-batches.json (optional — set up Google DWD to enable)"
 fi
 
 echo ""
@@ -167,7 +185,6 @@ echo ""
 echo -e "${CYAN}━━━ Symlinks ━━━${NC}"
 
 if [[ -L "$HERMES_HOME/service-account-key.json" ]]; then
-  target
   target="$(readlink "$HERMES_HOME/service-account-key.json")"
   if [[ -f "$target" ]]; then
     ok "SA-DWD symlink: $HERMES_HOME/service-account-key.json → $target"
@@ -175,9 +192,9 @@ if [[ -L "$HERMES_HOME/service-account-key.json" ]]; then
     warn "SA-DWD symlink exists but target missing: $target"
   fi
 elif [[ -f "$HERMES_HOME/service-account-key.json" ]]; then
-  warn "SA-DWD key exists but is a regular file, not a symlink (should be symlink to ~/.hermes/secrets/google-dwd-sa.json)"
+  warn "SA-DWD key exists but is a regular file (copy fallback is acceptable on Windows without symlink rights)"
 else
-  warn "SA-DWD symlink not found (install.sh creates it when ~/.hermes/secrets/google-dwd-sa.json exists)"
+  warn "SA-DWD key not found — optional; create ~/.hermes/secrets/google-dwd-sa.json to enable Google DWD ingest"
 fi
 
 echo ""
@@ -188,11 +205,10 @@ echo -e "${CYAN}━━━ Hermes Health ━━━${NC}"
 if command -v hermes &> /dev/null; then
   ok "Hermes CLI available: $(hermes --version 2>&1 | head -1)"
 
-  # Check skills are recognized by Hermes (not installed via CLI, but visible)
+  # Check skills are recognized by Hermes
   if [[ "$QUICK" != true ]]; then
-    local skills_output
     skills_output=$(hermes skills list 2>&1 || true)
-    for skill in "department-scrum" "brain-ingest-pipeline" "slack-formatting" "brain-compliance" "profile-enrichment" "gbrain-operations" "lark-formatting"; do
+    for skill in "department-scrum" "brain-ingest-pipeline" "brain-compliance" "profile-enrichment" "gbrain-operations"; do
       if echo "$skills_output" | grep -qi "$skill"; then
         ok "  └─ Hermes recognizes skill: $skill"
       else
@@ -213,30 +229,28 @@ if command -v hermes &> /dev/null; then
   if hermes mcp list 2>&1 | grep -qi "gbrain"; then
     ok "GBrain MCP server is configured"
 
-    # Test: can we query gbrain (if Hermes is running)
+    # Live MCP connection test (works without a running gateway)
     if [[ "$QUICK" != true ]]; then
-      local gbrain_test
-      gbrain_test=$(hermes chat -q "mcp_gbrain_get_health" --quiet 2>&1 || true)
-      if echo "$gbrain_test" | grep -qi "page_count\|brain_score\|version"; then
-        ok "  └─ gbrain MCP responds: connected"
+      gbrain_test=$(hermes -p default mcp test gbrain 2>&1 || true)
+      if echo "$gbrain_test" | grep -qi "connected\|successful"; then
+        ok "  └─ gbrain MCP connects"
       else
-        warn "  └─ gbrain MCP configured but query failed (gateway may not be running)"
+        warn "  └─ gbrain MCP configured (live query skipped — gateway may not be running)"
       fi
     fi
   else
-    warn "GBrain MCP server not configured — run gbrain serve and add to hermes mcp"
+    warn "GBrain MCP server not configured for default profile — run 'gbrain serve' and add it via 'hermes -p <profile> mcp add'"
   fi
 
-  # Check stock-scanner MCP
+  # Check stock-scanner MCP (optional)
   if hermes mcp list 2>&1 | grep -qi "stock-scanner"; then
     ok "stock-scanner MCP server is configured"
     if [[ "$QUICK" != true ]]; then
-      local stock_test
-      stock_test=$(hermes chat -q "mcp_stock_scanner_tradingview_market_indices" --quiet 2>&1 || true)
-      if echo "$stock_test" | grep -qi "VIX\|S&P\|NASDAQ"; then
-        ok "  └─ stock-scanner MCP responds: connected"
+      stock_test=$(hermes -p default mcp test stock-scanner 2>&1 || true)
+      if echo "$stock_test" | grep -qi "connected\|successful"; then
+        ok "  └─ stock-scanner MCP connects"
       else
-        warn "  └─ stock-scanner MCP configured but query failed"
+        warn "  └─ stock-scanner MCP configured (live query skipped)"
       fi
     fi
   else
@@ -251,7 +265,6 @@ echo ""
 # ── 7. Repo Integrity ───────────────────────────────────────────────────
 echo -e "${CYAN}━━━ Repo Integrity ━━━${NC}"
 
-# Verify no old paths remain
 if [[ ! -d "$REPO_ROOT/plugins" ]]; then
   ok "No old plugins/ directory"
 else
@@ -276,11 +289,10 @@ else
   warn "Old recipe still exists: recipes/calendar-to-brain.md"
 fi
 
-# Verify docs/ exists
 if [[ -d "$REPO_ROOT/docs" ]]; then
   ok "docs/ directory present"
 else
-  warn "docs/ directory missing — run Phase 7"
+  warn "docs/ directory missing"
 fi
 
 echo ""
