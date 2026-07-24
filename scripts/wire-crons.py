@@ -5,11 +5,11 @@ Shogun OS — Cron Wirer
 Generates and recommends cron jobs for a profile based on its type.
 
 Usage:
-  python3 scripts/wire-crons.py project-manager --type project-manager
-  python3 scripts/wire-crons.py hr-manager --type hr --deliver telegram:-1001234567890
-  python3 scripts/wire-crons.py finance --type finance --list
-  python3 scripts/wire-crons.py project-manager --apply       # (requires hermes CLI)
-══════════════════════════════════════════════════════════════════════════════
+  python scripts/wire-crons.py project-manager --type project-manager
+  python scripts/wire-crons.py hr-manager --type hr --deliver telegram:-1001234567890
+  python scripts/wire-crons.py finance --type finance --list
+  python scripts/wire-crons.py project-manager --apply       # (requires hermes CLI)
+
 
 Each profile type maps to a set of recommended cron jobs (scrum standups,
 pipeline tasks, etc.). The wirer outputs YAML-ready cron specs or directly
@@ -36,7 +36,16 @@ import shutil
 import subprocess
 import sys
 
-HERMES_HOME = os.environ.get("HERMES_HOME", os.path.expanduser("~/.hermes"))
+# Resolve Hermes home (Windows Hermes uses AppData/Local/hermes, not ~/.hermes)
+HERMES_HOME = os.environ.get("HERMES_HOME")
+if not HERMES_HOME:
+    default = os.path.expanduser("~/.hermes")
+    if os.path.isdir(default):
+        HERMES_HOME = default
+    elif os.path.isdir(os.path.expanduser("~/AppData/Local/hermes")):
+        HERMES_HOME = os.path.expanduser("~/AppData/Local/hermes")
+    else:
+        HERMES_HOME = default
 
 # ── Cron job definitions per profile type ───────────────────────────────
 
@@ -254,15 +263,20 @@ def get_crons(profile_type, profile_name):
                  for k, v in cron.items()}
         crons.append(entry)
 
+    # Substitute the resolved Hermes home (handles Windows AppData path)
+    for cron in crons:
+        if isinstance(cron.get("prompt"), str):
+            cron["prompt"] = cron["prompt"].replace("~/.hermes", HERMES_HOME)
+
     return crons
 
 
-def format_cron_commands(crons, deliver):
-    """Format cron jobs as hermes CLI commands."""
+def format_cron_commands(crons, deliver, profile_name):
+    """Format cron jobs as hermes CLI commands (profile-scoped)."""
     commands = []
     for cron in crons:
         cmd_parts = [
-            "hermes cron create",
+            f"hermes -p {profile_name} cron create",
             f"--name \"{cron['name']}\"",
         ]
         if cron["skills"]:
@@ -276,12 +290,17 @@ def format_cron_commands(crons, deliver):
     return commands
 
 
-def apply_crons(crons, deliver, dry_run=False):
-    """Apply cron jobs by running hermes cron create."""
+def apply_crons(crons, deliver, profile_name, dry_run=False):
+    """Apply cron jobs by running `hermes -p <profile> cron create`.
+
+    Cron jobs are created in the named profile's cron database, not the
+    active/default profile, so each department's jobs run with the right
+    config, skills, GBrain source, and tokens.
+    """
     applied = 0
     failed = 0
     for cron in crons:
-        cmd = ["hermes", "cron", "create", "--name", cron["name"]]
+        cmd = ["hermes", "-p", profile_name, "cron", "create", "--name", cron["name"]]
         if cron["skills"]:
             for s in cron["skills"]:
                 cmd.extend(["--skill", s])
@@ -305,7 +324,9 @@ def apply_crons(crons, deliver, dry_run=False):
                 applied += 1
             else:
                 print(f"  ❌ Failed: {cron['name']}")
-                print(f"     {result.stderr.strip()}")
+                # Capture both streams so real errors aren't hidden
+                err_text = (result.stderr or result.stdout or "").strip()
+                print(f"     {err_text}")
                 failed += 1
         except subprocess.TimeoutExpired:
             print(f"  ⏱️  Timeout: {cron['name']}")
@@ -344,7 +365,7 @@ def main():
 
     if args.list:
         print(f"\nRecommended cron jobs for \"{args.profile_name}\" ({args.type}):\n")
-        commands = format_cron_commands(crons, args.deliver)
+        commands = format_cron_commands(crons, args.deliver, args.profile_name)
         for i, cmd in enumerate(commands, 1):
             print(f"  [{i}] {cmd}")
             print()
@@ -369,8 +390,12 @@ def main():
             print("[DRY RUN MODE — no changes will be made]\n")
         else:
             print()
-        applied, failed = apply_crons(crons, args.deliver, dry_run=args.dry_run)
+        applied, failed = apply_crons(
+            crons, args.deliver, args.profile_name, dry_run=args.dry_run
+        )
         print(f"\nResult: {applied} applied, {failed} failed")
+        if failed > 0:
+            sys.exit(1)
         return
 
     # Default: show summary

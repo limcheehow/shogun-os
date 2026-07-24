@@ -100,11 +100,11 @@ NEXT STEPS AFTER INSTALL:
   1. Set up Google DWD:     see recipes/google-dwd.md
   2. Init gbrain:           scripts/init-gbrain.sh --yes
   3. Deploy profiles:       ./install.sh --deploy
-  4. Wire scrum crons:      python3 scripts/wire-crons.py <profile> --apply
+  4. Wire scrum crons:      python scripts/wire-crons.py <profile> --apply
   5. Set up Slack bots:     see SETUP.md Phase 4
   6. Install systemd:       ./install.sh --systemd
   7. Verify install:        ./scripts/verify-install.sh
-  8. Run tests:             python3 scripts/verify-comprehensive.py
+  8. Run tests:             python scripts/verify-comprehensive.py
 EOF
   exit 0
 }
@@ -599,6 +599,9 @@ section_deploy() {
     local p_arr=($profiles)
     local t_arr=($types)
 
+    local deploy_ok=0
+    local deploy_fail=0
+
     info "Deploying ${#p_arr[@]} profiles..."
     for ((i=0; i<${#p_arr[@]}; i++)); do
       local pname="${p_arr[$i]}"
@@ -607,21 +610,38 @@ section_deploy() {
       echo ""
       info "Deploying profile: $pname ($ptype)..."
 
-      # Step 1: Create Hermes profile
+      # Step 1: Create Hermes profile (treat a real failure as fatal, not "already exists")
       if command -v hermes &> /dev/null; then
-        hermes profile create "$pname" 2>/dev/null || warn "Profile $pname may already exist"
+        if hermes profile show "$pname" >/dev/null 2>&1; then
+          info "Profile $pname already exists — keeping"
+        elif hermes profile create "$pname" 2>/dev/null; then
+          ok "Created Hermes profile: $pname"
+        else
+          err "Profile creation failed for $pname — aborting deploy"
+          deploy_fail=$((deploy_fail + 1))
+          continue
+        fi
       else
         warn "hermes CLI not found — skipping profile creation"
       fi
 
       # Step 2: Generate profile config
       if [[ -f "$REPO_ROOT/scripts/generate-profile.py" ]]; then
-        python3 "$REPO_ROOT/scripts/generate-profile.py" "$pname" --type "$ptype" --force 2>&1 || warn "Profile generation failed for $pname"
+        if python "$REPO_ROOT/scripts/generate-profile.py" "$pname" --type "$ptype" --force 2>&1; then
+          deploy_ok=$((deploy_ok + 1))
+        else
+          err "Profile generation failed for $pname"
+          deploy_fail=$((deploy_fail + 1))
+        fi
       fi
     done
 
     echo ""
-    ok "All profiles deployed"
+    if [[ "$deploy_fail" -gt 0 ]]; then
+      err "$deploy_fail profile(s) failed, $deploy_ok succeeded"
+    else
+      ok "All profiles deployed ($deploy_ok)"
+    fi
 
   elif [[ -n "$deploy_target" ]]; then
     # Deploy single profile — format: profile-name:type
@@ -632,11 +652,18 @@ section_deploy() {
     info "Deploying profile: $pname ($ptype)..."
 
     if command -v hermes &> /dev/null; then
-      hermes profile create "$pname" 2>/dev/null || warn "Profile $pname may already exist"
+      if hermes profile show "$pname" >/dev/null 2>&1; then
+        info "Profile $pname already exists — keeping"
+      elif hermes profile create "$pname" 2>/dev/null; then
+        ok "Created Hermes profile: $pname"
+      else
+        err "Profile creation failed for $pname"
+        return 1
+      fi
     fi
 
     if [[ -f "$REPO_ROOT/scripts/generate-profile.py" ]]; then
-      python3 "$REPO_ROOT/scripts/generate-profile.py" "$pname" --type "$ptype" --force 2>&1 || warn "Profile generation failed"
+      python "$REPO_ROOT/scripts/generate-profile.py" "$pname" --type "$ptype" --force 2>&1 || err "Profile generation failed for $pname"
     fi
 
     info "Next: set up Slack bot and wire crons for $pname"
@@ -665,11 +692,11 @@ print_summary() {
   echo -e "    1. Set up Google DWD:  ${CYAN}see recipes/google-dwd.md${NC}"
   echo -e "    2. Init gbrain:         ${CYAN}scripts/init-gbrain.sh --yes${NC}"
   echo -e "    3. Deploy profiles:     ${CYAN}./install.sh --deploy${NC}"
-  echo -e "    4. Wire scrum crons:    ${CYAN}python3 scripts/wire-crons.py <profile> --apply${NC}"
+  echo -e "    4. Wire scrum crons:    ${CYAN}python scripts/wire-crons.py <profile> --apply${NC}"
   echo -e "    5. Set up Slack bots:   ${CYAN}see SETUP.md Phase 4${NC}"
   echo -e "    6. Install systemd:     ${CYAN}./install.sh --systemd${NC}"
   echo -e "    7. Verify install:      ${CYAN}./scripts/verify-install.sh${NC}"
-  echo -e "    8. Run tests:           ${CYAN}python3 scripts/verify-comprehensive.py${NC}"
+  echo -e "    8. Run tests:           ${CYAN}python scripts/verify-comprehensive.py${NC}"
   if [[ -n "$BACKUP_DIR" ]]; then
     echo ""
     info "Backups saved to: $BACKUP_DIR"

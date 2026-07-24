@@ -151,10 +151,11 @@ mcp_servers:
     args: [mcp]
 ```
 
-This is auto-configured by `generate-profile.py` and `init-gbrain.sh`. Verify with:
+This is auto-configured by `generate-profile.py` and `init-gbrain.sh` (they write `GBRAIN_SOURCE` and `GBRAIN_FEDERATED_READ` into each profile's `.env` and `config.yaml`). Verify with:
 ```bash
-hermes config show --profile hr-manager mcp_servers
+hermes -p hr-manager config show
 ```
+Look for the `mcp_servers.gbrain.env` block with `GBRAIN_SOURCE: hr`.
 
 ### 5.3 Set Up Slack Bots
 
@@ -179,31 +180,30 @@ For each department that needs a Slack bot:
 
 ## Phase 6: Wire Cron Jobs
 
-### 6.1 Infrastructure Crons (default profile)
+> **Note:** On Windows, Hermes stores its home under
+> `C:\Users\<you>\AppData\Local\hermes` (not `~/.hermes`). The wiring
+> scripts resolve this automatically. Also use `python` (not `python3`),
+> which is absent/unusable on this host.
 
+### 6.1 Infrastructure Crons
+
+Shogun OS does **not** wire infrastructure crons that depend on Slack or a
+team roster unless those are configured. The shared GBrain sync and nightly
+maintenance jobs are created directly via the Hermes CLI (`gbrain_live_sync.sh`,
+`gbrain_nightly_dream.sh`) — see your existing cron list.
+
+If you want the scrum/standup cadence for a profile (requires a populated
+`scrum.yaml` and, for delivery, a Slack channel), run:
 ```bash
-python3 scripts/wire-crons.py base --type base --deliver local --apply
+python scripts/wire-crons.py <profile> --type <type> --deliver local --apply
+# e.g.
+python scripts/wire-crons.py hr-manager --type hr --deliver local --apply
 ```
 
-### 6.2 Department Scrum Crons
-
-For each department profile, wire the 3-tier scrum workflow:
+### 6.2 Verify Crons
 
 ```bash
-python3 scripts/wire-crons.py hr-manager --type hr --deliver "slack:<channel>" --apply
-python3 scripts/wire-crons.py finance-manager --type finance --deliver "slack:<channel>" --apply
-# ... repeat for each department
-```
-
-Options:
-- `--list` — preview commands without running
-- `--dry-run` — simulate creation
-- `--apply` — create all cron jobs
-
-### 6.3 Verify Crons
-
-```bash
-hermes cron list
+hermes -p <profile> cron list
 ```
 
 ---
@@ -214,46 +214,50 @@ hermes cron list
 ./scripts/verify-install.sh
 ```
 
-Checks performed:
-1. ✅ Skills installed (department-scrum, brain-ingest-pipeline, slack-formatting, brain-compliance, profile-enrichment, gbrain-operations)
-2. ✅ Scripts installed (send-scrum-dms.py, gmail-triage.py, etc.)
-3. ✅ Gmail batch config installed (valid JSON)
-4. ✅ SA-DWD symlink exists
+Checks performed (warnings are non-fatal — e.g. Google DWD ingest is optional):
+1. ✅ Skills installed (21 skills)
+2. ✅ Scripts installed (init-gbrain.sh, wire-crons.py, verify-install.sh, verify-comprehensive.py) — Python syntax validated
+3. ⚠️ Gmail batch config (optional — only if Google DWD is set up)
+4. ⚠️ SA-DWD key/symlink (optional — only if Google DWD is set up)
 5. ✅ Hermes CLI available
-6. ✅ Hermes recognizes all 6 skills
-7. ✅ GBrain MCP configured and responding
-8. ✅ stock-scanner MCP configured (optional)
+6. ✅ Hermes recognizes key skills
+7. ✅ GBrain MCP configured + connects (via `hermes -p <profile> mcp test`)
+8. ⚠️ stock-scanner MCP (optional)
 9. ✅ Repo integrity (no old paths, no superseded recipes)
+
+The script exits non-zero only on hard failures (missing skills/scripts, syntax errors, repo regressions).
 
 ---
 
 ## Phase 8: Go Live
 
-### 8.1 Start Slack Gateways
+### 8.1 Start Slack Gateways (only if Slack bots are configured)
 
 For each profile with a Slack bot:
 ```bash
-hermes gateway start --profile <profile>
+hermes -p <profile> gateway start
 ```
 
 Verify each gateway:
 ```bash
-hermes gateway status --profile <profile>
+hermes -p <profile> gateway status
 # Expected: running
 ```
+
+> On Windows, gateways run under the Hermes Desktop app rather than systemd.
+> Start them from the Hermes GUI or via the command above in a persistent session.
 
 ### 8.2 Enable Cron Jobs
 
 All cron jobs are created in `enabled: true` state. They fire on their next scheduled tick. To verify:
 ```bash
-hermes cron list | grep -B 1 "enabled: false"
-# Should return no results (all enabled)
+hermes -p <profile> cron list
 ```
 
 ### 8.3 Test a Profile
 
 ```bash
-hermes -p hr-manager --exec "mcp_gbrain_whoami"
+hermes -p hr-manager -z "Call mcp_gbrain_whoami and report the result"
 # Expected: your brain identity with hr source
 ```
 

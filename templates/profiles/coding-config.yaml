@@ -1,11 +1,11 @@
 # ── Coding Agent Profile Config ──
 # Optimized for code generation tasks
 # Generated from templates/profiles/coding-config.yaml
-# Uses the default Hermes model config.
+# The generator replaces this placeholder with the active default Hermes model.
 
 model:
-  default: deepseek-v4-flash
-  provider: custom
+  default: placeholder
+  provider: placeholder
 
 fallback_providers: []
 
@@ -13,5 +13,5 @@ providers: {}
 
 mcp_servers:
   gbrain:
-    command: gbrain
-    args: [mcp]
+    command: $gbrain_command
+    args: [serve]
