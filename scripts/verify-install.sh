@@ -97,6 +97,9 @@ check_skill "plan" "skills/plan/SKILL.md"
 check_skill "verify-first" "skills/verify-first/SKILL.md"
 check_skill "search-router" "skills/search-router/SKILL.md"
 check_skill "company-workflow" "skills/company-workflow/SKILL.md"
+check_skill "customer-communication-onboarding" "skills/crm/customer-communication-onboarding/SKILL.md"
+check_skill "respondio-bridge" "skills/crm/respondio-bridge/SKILL.md"
+check_skill "chatwoot-bridge" "skills/crm/chatwoot-bridge/SKILL.md"
 
 echo ""
 

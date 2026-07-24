@@ -1,5 +1,42 @@
 # Changelog
 
+## [3.8.0] — 2026-07-24
+
+### Customer Communication Platform — Kizuna (CRM) Post-Install
+
+Three new CRM skills for setting up a shared customer inbox (IG, FB, WhatsApp, Website) via Respond.io or Chatwoot:
+
+#### New: `customer-communication-onboarding`
+- Kizuna-specific onboarding wizard that runs *after* core Shogun OS install
+- 8-step wizard with two branches: **[a] Respond.io** (SaaS) or **[b] Chatwoot** (self-hosted)
+- Branch A: API key capture → channel inventory → webhook setup → template scan → assignment model
+- Branch B: Docker deploy → inbox creation → agent accounts → webhook wiring → assignment model
+- Scripts: `create-chatwoot-inboxes.py`, `create-chatwoot-agents.py`, `create-channel-pages.py`
+- Templates: Docker Compose + `.env.example` for Chatwoot deployment
+- Trigger: `hermes -p kizuna -q 'cc setup'`
+
+#### New: `respondio-bridge`
+- Runtime integration: Respond.io webhook → Hermes processing → auto-reply or escalate
+- `sync-contact.py`: Respond.io contacts → brain people pages
+- `send-template.py`: Fixed templates from brain → Respond.io messages
+- `check-sla.py`: First response time SLA report (runnable on cron)
+- API reference docs
+
+#### New: `chatwoot-bridge`
+- Runtime integration: Chatwoot webhook → Hermes processing → draft/auto-reply
+- `sync-contact.py`: Chatwoot contacts → brain people pages
+- `log-conversation.py`: Chatwoot conversations → brain timeline entries
+- `check-sla.py`: Response time SLA report (runnable on cron)
+- Supports 3 assignment models: Hermes-first, Human-first, Co-pilot (private notes)
+- API reference docs
+
+#### Changes to existing files
+- **`scripts/install.sh`** — bumped to v3.8.0
+- **`scripts/verify-install.sh`** — added checks for 3 new skills
+- **`skills/shogun/shogun-installer/SKILL.md`** — Step 9 summary now points Kizuna users to post-install CC setup
+
+Full docs: `skills/crm/customer-communication-onboarding/SKILL.md`
+
 ## [3.7.0] — 2026-07-23
 
 ### Documentation & CLI Fixes
