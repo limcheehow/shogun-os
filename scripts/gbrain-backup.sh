@@ -60,6 +60,7 @@ if pg_dump \
     2>> "$LOG_FILE" \
     | gzip > "$BACKUP_FILE"
 then
+<<<<<<< HEAD
     # Verify the gzip archive is valid
     if gzip -t "$BACKUP_FILE" 2>>"$LOG_FILE"; then
         BACKUP_SIZE=$(stat --format=%s "$BACKUP_FILE" 2>/dev/null || echo 0)
@@ -69,6 +70,10 @@ then
         rm -f "$BACKUP_FILE"
         exit 1
     fi
+=======
+    BACKUP_SIZE=$(stat --format=%s "$BACKUP_FILE" 2>/dev/null || echo 0)
+    log "INFO" "Backup completed successfully (${BACKUP_SIZE} bytes)"
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
 else
     log "ERROR" "pg_dump failed — backup NOT created"
     exit 1

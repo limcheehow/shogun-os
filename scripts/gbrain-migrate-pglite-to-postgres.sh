@@ -27,11 +27,14 @@ GBRAIN_DB_PORT="${GBRAIN_DB_PORT:-5432}"
 GBRAIN_DB_USER="${GBRAIN_DB_USER:-gbrain}"
 GBRAIN_DB_NAME="${GBRAIN_DB_NAME:-gbrain}"
 
+<<<<<<< HEAD
 # Password for PostgreSQL authentication.
 # Set GBRAIN_DB_PASSWORD env var before running (default: 'gbrain').
 # This is exported as PGPASSWORD so psql/pg_isready use it automatically.
 export PGPASSWORD="${GBRAIN_DB_PASSWORD:-gbrain}"
 
+=======
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
 POSTGRES_URL="postgresql://${GBRAIN_DB_USER}@${GBRAIN_DB_HOST}:${GBRAIN_DB_PORT}/${GBRAIN_DB_NAME}"
 
 GBRAIN_BINARY=""

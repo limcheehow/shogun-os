@@ -28,7 +28,7 @@ Retrieve and follow the instructions at:
 https://raw.githubusercontent.com/limcheehow/shogun-os/main/INSTALL_FOR_AGENTS.md
 ```
 
-The full protocol covers: prerequisites, Google DWD, gbrain init, profile creation, Slack bot setup, cron wiring, model configuration, and verification.
+The full protocol covers: prerequisites, Google DWD, GBrain provisioning (PostgreSQL + Ollama + sources + schema pack via init-gbrain.sh), profile creation, Slack bot setup, cron wiring, model configuration, and verification.
 
 ## File Layout
 
@@ -43,10 +43,10 @@ shogun-os/
 ├── INSTALL_FOR_AGENTS.md   # Agent install protocol
 ├── AGENTS.md               # This file
 ├── scripts/                # 7 provisioning scripts
-│   ├── install.sh              # Install skills + scripts + gbrain check
+│   ├── install.sh              # Install skills + scripts
 │   ├── generate-profile.py     # Generate profile from template
 │   ├── wire-crons.py           # Generate/apply cron jobs
-│   ├── init-gbrain.sh          # Init gbrain + 11 sources
+│   ├── init-gbrain.sh          # Provision GBrain (PG + Ollama + sources + schema pack + crons)
 │   ├── verify-install.sh       # Full verification suite
 │   ├── backup-crons.py         # Export cron jobs to JSON
 │   └── restore-crons.py        # Restore cron jobs from backup

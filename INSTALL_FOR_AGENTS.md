@@ -9,22 +9,17 @@ Before starting, verify:
 ```bash
 which hermes          # Hermes Agent v0.x+ installed
 hermes --version
-which gbrain          # GBrain v0.42.x+ installed
-gbrain --version
 ```
 
-If either is missing, install:
+If Hermes is missing, install:
 ```bash
 # Hermes Agent
 curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
-
-# GBrain (via Bun)
-curl -fsSL https://bun.sh/install | bash
-export PATH="$HOME/.bun/bin:$PATH"
-bun install -g github:garrytan/gbrain
 ```
 
-**STOP** if either command fails. The installer will need the user's system password for Hermes installation.
+**GBrain is provisioned automatically by `init-gbrain.sh` in Phase 3** — no separate install needed.
+
+**STOP** if the command fails. The installer will need the user's system password for Hermes installation.
 
 ---
 
@@ -40,7 +35,7 @@ Install.sh will:
 1. Copy all 6 skills to `~/.hermes/skills/`
 2. Copy all scripts to `~/.hermes/scripts/`
 3. Copy config files (gmail-batches.json, scrum config example)
-4. Check gbrain version (recommends v0.42.x+)
+4. Verify gbrain version during init-gbrain.sh (Phase 3)
 5. Create SA-DWD symlink if service account key exists
 
 Show the summary to the user.
@@ -53,25 +48,27 @@ Shogun OS needs these secrets. Collect them from the user before proceeding:
 
 | Key | Where to get it |
 |-----|----------------|
-| `SUPABASE_URL` | Supabase project settings (for gbrain) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase project settings |
 | `TELEGRAM_BOT_TOKEN` | BotFather on Telegram (if using Telegram gateway) |
+
+> **Note:** No external database is needed. `init-gbrain.sh` (Phase 3) auto-installs PostgreSQL 16 with pgvector and configures it for local use.
 
 For each Slack bot (one per department), the user needs:
 - **Bot User OAuth Token** (`xoxb-...`) — from Slack App settings → OAuth & Permissions
 - **App-Level Token** (`xapp-...`) — from Slack App settings → App-Level Tokens
 
 Write secrets to `~/.hermes/.env`:
-```bash
-cat >> ~/.hermes/.env << 'EOF'
-SUPABASE_URL=https://...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
-EOF
-```
 
 ---
 
 ## Phase 3: Initialize GBrain
+
+`init-gbrain.sh` (v1.2.0) handles everything GBrain needs — no manual setup required:
+
+- **PostgreSQL 16 auto-install** with pgvector extension
+- **Ollama setup** with `nomic-embed-text` for local embeddings (no API key needed)
+- **11 department sources** created under `~/brain/` (see table below)
+- **`shogun-enterprise` schema pack activation** (at `schema-packs/shogun-enterprise/pack.yaml`)
+- **Cron wiring** for nightly sync, dream cycles, and maintenance
 
 ```bash
 ./scripts/init-gbrain.sh --yes

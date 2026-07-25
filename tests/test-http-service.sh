@@ -22,10 +22,17 @@ else
   fail "scripts/gbrain-http-service.sh exists"
 fi
 
+<<<<<<< HEAD
 if [ -f "$REPO_DIR/scripts/gbrain-http@.service" ]; then
   pass "scripts/gbrain-http@.service exists"
 else
   fail "scripts/gbrain-http@.service exists"
+=======
+if [ -f "$REPO_DIR/scripts/gbrain-http.service" ]; then
+  pass "scripts/gbrain-http.service exists"
+else
+  fail "scripts/gbrain-http.service exists"
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
 fi
 
 # --- Executable check ---
@@ -76,31 +83,48 @@ fi
 echo ""
 echo "--- Systemd unit file content ---"
 
+<<<<<<< HEAD
 if grep -q '\[Unit\]' "$REPO_DIR/scripts/gbrain-http@.service"; then
+=======
+if grep -q '\[Unit\]' "$REPO_DIR/scripts/gbrain-http.service"; then
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
   pass "Systemd file has [Unit] section"
 else
   fail "Systemd file has [Unit] section"
 fi
 
+<<<<<<< HEAD
 if grep -q '\[Service\]' "$REPO_DIR/scripts/gbrain-http@.service"; then
+=======
+if grep -q '\[Service\]' "$REPO_DIR/scripts/gbrain-http.service"; then
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
   pass "Systemd file has [Service] section"
 else
   fail "Systemd file has [Service] section"
 fi
 
+<<<<<<< HEAD
 if grep -q '\[Install\]' "$REPO_DIR/scripts/gbrain-http@.service"; then
+=======
+if grep -q '\[Install\]' "$REPO_DIR/scripts/gbrain-http.service"; then
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
   pass "Systemd file has [Install] section"
 else
   fail "Systemd file has [Install] section"
 fi
 
+<<<<<<< HEAD
 DESCRIPTION_LINE=$(grep 'Description=' "$REPO_DIR/scripts/gbrain-http@.service" || true)
+=======
+DESCRIPTION_LINE=$(grep 'Description=' "$REPO_DIR/scripts/gbrain-http.service" || true)
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
 if echo "$DESCRIPTION_LINE" | grep -q 'GBrain HTTP MCP Server'; then
   pass "Description is 'GBrain HTTP MCP Server'"
 else
   fail "Description is 'GBrain HTTP MCP Server'"
 fi
 
+<<<<<<< HEAD
 # After= targets postgresql (hard dependency), Wants=ollama (soft dependency)
 if grep -q 'After=postgresql.service' "$REPO_DIR/scripts/gbrain-http@.service" && \
    grep -q 'Wants=ollama.service' "$REPO_DIR/scripts/gbrain-http@.service"; then
@@ -110,26 +134,47 @@ else
 fi
 
 if grep -q 'Environment=GBRAIN_HTTP_PORT=3100' "$REPO_DIR/scripts/gbrain-http@.service"; then
+=======
+if grep -q 'After=postgresql.service ollama.service' "$REPO_DIR/scripts/gbrain-http.service"; then
+  pass "After includes postgresql.service and ollama.service"
+else
+  fail "After includes postgresql.service and ollama.service"
+fi
+
+if grep -q 'Environment=GBRAIN_HTTP_PORT=3100' "$REPO_DIR/scripts/gbrain-http.service"; then
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
   pass "Environment sets GBRAIN_HTTP_PORT=3100"
 else
   fail "Environment sets GBRAIN_HTTP_PORT=3100"
 fi
 
 EXPECTED_EXECSTART='%h/shogun-os/scripts/gbrain-http-service.sh'
+<<<<<<< HEAD
 if grep -q "ExecStart=$EXPECTED_EXECSTART" "$REPO_DIR/scripts/gbrain-http@.service"; then
+=======
+if grep -q "ExecStart=$EXPECTED_EXECSTART" "$REPO_DIR/scripts/gbrain-http.service"; then
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
   pass "ExecStart references correct path"
 else
   fail "ExecStart references correct path"
   echo "       Expected: ExecStart=$EXPECTED_EXECSTART"
+<<<<<<< HEAD
   echo "       Actual:   $(grep 'ExecStart=' "$REPO_DIR/scripts/gbrain-http@.service" || echo 'not found')"
 fi
 
 if grep -q 'User=%i' "$REPO_DIR/scripts/gbrain-http@.service"; then
+=======
+  echo "       Actual:   $(grep 'ExecStart=' "$REPO_DIR/scripts/gbrain-http.service" || echo 'not found')"
+fi
+
+if grep -q 'User=%i' "$REPO_DIR/scripts/gbrain-http.service"; then
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
   pass "User=%i (template unit)"
 else
   fail "User=%i (template unit)"
 fi
 
+<<<<<<< HEAD
 if grep -q 'WorkingDirectory=%h' "$REPO_DIR/scripts/gbrain-http@.service"; then
   pass "WorkingDirectory=%h"
 else
@@ -137,23 +182,35 @@ else
 fi
 
 if grep -q 'Restart=on-failure' "$REPO_DIR/scripts/gbrain-http@.service"; then
+=======
+if grep -q 'Restart=on-failure' "$REPO_DIR/scripts/gbrain-http.service"; then
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
   pass "Restart=on-failure"
 else
   fail "Restart=on-failure"
 fi
 
+<<<<<<< HEAD
 if grep -q 'RestartSec=5' "$REPO_DIR/scripts/gbrain-http@.service"; then
+=======
+if grep -q 'RestartSec=5' "$REPO_DIR/scripts/gbrain-http.service"; then
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
   pass "RestartSec=5"
 else
   fail "RestartSec=5"
 fi
 
+<<<<<<< HEAD
 if grep -q 'WantedBy=multi-user.target' "$REPO_DIR/scripts/gbrain-http@.service"; then
+=======
+if grep -q 'WantedBy=multi-user.target' "$REPO_DIR/scripts/gbrain-http.service"; then
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
   pass "WantedBy=multi-user.target"
 else
   fail "WantedBy=multi-user.target"
 fi
 
+<<<<<<< HEAD
 # --- Execution-level verification ---
 echo ""
 echo "--- Execution-level verification ---"
@@ -176,6 +233,8 @@ else
   pass "systemd-analyze not available — skipped systemd unit verification"
 fi
 
+=======
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
 # --- Summary ---
 echo ""
 echo "================================"

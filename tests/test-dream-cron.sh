@@ -83,6 +83,7 @@ else
   fail_one "Uses date in log filename"
 fi
 
+<<<<<<< HEAD
 # 9) Syntax check with bash -n (execution-level verification)
 echo ""
 echo "--- Execution-level verification ---"
@@ -107,6 +108,8 @@ else
   fail_one "Script lacks failure continuation (|| true, || :, || VAR=, or set +e)"
 fi
 
+=======
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
 echo ""
 echo "═══════════════════════════════════════════════════════════════"
 echo "Results: $pass passed, $fail failed"

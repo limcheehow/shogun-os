@@ -22,7 +22,11 @@ log() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"
 }
 
+<<<<<<< HEAD
 # ── Phase runner — returns 1 on failure (caller handles continuation) ──────
+=======
+# ── Phase runner — does NOT exit on phase failure ──────────────────────────
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
 run_phase() {
   local phase_name="$1"
   shift
@@ -36,18 +40,22 @@ run_phase() {
   fi
 }
 
+<<<<<<< HEAD
 # ── Log rotation: delete dream logs older than 7 days ──────────────────────
 rotate_logs() {
   find "$LOG_DIR" -maxdepth 1 -type f -name 'dream-*.log' -mtime +7 -delete 2>/dev/null
   log "Log rotation: cleaned dream logs older than 7 days"
 }
 
+=======
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
 # ── Header ─────────────────────────────────────────────────────────────────
 log "═══════════════════════════════════════════════════════════════"
 log "GBrain Dream Cycle — 3-phase run"
 log "Binary: $GBRAIN"
 log "═══════════════════════════════════════════════════════════════"
 
+<<<<<<< HEAD
 # ── Track failures across phases ───────────────────────────────────────────
 FAILED=0
 
@@ -73,3 +81,18 @@ else
   log "Dream cycle complete — all phases passed."
   log "═══════════════════════════════════════════════════════════════"
 fi
+=======
+# ── Phase 1: Consolidate ───────────────────────────────────────────────────
+run_phase "consolidate"
+
+# ── Phase 2: Synthesize ────────────────────────────────────────────────────
+run_phase "synthesize"
+
+# ── Phase 3: Patterns ──────────────────────────────────────────────────────
+run_phase "patterns"
+
+# ── Footer ─────────────────────────────────────────────────────────────────
+log "═══════════════════════════════════════════════════════════════"
+log "Dream cycle complete."
+log "═══════════════════════════════════════════════════════════════"
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)

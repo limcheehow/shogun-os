@@ -92,6 +92,7 @@ else
 fi
 
 # -------------------------------------------------------
+<<<<<<< HEAD
 # Test 6: Syntax check with bash -n (execution-level verification)
 # -------------------------------------------------------
 echo ""
@@ -116,6 +117,8 @@ else
 fi
 
 # -------------------------------------------------------
+=======
+>>>>>>> e91dd72 (v3.11.0: GBrain production integration)
 # Summary
 # -------------------------------------------------------
 TOTAL=$(($TESTS_PASSED + $TESTS_FAILED))

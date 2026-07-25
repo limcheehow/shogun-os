@@ -9,17 +9,14 @@
 pip install hermes-agent  # or your install method
 hermes --version
 
-# GBrain
-curl -fsSL https://bun.sh/install | bash
-bun install -g github:garrytan/gbrain
-gbrain --version
-
 # Tokscale (for AI spend tracking)
 npm install -g tokscale
 
 # Google Auth libraries
 pip install google-auth google-api-python-client
 ```
+
+> **Note:** GBrain is provisioned automatically by `./scripts/init-gbrain.sh` in Phase 2 below. No manual install needed here.
 
 ## Phase 1: Google DWD (Foundation)
 
@@ -35,46 +32,34 @@ See [`recipes/google-dwd.md`](recipes/google-dwd.md) for the full playbook.
 
 ## Phase 2: GBrain Setup
 
-### 2.1 Initialize Brain
+GBrain is now tightly integrated via `init-gbrain.sh` (v1.2.0+), which handles the entire setup automatically.
+
+### 2.1 Run init-gbrain.sh
 
 ```bash
-gbrain init
-# Choose: Postgres + pgvector via Supabase (recommended for >1000 files)
+./scripts/init-gbrain.sh --yes
 ```
 
-### 2.2 Create Sources
+**What it does:**
 
-```bash
-gbrain sources add shared
-gbrain sources add hr
-gbrain sources add finance
-gbrain sources add projects
-gbrain sources add procurement
-gbrain sources add products
-gbrain sources add crm
-gbrain sources add marketing
-gbrain sources add compliance
-gbrain sources add engineering
-gbrain sources add support
-```
+- **PostgreSQL 16** — auto-installs with pgvector extension for vector embeddings
+- **Ollama + nomic-embed-text** — local embedding model (no external API needed)
+- **11 department sources** — creates `shared`, `hr`, `finance`, `projects`,
+  `procurement`, `products`, `crm`, `marketing`, `compliance`, `engineering`,
+  `support` (each as a folder under `~/brain/`)
+- **shogun-enterprise schema pack** — activates the enterprise schema pack with
+  typed pages (person, project, deal, ticket, vendor, policy, etc.) and link types
+- **Federated read** — configures cross-source search so profiles can query
+  `shared/` and their own department source
+- **Cron wiring** — sets up dream cycle (2 AM daily) and backup (2:30 AM daily)
 
-Each source becomes its own folder under `~/brain/`.
+> **Prerequisite:** `scripts/init-gbrain.sh` requires a working Hermes installation
+> and Google DWD credentials (Phase 1). It auto-detects WSL vs Linux and installs
+> PostgreSQL accordingly.
 
-### 2.3 Configure Federated Read
+### 2.2 Import Staff Directory (Post-Setup)
 
-In each profile's `config.yaml` (except HR, which owns `shared/`):
-
-```bash
-gbrain config set federated_read true
-```
-
-Or set the environment variable:
-
-```bash
-export GBRAIN_FEDERATED_READ=true
-```
-
-### 2.4 Import Staff Directory
+After `init-gbrain.sh` completes, import the staff directory:
 
 ```bash
 mkdir -p ~/brain/shared/staff
@@ -126,8 +111,8 @@ mcp_servers:
     env:
       GBRAIN_SOURCE: "<dept>"
       GBRAIN_FEDERATED_READ: "true"
-      SUPABASE_URL: "${SUPABASE_URL}"
-      SUPABASE_SERVICE_ROLE_KEY: "${SUPABASE_SERVICE_ROLE_KEY}"
+      LOCAL_PG_CONNECTION_STRING: "${LOCAL_PG_CONNECTION_STRING}"
+      OLLAMA_HOST: "${OLLAMA_HOST:-http://localhost:11434}"
 ```
 
 ## Phase 4: Slack Bot Configuration
@@ -519,7 +504,7 @@ hermes cron resume <job-id>
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| `mcp_gbrain_*` fails | Wrong `GBRAIN_SOURCE` or Supabase env | Check profile `config.yaml` MCP env; `gbrain doctor` |
+| `mcp_gbrain_*` fails | Wrong `GBRAIN_SOURCE` or local PostgreSQL env | Check profile `config.yaml` MCP env; `gbrain doctor` |
 | Slack bot silent | Socket Mode off / bad tokens | Re-check `bot_token` / `app_token`; bot events `message.im`, `app_mention` |
 | Cron never fires | Job paused or wrong profile | `hermes cron list --profile <p>`; `hermes cron resume <id>` |
 | Federated read empty | Flag not set | `GBRAIN_FEDERATED_READ=true` on non-HR profiles |

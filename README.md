@@ -35,7 +35,7 @@ Choose your **industry vertical** during setup: **General** (services, consultin
 
 ## Prerequisites
 
-Before deploying Shogun OS, you need two core tools installed on your server (Linux or WSL2):
+Before deploying Shogun OS, you need one core tool installed on your server (Linux or WSL2). GBrain is included in the repo and auto-configured by `init-gbrain.sh` during setup.
 
 ### 1. Hermes Agent
 
@@ -51,21 +51,22 @@ hermes --version
 
 **Links:** [Documentation](https://hermes-agent.nousresearch.com/docs) | [GitHub](https://github.com/NousResearch/hermes-agent) | [Install Guide](https://hermes-agent.nousresearch.com/docs/getting-started/installation)
 
-### 2. GBrain (Knowledge Base)
+### 2. PostgreSQL 16+
 
-The hybrid-search knowledge engine that stores and retrieves every department's data.
+Required by GBrain for vector storage (pgvector extension). GBrain's `init-gbrain.sh` script will auto-install and configure PostgreSQL 16 for you if it's not already present.
 
 ```bash
-# Install via Bun (recommended)
-curl -fsSL https://bun.sh/install | bash
-export PATH="$HOME/.bun/bin:$PATH"
-bun install -g github:garrytan/gbrain
-
-# Verify
-gbrain --version  # should be v0.42.x+
+# Or install manually
+sudo apt install postgresql-16 postgresql-16-pgvector
 ```
 
-**Links:** [GitHub](https://github.com/garrytan/gbrain) | [AGENTS.md](https://github.com/garrytan/gbrain/blob/main/AGENTS.md) (install protocol for AI agents)
+**GBrain is included in this repo** — no separate install needed. The `init-gbrain.sh` script (v1.2.0+) handles everything:
+- PostgreSQL auto-install & pgvector setup
+- Ollama local embedding (nomic-embed-text, 768d, zero cost)
+- 11 department source creation
+- `shogun-enterprise` schema pack activation
+- Cron wiring (nightly dream cycle at 2am, pg_dump backup at 2:30am)
+- Dual MCP transport (stdio for Hermes profiles, HTTP for web portal)
 
 ### 3. Optional but Recommended
 
@@ -73,8 +74,7 @@ gbrain --version  # should be v0.42.x+
 |------|-----|---------|
 | **Slack Bot** | Every department agent communicates via Slack | [api.slack.com/apps](https://api.slack.com/apps) — create one bot per profile |
 | **Google Workspace SA-DWD** | Gmail/Calendar/Drive access via service accounts | See [`recipes/google-dwd.md`](recipes/google-dwd.md) |
-| **PostgreSQL 16+** | Production-grade session storage (vs PGLite) | `sudo apt install postgresql-16` or use Supabase |
-| **Node.js 20+** | Required by GBrain (Bun runtime) | `curl -fsSL https://deb.nodesource.com/setup_20.x \| sudo bash -` |
+| **Ollama** | Local embeddings (768d, zero cost) — auto-installed by init-gbrain.sh if not present | `curl -fsSL https://ollama.com/install.sh \| sh` |
 | **Cloudflare Account** | Web portal subdomain routing (`*.shogun-os.ai`) | [cloudflare.com](https://cloudflare.com) — free plan works |
 | **Docker** | Registry service deployment | `sudo apt install docker.io docker-compose` |
 
@@ -83,11 +83,11 @@ gbrain --version  # should be v0.42.x+
 Run this to confirm everything is in place:
 
 ```bash
-which hermes && echo "✅ Hermes" || echo "❌ Hermes"
-which gbrain && echo "✅ GBrain" || echo "❌ GBrain"
-which bun    && echo "✅ Bun"    || echo "⚠️  Bun (recommended for gbrain)"
-which docker && echo "✅ Docker" || echo "⚠️  Docker (for web registry)"
+which hermes  && echo "✅ Hermes" || echo "❌ Hermes"
+which docker  && echo "✅ Docker" || echo "⚠️  Docker (for web registry)"
+which psql    && echo "✅ PostgreSQL" || echo "⚠️  PostgreSQL (auto-installed by init-gbrain.sh)"
 ```
+> GBrain, Ollama, and pgvector are verified by `init-gbrain.sh` during setup — no separate check needed.
 
 ---
 
@@ -144,7 +144,7 @@ which docker && echo "✅ Docker" || echo "⚠️  Docker (for web registry)"
 
 **Layer 1: Hermes Agent Profiles** — Each department gets a dedicated Hermes profile with its own SOUL.md (persona), config.yaml (model config + MCP servers + Slack connection), skills, cron jobs, and gbrain source. Physical isolation prevents cross-dept data leaks.
 
-**Layer 2: GBrain (Knowledge Layer)** — Every profile connects to gbrain via MCP. Hybrid search across 11 department sources (`hr/`, `finance/`, `projects/`, etc.) with federated read of `shared/`. One Supabase instance, segmented by source.
+**Layer 2: GBrain (Knowledge Layer)** — Every profile connects to gbrain via MCP. Hybrid search across 11 department sources (`hr/`, `finance/`, `projects/`, etc.) with federated read of `shared/`. Local PostgreSQL 16 with pgvector, segmented by source. Local Ollama embeddings (768d, zero cost). `shogun-enterprise` schema pack with 30+ department page types.
 
 **Layer 3: Slack (Communication Layer)** — One Slack bot per profile. Each bot lives in its department's channels, receives DMs from team members, and posts cron deliveries to its home channel. Slack bot isolation is a hard requirement.
 
@@ -214,7 +214,7 @@ See [`docs/recipes/creating-provider-abstractions.md`](docs/recipes/creating-pro
 ```bash
 # 1. Prerequisites
 which hermes                    # Hermes Agent installed
-which gbrain                    # GBrain installed (v0.42.x+)
+which psql                      # PostgreSQL (or let init-gbrain.sh install it)
 
 # 2. Clone this repo
 git clone https://github.com/limcheehow/shogun-os.git
@@ -223,7 +223,7 @@ cd shogun-os
 # 3. Install skills, scripts, and templates
 ./scripts/install.sh
 
-# 4. Initialize gbrain with department sources
+# 4. Initialize gbrain (auto-installs PostgreSQL + Ollama if needed)
 ./scripts/init-gbrain.sh --yes
 
 # 5. Deploy all 10 department profiles
@@ -425,7 +425,7 @@ hermes skills install shogun-os/company-workflow
 
 | Script | What It Does |
 |--------|-------------|
-| `install.sh` | Install skills, scripts, templates, check gbrain version, deploy profiles |
+| `install.sh` | Install skills, scripts, templates, and deploy profiles |
 | `install-web.sh` | **NEW:** Set up web portal (build React, generate config, register tenant) |
 | `generate-profile.py` | Generate a new Hermes profile with SOUL.md + config.yaml from template |
 | `wire-crons.py` | Generate and apply cron jobs per profile type |
@@ -439,11 +439,24 @@ hermes skills install shogun-os/company-workflow
 
 ## Troubleshooting
 
-### Install fails: gbrain not found
+### Install fails: gbrain init fails
+
+GBrain is included in the repo — no separate install needed. If `init-gbrain.sh` fails:
+
 ```bash
-bun install -g github:garrytan/gbrain
-# Verify
-gbrain --version  # should be v0.42.x+
+# Check PostgreSQL is running
+sudo systemctl status postgresql
+
+# Check Ollama is running (for local embeddings)
+sudo systemctl status ollama
+
+# Re-run init with verbose output
+./scripts/init-gbrain.sh --yes --verbose
+
+# Manual fallback: rebuild gbrain from repo
+git clone https://github.com/garrytan/gbrain.git /tmp/gbrain
+cd /tmp/gbrain && bun install && bun run build
+# Then re-run init-gbrain.sh
 ```
 
 ### Profile creation fails: "Profile already exists"
