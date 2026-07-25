@@ -75,7 +75,15 @@ gbrain sources/
 
 **Federated read:** Every profile can read from `shared/` (staff directory, company policies, taxonomy). Writes go to the profile's own source.
 
-**Hybrid search:** gbrain uses pgvector in Supabase for semantic + keyword search. All profiles share the same Supabase instance but are segmented by source.
+**Production details:**
+
+| Component | Implementation |
+|-----------|---------------|
+| **Engine** | Local PostgreSQL 16 with pgvector extension |
+| **Embedding** | Ollama `nomic-embed-text` (768d, local inference, $0 API cost) |
+| **Schema Pack** | `shogun-enterprise` — 30+ department-specific page types (staff, deal, vendor, ticket, etc.) with typed link verbs |
+| **MCP Transport** | stdio for Hermes Agent profiles + HTTP (port **3100**) for web portal integration |
+| **Nightly Maintenance** | Dream cycle (consolidate + synthesize + patterns) at 2:00 AM; `pg_dump` backup at 2:30 AM |
 
 ### Layer 3: Slack (Communication Layer)
 

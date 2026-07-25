@@ -52,6 +52,7 @@ Federated read is **read-only** from `shared/`. Profiles cannot accidentally wri
 | Google DWD SA key | `~/.hermes/secrets/google-dwd-sa.json` | File permissions 600; NEVER committed |
 | Slack bot tokens | Profile `.env` | NEVER committed |
 | Supabase keys | `~/.hermes/.env` | NEVER committed |
+| PostgreSQL gbrain password | `scripts/init-gbrain.sh` | Default password `gbrain` — **change post-install** via `ALTER USER gbrain PASSWORD '<strong-password>'`; then update `~/.pgpass` |
 | Profile upload keys | `~/.hermes/auth.json` | NEVER committed |
 
 ## Operational Security

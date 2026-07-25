@@ -1,0 +1,617 @@
+api_version: gbrain-schema-pack-v1
+name: shogun-enterprise
+version: 1.0.0
+description: Shogun OS — multi-department enterprise schema pack
+gbrain_min_version: 0.39.0
+extends: gbrain-base
+
+# Inherit takes_kinds from gbrain-base.
+takes_kinds:
+  - fact
+  - take
+  - bet
+  - hunch
+
+# Allow borrowing inferred link types from gbrain-base.
+borrow_from: []
+
+# ──────────────────────────────────────────────────────────────────
+# Department-specific page types
+# ──────────────────────────────────────────────────────────────────
+page_types:
+
+  # ── Shared ──────────────────────────────────────────────────────
+  - name: staff
+    primitive: entity
+    path_prefixes:
+      - shared/staff/
+    aliases: []
+    extractable: true
+    expert_routing: true
+
+  - name: policy
+    primitive: concept
+    path_prefixes:
+      - shared/policies/
+      - shared/policy/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  # ── HR ──────────────────────────────────────────────────────────
+  - name: leave-request
+    primitive: temporal
+    path_prefixes:
+      - hr/leave-requests/
+      - hr/leave-request/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: candidate
+    primitive: entity
+    path_prefixes:
+      - hr/candidates/
+      - hr/candidate/
+    aliases: []
+    extractable: true
+    expert_routing: true
+
+  - name: review
+    primitive: temporal
+    path_prefixes:
+      - hr/reviews/
+      - hr/review/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  # ── Finance ─────────────────────────────────────────────────────
+  - name: budget
+    primitive: concept
+    path_prefixes:
+      - finance/budgets/
+      - finance/budget/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: expense
+    primitive: temporal
+    path_prefixes:
+      - finance/expenses/
+      - finance/expense/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: invoice
+    primitive: temporal
+    path_prefixes:
+      - finance/invoices/
+      - finance/invoice/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  # ── Projects ────────────────────────────────────────────────────
+  - name: milestone
+    primitive: temporal
+    path_prefixes:
+      - projects/milestones/
+      - projects/milestone/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: ticket
+    primitive: temporal
+    path_prefixes:
+      - projects/tickets/
+      - projects/ticket/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  # ── Procurement ─────────────────────────────────────────────────
+  - name: vendor
+    primitive: entity
+    path_prefixes:
+      - procurement/vendors/
+      - procurement/vendor/
+    aliases: []
+    extractable: true
+    expert_routing: true
+
+  - name: purchase-order
+    primitive: temporal
+    path_prefixes:
+      - procurement/purchase-orders/
+      - procurement/purchase-order/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: contract
+    primitive: concept
+    path_prefixes:
+      - procurement/contracts/
+      - procurement/contract/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  # ── Products ────────────────────────────────────────────────────
+  - name: prd
+    primitive: concept
+    path_prefixes:
+      - products/prds/
+      - products/prd/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: roadmap
+    primitive: concept
+    path_prefixes:
+      - products/roadmaps/
+      - products/roadmap/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: release
+    primitive: temporal
+    path_prefixes:
+      - products/releases/
+      - products/release/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  # ── CRM ─────────────────────────────────────────────────────────
+  - name: deal
+    primitive: temporal
+    path_prefixes:
+      - crm/deals/
+      - crm/deal/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: contact
+    primitive: entity
+    path_prefixes:
+      - crm/contacts/
+      - crm/contact/
+    aliases: []
+    extractable: true
+    expert_routing: true
+
+  - name: company
+    primitive: entity
+    path_prefixes:
+      - crm/companies/
+      - crm/company/
+    aliases: []
+    extractable: true
+    expert_routing: true
+
+  # ── Marketing ───────────────────────────────────────────────────
+  - name: campaign
+    primitive: temporal
+    path_prefixes:
+      - marketing/campaigns/
+      - marketing/campaign/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: content
+    primitive: media
+    path_prefixes:
+      - marketing/content/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: event
+    primitive: temporal
+    path_prefixes:
+      - marketing/events/
+      - marketing/event/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  # ── Compliance ──────────────────────────────────────────────────
+  - name: audit
+    primitive: temporal
+    path_prefixes:
+      - compliance/audits/
+      - compliance/audit/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: control
+    primitive: concept
+    path_prefixes:
+      - compliance/controls/
+      - compliance/control/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: risk
+    primitive: concept
+    path_prefixes:
+      - compliance/risks/
+      - compliance/risk/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  # ── Engineering ─────────────────────────────────────────────────
+  - name: adr
+    primitive: annotation
+    path_prefixes:
+      - engineering/adrs/
+      - engineering/adr/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: codebase
+    primitive: concept
+    path_prefixes:
+      - engineering/codebases/
+      - engineering/codebase/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: deployment
+    primitive: temporal
+    path_prefixes:
+      - engineering/deployments/
+      - engineering/deployment/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  # ── Support ─────────────────────────────────────────────────────
+  - name: kb-article
+    primitive: concept
+    path_prefixes:
+      - support/kb-articles/
+      - support/kb-article/
+    aliases: []
+    extractable: true
+    expert_routing: false
+
+  - name: customer
+    primitive: entity
+    path_prefixes:
+      - support/customers/
+      - support/customer/
+    aliases: []
+    extractable: true
+    expert_routing: true
+
+# ──────────────────────────────────────────────────────────────────
+# Link verbs (enterprise relationship types)
+# ──────────────────────────────────────────────────────────────────
+link_types:
+
+  - name: assigned_to
+    inference:
+      regex: \\b(assigned to|assignee|assigned to)\\b
+
+  - name: reports_to
+    inference:
+      regex: \\b(reports to|reports into|reporting to)\\b
+
+  - name: manages
+    inference:
+      regex: \\b(manages|manager of|managing|reports under)\\b
+
+  - name: belongs_to
+    inference:
+      regex: \\b(belongs to|member of|part of|team of)\\b
+
+  - name: raised_by
+    inference:
+      regex: \\b(raised by|created by|opened by|filed by)\\b
+
+  - name: contacts_at
+    inference:
+      regex: \\b(contact at|point of contact|poc for)\\b
+
+  - name: ordered_from
+    inference:
+      regex: \\b(ordered from|purchased from|bought from)\\b
+
+  - name: covers
+    inference:
+      regex: \\b(covers|covers|covering)\\b
+
+  - name: ships_with
+    inference:
+      regex: \\b(ships with|bundled with|packaged with)\\b
+
+  - name: documents
+    inference:
+      regex: \\b(documents|documents|documented by)\\b
+
+  - name: mitigates
+    inference:
+      regex: \\b(mitigates|mitigated by|controls? for)\\b
+
+  - name: audits
+    inference:
+      regex: \\b(audits|audited by|audit of)\\b
+
+  - name: promotes
+    inference:
+      regex: \\b(promotes|promoted by|campaign for)\\b
+
+  - name: references
+    inference:
+      regex: \\b(references|references|refers to|see also)\\b
+
+# ──────────────────────────────────────────────────────────────────
+# Frontmatter links: field → verb mappings per page type
+# ──────────────────────────────────────────────────────────────────
+frontmatter_links:
+
+  # Staff / Org
+  - page_type: staff
+    fields: [manager, reports_to]
+    link_type: reports_to
+
+  - page_type: staff
+    fields: [direct_reports, team]
+    link_type: manages
+
+  - page_type: staff
+    fields: [department, team]
+    link_type: belongs_to
+
+  # Candidate
+  - page_type: candidate
+    fields: [recruiter, interviewer]
+    link_type: assigned_to
+
+  - page_type: candidate
+    fields: [applied_for]
+    link_type: belongs_to
+
+  # Review
+  - page_type: review
+    fields: [reviewer]
+    link_type: assigned_to
+
+  - page_type: review
+    fields: [reviewee, subject]
+    link_type: belongs_to
+
+  # Expense
+  - page_type: expense
+    fields: [submitted_by, claimant]
+    link_type: raised_by
+
+  # Invoice
+  - page_type: invoice
+    fields: [raised_by]
+    link_type: raised_by
+
+  - page_type: invoice
+    fields: [vendor]
+    link_type: ordered_from
+
+  # Budget
+  - page_type: budget
+    fields: [owner, approver]
+    link_type: assigned_to
+
+  # Ticket
+  - page_type: ticket
+    fields: [assignee, assigned_to]
+    link_type: assigned_to
+
+  - page_type: ticket
+    fields: [reporter, raised_by]
+    link_type: raised_by
+
+  # Milestone
+  - page_type: milestone
+    fields: [owner]
+    link_type: assigned_to
+
+  # Vendor
+  - page_type: vendor
+    fields: [account_manager, contact]
+    link_type: contacts_at
+
+  # Purchase Order
+  - page_type: purchase-order
+    fields: [vendor]
+    link_type: ordered_from
+
+  - page_type: purchase-order
+    fields: [requester, raised_by]
+    link_type: raised_by
+
+  - page_type: purchase-order
+    fields: [contract]
+    link_type: references
+
+  # Contract
+  - page_type: contract
+    fields: [vendor, supplier]
+    link_type: ordered_from
+
+  - page_type: contract
+    fields: [owner]
+    link_type: assigned_to
+
+  - page_type: contract
+    fields: [covers]
+    link_type: covers
+
+  # PRD
+  - page_type: prd
+    fields: [author, product_manager]
+    link_type: assigned_to
+
+  - page_type: prd
+    fields: [references, related]
+    link_type: references
+
+  # Release
+  - page_type: release
+    fields: [owner, release_manager]
+    link_type: assigned_to
+
+  - page_type: release
+    fields: [ships_with]
+    link_type: ships_with
+
+  - page_type: release
+    fields: [adrs]
+    link_type: documents
+
+  # Deal
+  - page_type: deal
+    fields: [contact, contacts_at]
+    link_type: contacts_at
+
+  - page_type: deal
+    fields: [company]
+    link_type: belongs_to
+
+  - page_type: deal
+    fields: [owner, account_executive]
+    link_type: assigned_to
+
+  # Contact
+  - page_type: contact
+    fields: [company]
+    link_type: belongs_to
+
+  - page_type: contact
+    fields: [referral, referred_by]
+    link_type: references
+
+  # Company
+  - page_type: company
+    fields: [contacts, key_people]
+    link_type: contacts_at
+
+  # Campaign
+  - page_type: campaign
+    fields: [owner]
+    link_type: assigned_to
+
+  - page_type: campaign
+    fields: [promotes]
+    link_type: promotes
+
+  # Content
+  - page_type: content
+    fields: [author, created_by]
+    link_type: assigned_to
+
+  - page_type: content
+    fields: [campaign]
+    link_type: belongs_to
+
+  # Event
+  - page_type: event
+    fields: [organizer, owner]
+    link_type: assigned_to
+
+  # Audit
+  - page_type: audit
+    fields: [auditor, assigned_to]
+    link_type: audits
+
+  - page_type: audit
+    fields: [auditee, subject]
+    link_type: covers
+
+  # Control
+  - page_type: control
+    fields: [owner]
+    link_type: assigned_to
+
+  - page_type: control
+    fields: [mitigates, addresses]
+    link_type: mitigates
+
+  # Risk
+  - page_type: risk
+    fields: [owner]
+    link_type: assigned_to
+
+  - page_type: risk
+    fields: [mitigated_by]
+    link_type: mitigates
+
+  # ADR
+  - page_type: adr
+    fields: [author, decider]
+    link_type: assigned_to
+
+  - page_type: adr
+    fields: [supersedes, references]
+    link_type: references
+
+  # Codebase
+  - page_type: codebase
+    fields: [owner, tech_lead]
+    link_type: assigned_to
+
+  # Deployment
+  - page_type: deployment
+    fields: [deployed_by, engineer]
+    link_type: assigned_to
+
+  - page_type: deployment
+    fields: [codebase]
+    link_type: documents
+
+  # KB Article
+  - page_type: kb-article
+    fields: [author, owner]
+    link_type: assigned_to
+
+  - page_type: kb-article
+    fields: [related, references]
+    link_type: references
+
+  # Customer
+  - page_type: customer
+    fields: [account_manager, support_rep]
+    link_type: assigned_to
+
+  # Policy
+  - page_type: policy
+    fields: [owner, approver]
+    link_type: assigned_to
+
+# ──────────────────────────────────────────────────────────────────
+# Enrichable types
+# ──────────────────────────────────────────────────────────────────
+enrichable_types:
+  - type: company
+    rubric: company-default
+  - type: contact
+    rubric: person-default
+  - type: vendor
+    rubric: company-default
+  - type: customer
+    rubric: company-default
+  - type: staff
+    rubric: person-default
