@@ -174,7 +174,7 @@ def load_config(force_reload: bool = False) -> WebConfig:
     microsoft = _oauth_from_dict(_as_dict(data.get("microsoft_oauth")))
 
     default_static = str(
-        Path(__file__).resolve().parent.parent / "client" / "dist"
+        Path(__file__).resolve().parent.parent / "ui" / "dist"
     )
 
     cfg = WebConfig(
