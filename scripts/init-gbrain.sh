@@ -15,7 +15,7 @@
 
 set -euo pipefail
 
-VERSION="1.1.0"
+VERSION="1.2.0"
 
 # Resolve Python interpreter (python3 absent/unusable on Windows)
 if command -v python >/dev/null 2>&1 && python -c 'import sys' >/dev/null 2>&1; then
@@ -131,6 +131,83 @@ fi
 
 # If only checking version, exit now
 if [[ "${CHECK_VERSION:-false}" == true ]]; then exit 0; fi
+
+# ── PostgreSQL Setup ────────────────────────────────────────────────────
+
+echo ""
+echo -e "${CYAN}━━━ PostgreSQL Setup ━━━${NC}"
+
+if command -v psql &> /dev/null; then
+  PSQL_VERSION=$(psql --version 2>&1 | head -1)
+  ok "PostgreSQL already installed: $PSQL_VERSION"
+else
+  info "PostgreSQL not found — installing postgresql-16 and postgresql-contrib-16..."
+  if [[ "$DRY_RUN" == true ]]; then
+    ok "[DRY-RUN] Would run: sudo apt-get install -y postgresql-16 postgresql-contrib-16"
+  else
+    sudo apt-get update -qq && sudo apt-get install -y postgresql-16 postgresql-contrib-16 || {
+      err "Failed to install PostgreSQL 16"
+      exit 1
+    }
+    ok "PostgreSQL 16 installed"
+  fi
+fi
+
+# Enable and start PostgreSQL service
+if [[ "$DRY_RUN" == true ]]; then
+  ok "[DRY-RUN] Would enable + start postgresql service"
+else
+  sudo systemctl enable postgresql 2>/dev/null || true
+  sudo systemctl start postgresql 2>/dev/null || true
+  if pg_isready &>/dev/null; then
+    ok "PostgreSQL service is running"
+  else
+    err "PostgreSQL service failed to start"
+    exit 1
+  fi
+fi
+
+# Create gbrain database user (password: 'gbrain') if not exists
+if [[ "$DRY_RUN" == true ]]; then
+  ok "[DRY-RUN] Would create gbrain database user if not exists"
+else
+  USER_EXISTS=$(sudo -u postgres psql -t -c "SELECT 1 FROM pg_roles WHERE rolname='gbrain';" 2>/dev/null | tr -d ' ')
+  if [[ "$USER_EXISTS" == "1" ]]; then
+    ok "gbrain database user already exists"
+  else
+    sudo -u postgres psql -c "CREATE USER gbrain WITH PASSWORD 'gbrain';" 2>&1 || {
+      err "Failed to create gbrain database user"
+      exit 1
+    }
+    ok "Created gbrain database user"
+  fi
+fi
+
+# Create gbrain database owned by gbrain user if not exists
+if [[ "$DRY_RUN" == true ]]; then
+  ok "[DRY-RUN] Would create gbrain database owned by gbrain user if not exists"
+else
+  DB_EXISTS=$(sudo -u postgres psql -t -c "SELECT 1 FROM pg_database WHERE datname='gbrain';" 2>/dev/null | tr -d ' ')
+  if [[ "$DB_EXISTS" == "1" ]]; then
+    ok "gbrain database already exists"
+  else
+    sudo -u postgres psql -c "CREATE DATABASE gbrain OWNER gbrain;" 2>&1 || {
+      err "Failed to create gbrain database"
+      exit 1
+    }
+    ok "Created gbrain database owned by gbrain"
+  fi
+fi
+
+# Enable pgvector extension
+if [[ "$DRY_RUN" == true ]]; then
+  ok "[DRY-RUN] Would enable pgvector extension in gbrain database"
+else
+  sudo -u postgres psql -d gbrain -c "CREATE EXTENSION IF NOT EXISTS vector;" 2>&1 || {
+    warn "Failed to enable pgvector extension (may not be installed)"
+  }
+  ok "pgvector extension enabled in gbrain database"
+fi
 
 # ── Sources to create ──────────────────────────────────────────────────
 
@@ -331,6 +408,94 @@ else
   info "Using gbrain built-in tier defaults (no Hermes model found to inherit)"
 fi
 
+# ── Ollama + Local Embedding ──────────────────────────────────────────
+
+echo ""
+echo -e "${CYAN}━━━ Ollama + Local Embedding ━━━${NC}"
+
+OLLAMA_FOUND=false
+if command -v ollama &> /dev/null; then
+  OLLAMA_FOUND=true
+  OLLAMA_VER=$(ollama --version 2>&1 | head -1)
+  ok "Ollama found: $OLLAMA_VER"
+
+  if ollama list 2>/dev/null | grep -q "nomic-embed-text"; then
+    ok "nomic-embed-text model already pulled"
+  else
+    if [[ "$DRY_RUN" == true ]]; then
+      ok "[DRY-RUN] Would pull nomic-embed-text model: ollama pull nomic-embed-text"
+    else
+      info "Pulling nomic-embed-text model (this may take a moment)..."
+      if ollama pull nomic-embed-text 2>&1; then
+        ok "nomic-embed-text model pulled"
+      else
+        err "Failed to pull nomic-embed-text model"
+      fi
+    fi
+  fi
+else
+  warn "Ollama not found — local embedding will not be available"
+  info "Install Ollama:  curl -fsSL https://ollama.com/install.sh | sh"
+fi
+
+# ── Schema Pack ────────────────────────────────────────────────────────
+
+echo ""
+echo -e "${CYAN}━━━ Schema Pack ━━━${NC}"
+
+SCHEMA_PACK_PATH="$HOME/.gbrain/schema-packs/shogun-enterprise/pack.yaml"
+SCHEMA_PACK_FOUND=false
+if [[ -f "$SCHEMA_PACK_PATH" ]]; then
+  SCHEMA_PACK_FOUND=true
+  ok "Schema pack found: shogun-enterprise"
+  if [[ "$DRY_RUN" == true ]]; then
+    ok "[DRY-RUN] Would run: gbrain schema use shogun-enterprise"
+  else
+    if "$GBRAIN_BIN" schema use shogun-enterprise 2>&1; then
+      ok "Activated schema pack: shogun-enterprise"
+    else
+      err "Failed to activate schema pack: shogun-enterprise"
+    fi
+  fi
+else
+  info "Schema pack not found at $SCHEMA_PACK_PATH"
+  info "It can be created later with:  gbrain schema pack create shogun-enterprise"
+fi
+
+# ── Cron Setup ─────────────────────────────────────────────────────────
+
+echo ""
+echo -e "${CYAN}━━━ Cron Setup ━━━${NC}"
+
+CRON_INSTALLED=0
+EXISTING_CRON=$(crontab -l 2>/dev/null || echo "")
+
+if echo "$EXISTING_CRON" | grep -q "gbrain-dream-cron"; then
+  ok "Cron entry already exists: gbrain-dream-cron"
+else
+  CRON_ENTRY="0 2 * * * \$HOME/shogun-os/scripts/gbrain-dream-cron.sh"
+  if [[ "$DRY_RUN" == true ]]; then
+    ok "[DRY-RUN] Would add cron: $CRON_ENTRY"
+  else
+    CRON_INSTALLED=$((CRON_INSTALLED + 1))
+    (crontab -l 2>/dev/null; echo "$CRON_ENTRY") | crontab -
+    ok "Added cron: $CRON_ENTRY"
+  fi
+fi
+
+if echo "$EXISTING_CRON" | grep -q "gbrain-backup"; then
+  ok "Cron entry already exists: gbrain-backup"
+else
+  CRON_ENTRY="30 2 * * * \$HOME/shogun-os/scripts/gbrain-backup.sh"
+  if [[ "$DRY_RUN" == true ]]; then
+    ok "[DRY-RUN] Would add cron: $CRON_ENTRY"
+  else
+    CRON_INSTALLED=$((CRON_INSTALLED + 1))
+    (crontab -l 2>/dev/null; echo "$CRON_ENTRY") | crontab -
+    ok "Added cron: $CRON_ENTRY"
+  fi
+fi
+
 # ── Verify ─────────────────────────────────────────────────────────────
 
 echo ""
@@ -351,10 +516,21 @@ echo -e "${GREEN}═════════════════════
 if [[ "$DRY_RUN" == true ]]; then
   echo -e "${YELLOW}  ⚡ DRY RUN — No changes made${NC}"
 fi
-echo -e "${GREEN}  GBrain Init Complete${NC}"
+echo -e "  ${GREEN}  GBrain Init Complete${NC}"
 echo -e "    Sources:  ${#SOURCES[@]} department sources"
 echo -e "    Brain:    ${BRAIN_DIR}/{shared,hr,finance,...}/"
 echo -e "    Model:    ${GBRAIN_MODEL:-built-in defaults} (inherited from Hermes)"
+if [[ "$OLLAMA_FOUND" == true ]]; then
+  echo -e "    Ollama:   ${GREEN}installed${NC} (nomic-embed-text)"
+else
+  echo -e "    Ollama:   ${YELLOW}not found${NC}"
+fi
+if [[ "$SCHEMA_PACK_FOUND" == true ]]; then
+  echo -e "    Schema:   shogun-enterprise (activated)"
+else
+  echo -e "    Schema:   ${YELLOW}not installed${NC}"
+fi
+echo -e "    Crons:    $CRON_INSTALLED added (dream + backup)"
 echo ""
 echo -e "${GREEN}  Next Steps:${NC}"
 echo -e "    1. Deploy profiles:  ${CYAN}./install.sh --deploy${NC}"

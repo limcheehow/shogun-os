@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.11.0] — 2026-07-26
+
+### GBrain Production Integration
+
+Full upgrade of the knowledge layer from ad-hoc per-profile stdio to a zero-cost, multi-transport production deployment.
+
+- **Local embeddings:** Switched from OpenAI `text-embedding-3-small` (1536d, paid) to Ollama `nomic-embed-text` (768d, local inference, $0 cost). Added `scripts/init-gbrain.sh` Ollama check + install step.
+- **Local PostgreSQL auto-install:** Script now auto-installs `postgresql-16` + `postgresql-contrib-16` if missing, creates `gbrain` user + database, and enables pgvector extension.
+- **New: `shogun-enterprise` schema pack** — 30+ department-specific page types (staff, leave-request, candidate, budget, expense, invoice, milestone, ticket, vendor, purchase-order, contract, prd, roadmap, release, deal, contact, company, campaign, content, event, audit, control, risk, adr, codebase, deployment, kb-article, customer) with typed link verbs and frontmatter link extraction.
+- **Dual MCP transport:** stdio for 10 Hermes Agent profiles + HTTP server on port 3100 for web portal access.
+- **Nightly dream cycle:** `gbrain-dream-cron.sh` runs consolidate + synthesize + patterns phases at 2:00 AM daily.
+- **pg_dump backups:** `gbrain-backup.sh` runs nightly at 2:30 AM, creates timestamped `.sql.gz` backups in `~/.gbrain/backups/`.
+- **PGLite migration script:** `gbrain-migrate-pglite-to-postgres.sh` for users migrating from the old PGLite-based gbrain setup.
+- **Updated: `ARCHITECTURE.md`** — Layer 2 section rewritten to reflect local PG16, Ollama embeddings, shogun-enterprise schema pack, dual MCP transport, and nightly maintenance schedule.
+- **Updated: `scripts/init-gbrain.sh`** — v1.2.0 now includes Postgres auto-install, pgvector enable, and Ollama provisioning.
+- **Updated: `scripts/install.sh`** — Bumps to v3.11.0 with gbrain production integration checks.
+- **Updated: `scripts/verify-install.sh`** — Adds gbrain production transport, backup, and dream cycle verification.
+
 ## [3.9.0] — 2026-07-25
 
 ### Provider Abstraction Architecture (All 10 Domains)
