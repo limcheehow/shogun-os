@@ -92,6 +92,30 @@ else
 fi
 
 # -------------------------------------------------------
+# Test 6: Syntax check with bash -n (execution-level verification)
+# -------------------------------------------------------
+echo ""
+echo "[Test 6] Syntax check (bash -n)"
+
+if bash -n "$SCRIPT" 2>/dev/null; then
+    pass "bash -n syntax check passed"
+else
+    fail "bash -n syntax check FAILED"
+fi
+
+# -------------------------------------------------------
+# Test 7: Backup verification via gzip -t
+# -------------------------------------------------------
+echo ""
+echo "[Test 7] gzip -t backup verification reference"
+
+if grep -q 'gzip -t\|gzip.*--test\|gzip.*test' "$SCRIPT" 2>/dev/null; then
+    pass "Script references gzip -t (backup verification)"
+else
+    fail "Script does NOT reference gzip -t for backup verification"
+fi
+
+# -------------------------------------------------------
 # Summary
 # -------------------------------------------------------
 TOTAL=$(($TESTS_PASSED + $TESTS_FAILED))

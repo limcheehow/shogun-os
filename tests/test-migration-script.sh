@@ -92,7 +92,7 @@ done
 # 5. Has color variable definitions
 echo "[Test] Color variable definitions"
 for color_var in RED GREEN YELLOW CYAN NC; do
-  if grep -q "${color_var}=" "$SCRIPT" | head -1; then
+  if grep -q "${color_var}=" "$SCRIPT"; then
     pass "Has color variable: ${color_var}"
   else
     fail "Missing color variable: ${color_var}"
@@ -147,6 +147,25 @@ if grep -q "gbrain stats" "$SCRIPT"; then
   pass "Script runs gbrain stats after migration"
 else
   fail "Missing gbrain stats verification"
+fi
+
+# 12. Syntax check with bash -n (execution-level verification)
+echo ""
+echo "[Test] Syntax check (bash -n)"
+SCRIPT_CONTENT=$(cat "$SCRIPT")
+if echo "$SCRIPT_CONTENT" | bash -n 2>/dev/null; then
+  pass "bash -n syntax check passed"
+else
+  fail "bash -n syntax check FAILED"
+fi
+
+# 13. PGPASSWORD support check
+echo ""
+echo "[Test] PGPASSWORD support"
+if grep -q "PGPASSWORD" "$SCRIPT"; then
+  pass "Script supports PGPASSWORD for authentication"
+else
+  fail "Script does NOT support PGPASSWORD"
 fi
 
 echo ""

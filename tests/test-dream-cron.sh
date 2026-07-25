@@ -83,6 +83,30 @@ else
   fail_one "Uses date in log filename"
 fi
 
+# 9) Syntax check with bash -n (execution-level verification)
+echo ""
+echo "--- Execution-level verification ---"
+if bash -n "$SCRIPT" 2>/dev/null; then
+  pass_one "bash -n syntax check passed"
+else
+  fail_one "bash -n syntax check FAILED"
+fi
+
+# 10) Script has || true or equivalent failure continuation (C1 bug prevention)
+echo ""
+echo "--- Failure continuation verification ---"
+if grep -qF '|| true' <<<"$SCRIPT_CONTENT"; then
+  pass_one "Script uses '|| true' continuation for failure resilience"
+elif grep -qF '|| :' <<<"$SCRIPT_CONTENT"; then
+  pass_one "Script uses '|| :' continuation for failure resilience"
+elif grep -qE '\|\| *[A-Z_]+=' <<<"$SCRIPT_CONTENT"; then
+  pass_one "Script uses '|| VAR=' pattern to track failures without exiting"
+elif grep -qE '(set \+e|set -e.*set \+e|trap.*EXIT)' <<<"$SCRIPT_CONTENT"; then
+  pass_one "Script handles failure via explicit error management"
+else
+  fail_one "Script lacks failure continuation (|| true, || :, || VAR=, or set +e)"
+fi
+
 echo ""
 echo "═══════════════════════════════════════════════════════════════"
 echo "Results: $pass passed, $fail failed"

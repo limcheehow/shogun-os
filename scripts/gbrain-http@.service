@@ -1,0 +1,30 @@
+# GBrain HTTP MCP Server — systemd template unit
+#
+# Usage:
+#   sudo systemctl enable gbrain-http@cheehow
+#   sudo systemctl start gbrain-http@cheehow
+#
+# The %i specifier resolves to the instance name (e.g. 'cheehow')
+# and is used as the systemd User. %h resolves to the user's home directory.
+#
+# ollama.service is a Wants= soft dependency — if Ollama isn't installed,
+# the service still starts (unlike a hard After= requirement).
+
+[Unit]
+Description=GBrain HTTP MCP Server
+After=postgresql.service
+Wants=ollama.service
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=%h
+Environment=GBRAIN_HTTP_PORT=3100
+# Note: ExecStart path assumes repo cloned at ~/shogun-os/.
+# If cloned elsewhere, update this path or symlink ~/shogun-os → actual location.
+ExecStart=%h/shogun-os/scripts/gbrain-http-service.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

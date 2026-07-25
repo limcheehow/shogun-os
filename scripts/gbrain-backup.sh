@@ -60,8 +60,15 @@ if pg_dump \
     2>> "$LOG_FILE" \
     | gzip > "$BACKUP_FILE"
 then
-    BACKUP_SIZE=$(stat --format=%s "$BACKUP_FILE" 2>/dev/null || echo 0)
-    log "INFO" "Backup completed successfully (${BACKUP_SIZE} bytes)"
+    # Verify the gzip archive is valid
+    if gzip -t "$BACKUP_FILE" 2>>"$LOG_FILE"; then
+        BACKUP_SIZE=$(stat --format=%s "$BACKUP_FILE" 2>/dev/null || echo 0)
+        log "INFO" "Backup completed successfully (${BACKUP_SIZE} bytes, archive verified)"
+    else
+        log "ERROR" "Backup archive verification FAILED — file may be corrupt"
+        rm -f "$BACKUP_FILE"
+        exit 1
+    fi
 else
     log "ERROR" "pg_dump failed — backup NOT created"
     exit 1
