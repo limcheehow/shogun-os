@@ -1,6 +1,6 @@
 # Shogun OS
 
-> Shogun OS is a reference architecture for running an entire organization through Hermes Agent. Each department gets a dedicated AI operator with role-specific tools, memory, and autonomy. Built on Hermes Agent + GBrain.
+> Shogun OS is a reference architecture for running an entire organization through Hermes Agent. Each department gets a dedicated AI operator with role-specific tools, memory, and autonomy. Built on Hermes Agent + GBrain. **NEW:** Web Portal gives every install a `*.shogun-os.ai` subdomain with onboarding wizard and department dashboards.
 
 Repo: https://github.com/limcheehow/shogun-os
 
@@ -13,8 +13,9 @@ Repo: https://github.com/limcheehow/shogun-os
 
 ## Architecture
 
-- [ARCHITECTURE.md](https://raw.githubusercontent.com/limcheehow/shogun-os/main/ARCHITECTURE.md): Three-layer system design (Hermes profiles → GBrain → Slack bots).
+- [ARCHITECTURE.md](https://raw.githubusercontent.com/limcheehow/shogun-os/main/ARCHITECTURE.md): Four-layer system design (Web Portal → Hermes profiles → GBrain → Slack bots).
 - [docs/architecture/OVERVIEW.md](https://raw.githubusercontent.com/limcheehow/shogun-os/main/docs/architecture/OVERVIEW.md): Detailed architecture with data flow, scrum architecture, cron architecture, security model.
+- [docs/architecture/PROVIDER_ABSTRACTION.md](https://raw.githubusercontent.com/limcheehow/shogun-os/main/docs/architecture/PROVIDER_ABSTRACTION.md): Provider abstraction pattern for all 10 domains.
 
 ## Setup & Deployment
 
@@ -57,9 +58,19 @@ Repo: https://github.com/limcheehow/shogun-os
 | Script | Purpose |
 |--------|---------|
 | [install.sh](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/install.sh) | Install skills, scripts, templates; gbrain version check; deploy profiles |
+| [install-web.sh](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/install-web.sh) | **NEW:** Set up web portal (build React, generate config, register tenant) |
+| [verify-web.sh](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/verify-web.sh) | **NEW:** Verify web portal setup |
 | [generate-profile.py](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/generate-profile.py) | Generate Hermes profile with SOUL.md + config.yaml from template |
 | [wire-crons.py](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/wire-crons.py) | Generate and apply cron jobs per profile type |
 | [init-gbrain.sh](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/init-gbrain.sh) | Initialize gbrain with all 11 department sources |
 | [verify-install.sh](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/verify-install.sh) | Full install verification with MCP connectivity probe |
 | [backup-crons.py](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/backup-crons.py) | Export cron jobs to portable JSON |
 | [restore-crons.py](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/restore-crons.py) | Restore cron jobs from backup |
+
+## Web Portal
+
+| Component | Purpose |
+|-----------|---------|
+| [shogun-web/server](https://raw.githubusercontent.com/limcheehow/shogun-os/main/shogun-web/server/) | FastAPI backend (auth, onboarding, departments, gateway proxy) |
+| [shogun-web/ui](https://raw.githubusercontent.com/limcheehow/shogun-os/main/shogun-web/ui/) | React frontend (login, onboarding wizard, dashboard, department pages) |
+| [shogun-web/registry](https://raw.githubusercontent.com/limcheehow/shogun-os/main/shogun-web/registry/) | Central routing service (Cloudflare Tunnel wildcard, tenant registry) |

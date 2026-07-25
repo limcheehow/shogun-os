@@ -208,10 +208,59 @@ hermes -p <profile> cron list
 
 ---
 
-## Phase 7: Verification
+## Phase 7: Web Portal Setup (Optional but Recommended)
+
+The web portal gives every install a `*.shogun-os.ai` subdomain with onboarding wizard, department dashboards, and unified chat interface.
+
+### 7.1 Prerequisites
+
+- Domain registered (e.g., `shogun-os.ai`)
+- Cloudflare account (free plan works)
+- VPS with Docker (for central registry)
+
+### 7.2 Deploy Central Registry
+
+```bash
+cd shogun-web/registry
+cp .env.example .env
+# Edit .env with your Cloudflare API token + Zone ID
+docker compose up -d
+```
+
+### 7.3 Create Cloudflare Tunnel
+
+```bash
+cloudflared tunnel create shogun-registry
+# Note the tunnel ID
+# Create CNAME record: *.shogun-os.ai → <tunnel-id>.cfargotunnel.com
+```
+
+### 7.4 Install Web Portal
+
+```bash
+./scripts/install-web.sh
+```
+
+This will:
+1. Install Python dependencies
+2. Build React frontend
+3. Generate `~/.shogun-os/web.json` with tenant config
+4. Register with central registry
+5. Print access URL and admin credentials
+
+### 7.5 Verify Web Portal
+
+```bash
+./scripts/verify-web.sh
+```
+
+---
+
+## Phase 8: Verification
 
 ```bash
 ./scripts/verify-install.sh
+./scripts/verify-web.sh  # if web portal installed
 ```
 
 Checks performed (warnings are non-fatal — e.g. Google DWD ingest is optional):
@@ -229,9 +278,9 @@ The script exits non-zero only on hard failures (missing skills/scripts, syntax 
 
 ---
 
-## Phase 8: Go Live
+## Phase 9: Go Live
 
-### 8.1 Start Slack Gateways (only if Slack bots are configured)
+### 9.1 Start Slack Gateways (only if Slack bots are configured)
 
 For each profile with a Slack bot:
 ```bash
@@ -247,25 +296,34 @@ hermes -p <profile> gateway status
 > On Windows, gateways run under the Hermes Desktop app rather than systemd.
 > Start them from the Hermes GUI or via the command above in a persistent session.
 
-### 8.2 Enable Cron Jobs
+### 9.2 Start Web Portal (if installed)
+
+```bash
+cd shogun-web/server
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+# Or use systemd: sudo systemctl start shogun-web
+```
+
+### 9.3 Enable Cron Jobs
 
 All cron jobs are created in `enabled: true` state. They fire on their next scheduled tick. To verify:
 ```bash
 hermes -p <profile> cron list
 ```
 
-### 8.3 Test a Profile
+### 9.4 Test a Profile
 
 ```bash
 hermes -p hr-manager -z "Call mcp_gbrain_whoami and report the result"
 # Expected: your brain identity with hr source
 ```
 
-### 8.4 Post-Install
+### 9.5 Post-Install
 
 - Check brain health: `gbrain doctor`
 - Review SETUP.md for remaining configuration (Scrum configs, model switching)
 - Import initial staff directory: `mkdir -p ~/brain/shared/staff && gbrain import ~/brain/shared/staff`
+- Visit web portal: `https://<your-subdomain>.shogun-os.ai`
 
 ---
 
@@ -278,4 +336,6 @@ hermes -p hr-manager -z "Call mcp_gbrain_whoami and report the result"
 | Slack bot doesn't respond | Check `allowed_channels` in config.yaml, verify gateway is running |
 | Scrum crons not firing | Verify `scrum.yaml` exists in profile directory with real channel IDs |
 | gbrain MCP not found | Add to config.yaml: `mcp_servers.gbrain.command: gbrain`, `mcp_servers.gbrain.args: [mcp]` |
+| Web portal not loading | Check `~/.shogun-os/web.json` exists, verify React build at `shogun-web/ui/dist/` |
+| Registry not routing | Verify Cloudflare Tunnel is running, check DNS CNAME record |
 || No LLM provider | Default profile config handles model settings — no per-profile API keys needed. Check `~/.hermes/config.yaml` model section |
