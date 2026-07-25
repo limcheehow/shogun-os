@@ -2,7 +2,41 @@
 
 ## System Design
 
-Shogun OS runs on three layers:
+Shogun OS runs on four layers:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│              Layer 0: Web Portal (Multi-Tenant UI)              │
+│   *.shogun-os.ai → Cloudflare Tunnel → VPS Registry → Tenant    │
+│   FastAPI (server/) + React (ui/) + registry/                   │
+│   Onboarding · Dept dashboards · Unified chat                   │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+┌────────────────────────────▼────────────────────────────────────┐
+│           Layer 1: Hermes Agent Profiles (×10 depts)            │
+│  SOUL.md · config.yaml · skills/ · cron/ · memories/ · gbrain   │
+│  Provider abstractions (MCP bridges) per domain                 │
+└───────┬─────────────────────────────┬───────────────────────────┘
+        │                             │
+┌───────▼──────────┐         ┌────────▼───────────────────────────┐
+│ Layer 2: GBrain  │         │ Layer 3: Slack (per-profile bots)  │
+│ Knowledge / MCP  │         │ DMs · channels · cron delivery     │
+│ 11 sources +     │         │ Isolation is a hard requirement    │
+│ federated shared │         │                                    │
+└──────────────────┘         └────────────────────────────────────┘
+```
+
+### Layer 0: Web Portal
+
+Multi-tenant **FastAPI + React** application. Each tenant gets a unique subdomain (`*.shogun-os.ai`).
+
+- **Central registry on VPS** with Cloudflare Tunnel wildcard routing maps subdomains to tenant backends
+- **Onboarding wizard**, department dashboards, and a unified chat interface
+- Repo layout under `shogun-web/`:
+  - `server/` — FastAPI backend
+  - `ui/` — React frontend
+  - `registry/` — central routing / tenant registry
+- Provisioning & checks: `install-web.sh` + `verify-web.sh`
 
 ### Layer 1: Hermes Agent Profiles
 
@@ -52,6 +86,27 @@ One Slack bot per profile. Each bot:
 - Posts cron delivery to its home channel
 
 **Slack bot isolation is a hard requirement.** A single bot trying to serve all departments would create cross-department visibility issues (every profile sees every channel).
+
+## Provider Abstractions
+
+Every domain exposes a **unified MCP bridge pattern** with pluggable provider plugins (one bridge per domain; providers loaded via `importlib`). Skills and crons call **contract tools** only — never provider-specific APIs.
+
+| Domain | Providers | Contract Tools | Bridge / recipes |
+|--------|-----------|----------------|------------------|
+| **HR / Time-Tracking** | Jibble, Kami | 11 `tt_*` tools | `recipes/hr/` |
+| **Accounting** | Bukku, QuickBooks, Xero | 11 `acct_*` tools | `recipes/accounting/` |
+| **Procurement** | — | 11 `proc_*` tools | `recipes/procurement/` |
+| **CRM** | HubSpot | 11 `crm_*` tools | `recipes/crm/` |
+| **Marketing** | — | 11 `mkt_*` tools | `recipes/marketing/` |
+| **Compliance** | — | 11 `comp_*` tools | `recipes/compliance/` |
+| **Support** | — | 11 `spt_*` tools | `recipes/support/` |
+| **Engineering** | — | 11 `eng_*` tools | `recipes/engineering/` |
+| **Projects** | — | 11 `proj_*` tools | `recipes/projects/` |
+| **Product** | — | 11 `pd_*` tools | `recipes/product/` |
+
+**Pattern:** One MCP bridge per domain. Provider plugins from a `plugins/` directory. Active provider selected via env (e.g. `ACCT_PROVIDER`). OAuth tokens cached at `~/.hermes/mcp-tokens/<domain>-<provider>.json`.
+
+Full guide: [`docs/recipes/creating-provider-abstractions.md`](docs/recipes/creating-provider-abstractions.md). Also see [`docs/architecture/PROVIDER_ABSTRACTION.md`](docs/architecture/PROVIDER_ABSTRACTION.md).
 
 ## MCP Architecture
 
