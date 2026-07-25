@@ -1,0 +1,8 @@
+# Shogun OS central registry service
+fastapi>=0.115.0,<1.0.0
+uvicorn[standard]>=0.32.0,<1.0.0
+httpx>=0.27.0,<1.0.0
+pydantic>=2.7.0,<3.0.0
+pydantic-settings>=2.4.0,<3.0.0
+websockets>=13.0,<16.0
+python-multipart>=0.0.9

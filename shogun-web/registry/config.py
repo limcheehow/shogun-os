@@ -1,0 +1,104 @@
+"""Configuration for the Shogun OS central registry service."""
+
+from __future__ import annotations
+
+import os
+from functools import lru_cache
+from pathlib import Path
+from typing import Optional
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Runtime configuration loaded from environment / .env."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+    # Service
+    host: str = Field(default="0.0.0.0", description="Bind address")
+    port: int = Field(default=9000, description="Listen port")
+    log_level: str = Field(default="info")
+    environment: str = Field(default="production")
+
+    # Public domain (tenants get {subdomain}.{registry_domain})
+    registry_domain: str = Field(
+        default="shogun-os.ai",
+        description="Apex domain for tenant subdomains",
+    )
+
+    # Auth
+    admin_api_key: str = Field(
+        default="change-me-admin-key",
+        description="Bearer token required for admin endpoints",
+    )
+    registration_token: Optional[str] = Field(
+        default=None,
+        description="Optional shared secret required on /api/register",
+    )
+
+    # Database
+    database_path: str = Field(
+        default="/var/lib/shogun-registry/registry.db",
+        description="SQLite database file path",
+    )
+
+    # Proxy / health
+    proxy_timeout_seconds: float = Field(default=60.0)
+    websocket_timeout_seconds: float = Field(default=300.0)
+    health_check_interval_seconds: int = Field(default=30)
+    heartbeat_stale_seconds: int = Field(
+        default=120,
+        description="Mark tenant offline if no heartbeat within this window",
+    )
+    backend_connect_timeout_seconds: float = Field(default=5.0)
+
+    # Cloudflare (optional tunnel management)
+    cloudflare_api_token: Optional[str] = Field(default=None)
+    cloudflare_account_id: Optional[str] = Field(default=None)
+    cloudflare_zone_id: Optional[str] = Field(default=None)
+    cloudflare_api_base: str = Field(
+        default="https://api.cloudflare.com/client/v4"
+    )
+    enable_tunnel_provisioning: bool = Field(
+        default=False,
+        description="If true, create CF tunnels/DNS on register when credentials set",
+    )
+
+    # Local dev convenience
+    allow_insecure_local_db: bool = Field(
+        default=False,
+        description="If true and DB path parent missing, fall back to ./data/registry.db",
+    )
+
+
+@lru_cache
+def get_settings() -> Settings:
+    settings = Settings()
+    db_path = Path(settings.database_path)
+    parent = db_path.parent
+    can_use = True
+    try:
+        parent.mkdir(parents=True, exist_ok=True)
+        if not os.access(parent, os.W_OK):
+            can_use = False
+    except OSError:
+        can_use = False
+
+    if not can_use:
+        # Production path not writable — fall back to local data dir
+        local = Path(__file__).resolve().parent / "data" / "registry.db"
+        local.parent.mkdir(parents=True, exist_ok=True)
+        object.__setattr__(settings, "database_path", str(local))
+        object.__setattr__(settings, "allow_insecure_local_db", True)
+    return settings
+
+
+def reset_settings_cache() -> None:
+    get_settings.cache_clear()

@@ -1000,6 +1000,8 @@ def main():
                         help="Overwrite existing profile directory")
     parser.add_argument("--dry-run", "-n", action="store_true",
                         help="Preview without creating files")
+    parser.add_argument("--gateway-port", type=int, default=None,
+                        help="Gateway port for web portal (default: auto-assign)")
 
     args = parser.parse_args()
     meta = PROFILE_META[args.type]
@@ -1080,6 +1082,20 @@ def main():
     # 4. Skill symlinks
     link_skills(profile_dir, meta["skills"], dry_run=args.dry_run)
 
+    # 5. Gateway port for web portal
+    gateway_port = args.gateway_port
+    if gateway_port is None:
+        # Auto-assign: 8001 + profile index (deterministic)
+        profile_types = list(PROFILE_META.keys())
+        profile_idx = profile_types.index(args.type) if args.type in profile_types else 0
+        gateway_port = 8001 + profile_idx
+    gateway_path = profile_dir / ".gateway-port"
+    if args.dry_run:
+        ok(f"[DRY-RUN] Would create: {gateway_path} (port {gateway_port})")
+    else:
+        gateway_path.write_text(str(gateway_port), encoding="utf-8")
+        ok(f"Created: .gateway-port (port {gateway_port})")
+
     # ── Summary ─────────────────────────────────────────────────────────
     print()
     print(f"  {color('════════════════════════════════════════════════', 'green')}")
@@ -1088,11 +1104,13 @@ def main():
     info(f"SOUL:      {profile_dir / 'SOUL.md'}")
     info(f"Env:       {profile_dir / '.env'}")
     info(f"Skills:    {meta['skills'] or 'none'}")
+    info(f"Gateway:   port {gateway_port}")
     print()
     info("Next steps:")
     info("  1. Edit .env with your API keys (profiles don't inherit)")
     info("  2. Activate:  hermes profile use {args.profile_name}")
     info("  3. Wire crons: python3 scripts/wire-crons.py {args.profile_name} --type {args.type}")
+    info("  4. Start gateway: hermes serve --profile {args.profile_name} --port {gateway_port}")
     print()
 
 

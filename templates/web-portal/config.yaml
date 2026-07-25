@@ -1,0 +1,102 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Shogun OS — Web Portal Server Config (template)
+# Installed to: ~/.shogun-os/config.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+# Placeholders (substituted by install-web.sh):
+#   {{HOST}} {{PORT}} {{DB_PATH}} {{STATIC_DIR}} {{SECRET_KEY}}
+#   {{GOOGLE_CLIENT_ID}} {{GOOGLE_CLIENT_SECRET}}
+#   {{MS_CLIENT_ID}} {{MS_CLIENT_SECRET}} {{MS_TENANT_ID}}
+#   {{REGISTRY_URL}} {{REGISTRY_TOKEN}} {{LOG_PATH}}
+# ─────────────────────────────────────────────────────────────────────────────
+
+server:
+  host: "{{HOST}}"
+  port: "{{PORT}}"
+  reload: false
+  workers: 1
+  cors_origins:
+    - "https://*.shogun.os"
+    - "http://localhost:{{PORT}}"
+    - "http://127.0.0.1:{{PORT}}"
+
+database:
+  # SQLite by default; set url for Postgres if preferred
+  path: "{{DB_PATH}}"
+  url: "sqlite:///{{DB_PATH}}"
+  echo: false
+
+auth:
+  secret_key: "{{SECRET_KEY}}"
+  algorithm: "HS256"
+  access_token_expire_minutes: 1440
+  # Local admin password login always available; OAuth is optional
+  oauth:
+    google:
+      client_id: "{{GOOGLE_CLIENT_ID}}"
+      client_secret: "{{GOOGLE_CLIENT_SECRET}}"
+      enabled: false
+    microsoft:
+      client_id: "{{MS_CLIENT_ID}}"
+      client_secret: "{{MS_CLIENT_SECRET}}"
+      tenant_id: "{{MS_TENANT_ID}}"
+      enabled: false
+
+static:
+  # Production React build served by FastAPI
+  dir: "{{STATIC_DIR}}"
+  spa_fallback: true
+
+# Department Hermes profiles and local gateway ports.
+# Ports must be unique and free on the host.
+departments:
+  - name: "HR"
+    profile: "hr-manager"
+    port: 9101
+    enabled: true
+  - name: "Finance"
+    profile: "finance-manager"
+    port: 9102
+    enabled: true
+  - name: "Procurement"
+    profile: "procurement-manager"
+    port: 9103
+    enabled: true
+  - name: "CRM"
+    profile: "crm-manager"
+    port: 9104
+    enabled: true
+  - name: "Marketing"
+    profile: "marketing-manager"
+    port: 9105
+    enabled: true
+  - name: "Compliance"
+    profile: "compliance-manager"
+    port: 9106
+    enabled: true
+  - name: "Customer Support"
+    profile: "customer-support"
+    port: 9107
+    enabled: true
+  - name: "Project"
+    profile: "project-manager"
+    port: 9108
+    enabled: true
+  - name: "Product"
+    profile: "product-manager"
+    port: 9109
+    enabled: true
+  - name: "Coding"
+    profile: "coding-agent"
+    port: 9110
+    enabled: true
+
+registry:
+  url: "{{REGISTRY_URL}}"
+  token: "{{REGISTRY_TOKEN}}"
+  # POST {url}/api/register on install; heartbeat optional
+  heartbeat_interval_seconds: 300
+  domain_suffix: "shogun.os"
+
+logging:
+  level: "INFO"
+  file: "{{LOG_PATH}}"

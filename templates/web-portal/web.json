@@ -1,0 +1,89 @@
+{
+  "tenant_id": "{{TENANT_ID}}",
+  "subdomain": "{{SUBDOMAIN}}",
+  "display_name": "{{DISPLAY_NAME}}",
+  "admin_user": {
+    "email": "{{ADMIN_EMAIL}}",
+    "password_hash": "{{ADMIN_PASSWORD_HASH}}",
+    "display_name": "Admin"
+  },
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8787,
+    "public_url": "https://{{SUBDOMAIN}}.shogun.os"
+  },
+  "departments": [
+    {
+      "name": "HR",
+      "profile": "hr-manager",
+      "port": 9101,
+      "status": "pending"
+    },
+    {
+      "name": "Finance",
+      "profile": "finance-manager",
+      "port": 9102,
+      "status": "pending"
+    },
+    {
+      "name": "Procurement",
+      "profile": "procurement-manager",
+      "port": 9103,
+      "status": "pending"
+    },
+    {
+      "name": "CRM",
+      "profile": "crm-manager",
+      "port": 9104,
+      "status": "pending"
+    },
+    {
+      "name": "Marketing",
+      "profile": "marketing-manager",
+      "port": 9105,
+      "status": "pending"
+    },
+    {
+      "name": "Compliance",
+      "profile": "compliance-manager",
+      "port": 9106,
+      "status": "pending"
+    },
+    {
+      "name": "Customer Support",
+      "profile": "customer-support",
+      "port": 9107,
+      "status": "pending"
+    },
+    {
+      "name": "Project",
+      "profile": "project-manager",
+      "port": 9108,
+      "status": "pending"
+    },
+    {
+      "name": "Product",
+      "profile": "product-manager",
+      "port": 9109,
+      "status": "pending"
+    },
+    {
+      "name": "Coding",
+      "profile": "coding-agent",
+      "port": 9110,
+      "status": "pending"
+    }
+  ],
+  "onboarding": {
+    "step": "welcome",
+    "completed": false,
+    "steps_done": []
+  },
+  "registry": {
+    "registered": false,
+    "registered_at": null,
+    "last_heartbeat": null
+  },
+  "created_at": "{{CREATED_AT}}",
+  "updated_at": "{{CREATED_AT}}"
+}

@@ -1,0 +1,81 @@
+# Shogun OS central registry — VPS deployment
+#
+# Default: SQLite only (single volume).
+# Optional Postgres profile is available but the app uses SQLite by design;
+# Postgres is reserved for future multi-replica deployments / external tooling.
+
+services:
+  registry:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: shogun-registry:latest
+    container_name: shogun-registry
+    restart: unless-stopped
+    ports:
+      - "${REGISTRY_PORT:-9000}:9000"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "9000"
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      REGISTRY_DOMAIN: "${REGISTRY_DOMAIN:-shogun-os.ai}"
+      ADMIN_API_KEY: "${ADMIN_API_KEY:-change-me-admin-key}"
+      REGISTRATION_TOKEN: "${REGISTRATION_TOKEN:-}"
+      DATABASE_PATH: "/var/lib/shogun-registry/registry.db"
+      HEALTH_CHECK_INTERVAL_SECONDS: "${HEALTH_CHECK_INTERVAL_SECONDS:-30}"
+      HEARTBEAT_STALE_SECONDS: "${HEARTBEAT_STALE_SECONDS:-120}"
+      CLOUDFLARE_API_TOKEN: "${CLOUDFLARE_API_TOKEN:-}"
+      CLOUDFLARE_ACCOUNT_ID: "${CLOUDFLARE_ACCOUNT_ID:-}"
+      CLOUDFLARE_ZONE_ID: "${CLOUDFLARE_ZONE_ID:-}"
+      ENABLE_TUNNEL_PROVISIONING: "${ENABLE_TUNNEL_PROVISIONING:-false}"
+    volumes:
+      - registry-data:/var/lib/shogun-registry
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9000/api/health', timeout=3)",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - shogun-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # Optional PostgreSQL for future HA / analytics (app still uses SQLite today).
+  postgres:
+    image: postgres:16-alpine
+    container_name: shogun-registry-pg
+    profiles: ["postgres"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-shogun}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-shogun}"
+      POSTGRES_DB: "${POSTGRES_DB:-shogun_registry}"
+    volumes:
+      - registry-pg-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - shogun-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  registry-data:
+  registry-pg-data:
+
+networks:
+  shogun-net:
+    name: shogun-net
