@@ -1,14 +1,37 @@
 # Shogun OS
 
-> **Every department gets its own AI agent with a Samurai persona, its own gbrain source, and shared infrastructure. One Slack bot per profile. One unified task system. One brain.**
+> **Every department gets its own AI agent with a Samurai persona, its own gbrain source, and shared infrastructure. One Slack bot per profile. One unified task system. One brain. One web portal.**
 
 Shogun OS is a reference architecture for running an entire organization through AI agents. Built on [Hermes Agent](https://hermes-agent.nousresearch.com) + [GBrain](https://github.com/garrytan/gbrain), it gives each department a dedicated AI operator with role-specific tools, memory, and autonomy — isolated from every other department by design.
+
+**NEW in v3.10.0:** Web Portal — every install gets a `*.shogun-os.ai` subdomain with onboarding wizard, department dashboards, and unified chat interface.
 
 Choose your **industry vertical** during setup: **General** (services, consulting, software) or **Manufacturing** (factory, production, OEM). Shared profiles deploy regardless of industry; department-specific profiles activate based on your selection.
 
 > **~30 minutes to a working multi-agent setup.** Clone the repo, run the installer, wire Slack bots. Your agents handle the rest.
+> **~10 minutes to a working web portal.** Run the web installer, set up Cloudflare Tunnel, visit your subdomain.
 
 > **Agents:** start with [`AGENTS.md`](AGENTS.md). **Humans:** start with [`SETUP.md`](SETUP.md). **LLMs:** fetch [`llms.txt`](llms.txt) for the documentation map.
+
+---
+
+## What's New
+
+### v3.10.0 — Web Portal
+- **Multi-tenant web portal** at `*.shogun-os.ai` with per-tenant subdomains
+- **Onboarding wizard** — 4-step setup: departments → company info → provider config → launch
+- **Department dashboards** — Chat, Brain, Docs for each department
+- **Unified auth** — Google/Microsoft OAuth + email/password with forced first-login change
+- **Central registry** — Cloudflare Tunnel wildcard routing to tenant instances
+- **Provider abstractions** — Bukku, QuickBooks, Xero for accounting; Jibble for HR time-tracking
+
+### v3.9.0 — Provider Abstractions
+- **10 domain recipes** — HR, Accounting, Procurement, CRM, Marketing, Compliance, Support, Engineering, Projects, Product
+- **Unified bridge pattern** — one MCP bridge per domain, provider plugins loaded via `importlib`
+- **OAuth helper** — shared token cache at `~/.hermes/mcp-tokens/<domain>-<provider>.json`
+- **Full P0 contracts** — 11 tools per domain, standardized across providers
+
+---
 
 ## Prerequisites
 
@@ -52,6 +75,8 @@ gbrain --version  # should be v0.42.x+
 | **Google Workspace SA-DWD** | Gmail/Calendar/Drive access via service accounts | See [`recipes/google-dwd.md`](recipes/google-dwd.md) |
 | **PostgreSQL 16+** | Production-grade session storage (vs PGLite) | `sudo apt install postgresql-16` or use Supabase |
 | **Node.js 20+** | Required by GBrain (Bun runtime) | `curl -fsSL https://deb.nodesource.com/setup_20.x \| sudo bash -` |
+| **Cloudflare Account** | Web portal subdomain routing (`*.shogun-os.ai`) | [cloudflare.com](https://cloudflare.com) — free plan works |
+| **Docker** | Registry service deployment | `sudo apt install docker.io docker-compose` |
 
 ### Quick Check
 
@@ -61,94 +86,67 @@ Run this to confirm everything is in place:
 which hermes && echo "✅ Hermes" || echo "❌ Hermes"
 which gbrain && echo "✅ GBrain" || echo "❌ GBrain"
 which bun    && echo "✅ Bun"    || echo "⚠️  Bun (recommended for gbrain)"
+which docker && echo "✅ Docker" || echo "⚠️  Docker (for web registry)"
 ```
 
-## What this looks like
-
-Say you're the CEO. You want to know how things are going across the company. Here's what you'd ask, and what you'd get back.
-
-**You ask:**
-> "What's the status of the IOI project, and is the team healthy?"
-
-**Most project trackers give you a dashboard to navigate and interpret yourself.** You open Jira, find the project board, scan through cards, switch to Slack for context, check the support ticket system — it's your brain doing the synthesis across 5 tools.
-
-**Shogun OS gives you a synthesized answer across departments:**
-
-```
-IOI Project — Gorobei (Projects)
-
-73% complete. 3 of 8 milestones delivered. Next: camera
-installation (pending vendor schedule).
-
-RISK: Support ticket TS-2026-012 is 3 days past SLA — Bōei
-      flagged it this morning. IOI customer has mentioned
-      this twice. Gorobei escalated to Kizuna (CRM).
-
-Team health — Jinzai (HR)
-- 9 team members. 0 on leave today. 1 MC yesterday (recovered).
-- Last week's SPACE Pulse: 4.2/5 (stable).
-- No overdue performance reviews.
-
-Budget — Koku (Finance)
-- Project budget: RM 240K. Spent: RM 178K (74%).
-- Cloud cost this month: RM 14.2K (within forecast).
-- Runway: 14 months at current burn rate.
-```
-
-Each sentence is a claim written by the department agent, verified against its gbrain source, and cross-referenced with the shared staff directory. You get the answer, not the dashboard.
-
-## Agent Roster — Shared vs Industry-Specific
-
-Shogun OS profiles are organized by **industry vertical**. Every company gets shared profiles, then picks an industry for department-specific agents.
-
-| Category | Profiles | Details |
-|----------|----------|---------|
-| **Shared** (every company) | Jinzai, Koku, Kura, Kizuna, Haiku, Kata, Boei, Takumi, Benkei | HR, Finance, Procurement, CRM, Marketing, Compliance, Support, Engineering, Executive |
-| **General** (services/software) | Gorobei, Shi | Project management, Product management → [`profiles-general.md`](profiles-general.md) |
-| **Manufacturing** (factory/OEM) | Kojo, Kensa, Shuri, Soko, Anzen | Production, Quality, Maintenance, Warehouse, HSE → [`profiles-manufacturing.md`](profiles-manufacturing.md) |
-| **Retail** (stores/e-commerce) | Tenpo, Shohin, Denshi, Kokyaku, Ryutsu, Hyoji | Stores, Merchandising, E-commerce, CRM-Loyalty, Supply Chain, VM → [`profiles-retail.md`](profiles-retail.md) |
-
-> **Deploy:** `./install.sh --deploy all --industry manufacturing` — creates 13 profiles total.
-> **Deploy:** `./install.sh --deploy all --industry general` — creates 10 profiles total.
-> **Deploy:** `./install.sh --deploy all --industry retail` — creates 14 profiles total.
+---
 
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                    Shogun OS Architecture                    │
-├──────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐     ┌──────────┐   │
-│  │  HR      │ │ Finance  │ │ Projects │ ... │  Coding  │   │
-│  │  Jinzai  │ │ Koku     │ │ Gorobei  │     │  Takumi  │   │
-│  ├──────────┤ ├──────────┤ ├──────────┤     ├──────────┤   │
-│  │ Slack Bot│ │Slack Bot │ │Slack Bot │     │Slack Bot │   │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘     └────┬─────┘   │
-│       │            │            │                │          │
-│       └────────────┴────────────┴────────────────┘          │
-│                            │                                 │
-│                   ┌────────▼────────┐                        │
-│                   │   GBrain MCP    │                        │
-│                   │  (Hybrid Search) │                       │
-│                   └────────┬────────┘                        │
-│                            │                                 │
-│              ┌─────────────┼─────────────┐                   │
-│              │             │             │                   │
-│         ┌────▼───┐  ┌─────▼────┐  ┌────▼────┐              │
-│         │ Shared  │  │Dept Brain│  │ Shared  │              │
-│         │ Skills  │  │ Sources  │  │ Recipes │              │
-│         └─────────┘  └──────────┘  └──────────┘             │
-└──────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    Shogun OS Architecture                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
+│  │  Web Portal │  │  Web Portal │  │  Web Portal │  ...         │
+│  │  (Tenant A) │  │  (Tenant B) │  │  (Tenant C) │             │
+│  │  *.shogun-  │  │  *.shogun-  │  │  *.shogun-  │             │
+│  │   os.ai     │  │   os.ai     │  │   os.ai     │             │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘             │
+│         │                │                │                    │
+│         └────────────────┴────────────────┘                    │
+│                          │                                      │
+│                 ┌────────▼────────┐                             │
+│                 │ Central Registry │  ← Cloudflare Tunnel       │
+│                 │  (shogun-os.ai)  │    Wildcard Routing        │
+│                 └────────┬────────┘                             │
+│                          │                                      │
+│  ┌───────────────────────┼───────────────────────┐              │
+│  │                       │                       │              │
+│  │  ┌──────────┐ ┌───────▼───┐ ┌──────────┐      │              │
+│  │  │  HR      │ │  Finance  │ │ Projects │ ...  │              │
+│  │  │  Jinzai  │ │   Koku    │ │ Gorobei  │      │              │
+│  │  ├──────────┤ ├───────────┤ ├──────────┤      │              │
+│  │  │ Slack Bot│ │ Slack Bot │ │ Slack Bot│      │              │
+│  │  │ Web Chat │ │ Web Chat  │ │ Web Chat │      │              │
+│  │  └────┬─────┘ └─────┬─────┘ └────┬─────┘      │              │
+│  │       │             │            │            │              │
+│  │       └─────────────┴────────────┴────────────┘              │
+│  │                         │                                    │
+│  │                ┌────────▼────────┐                           │
+│  │                │   GBrain MCP    │                           │
+│  │                │  (Hybrid Search) │                           │
+│  │                └────────┬────────┘                           │
+│  │                         │                                    │
+│  │           ┌─────────────┼─────────────┐                      │
+│  │           │             │             │                      │
+│  │      ┌────▼───┐  ┌─────▼────┐  ┌────▼────┐                 │
+│  │      │ Shared  │  │Dept Brain│  │ Shared  │                 │
+│  │      │ Skills  │  │ Sources  │  │ Recipes │                 │
+│  │      └─────────┘  └──────────┘  └──────────┘                 │
+│  └──────────────────────────────────────────────────────────────┘
 ```
 
-### Three Layers
+### Four Layers
+
+**Layer 0: Web Portal (NEW)** — Multi-tenant FastAPI + React application. Each tenant gets a `*.shogun-os.ai` subdomain via Cloudflare Tunnel wildcard routing. Central registry on VPS routes subdomains to tenant backends. Onboarding wizard, department dashboards, unified chat interface.
 
 **Layer 1: Hermes Agent Profiles** — Each department gets a dedicated Hermes profile with its own SOUL.md (persona), config.yaml (model config + MCP servers + Slack connection), skills, cron jobs, and gbrain source. Physical isolation prevents cross-dept data leaks.
 
 **Layer 2: GBrain (Knowledge Layer)** — Every profile connects to gbrain via MCP. Hybrid search across 11 department sources (`hr/`, `finance/`, `projects/`, etc.) with federated read of `shared/`. One Supabase instance, segmented by source.
 
-**Layer 3: Slack (Communication Layer)** — One Slack bot per profile. Each bot lives in its department's channels, receives DMs from team members, and posts cron deliveries to its home channel. Slack bot isolation is a hard requirement — a single bot serving all departments creates cross-dept visibility issues.
+**Layer 3: Slack (Communication Layer)** — One Slack bot per profile. Each bot lives in its department's channels, receives DMs from team members, and posts cron deliveries to its home channel. Slack bot isolation is a hard requirement.
 
 ### Samurai Personas
 
@@ -167,7 +165,51 @@ Every profile embodies a Samurai persona from Akira Kurosawa's *Seven Samurai* (
 | Customer Support | **Bōei** (防衛 — "Defense") | Client shield |
 | Coding | **Takumi** (匠 — "Artisan") | Engineering craft |
 
+---
+
+## Agent Roster — Shared vs Industry-Specific
+
+Shogun OS profiles are organized by **industry vertical**. Every company gets shared profiles, then picks an industry for department-specific agents.
+
+| Category | Profiles | Details |
+|----------|----------|---------|
+| **Shared** (every company) | Jinzai, Koku, Kura, Kizuna, Haiku, Kata, Boei, Takumi, Benkei | HR, Finance, Procurement, CRM, Marketing, Compliance, Support, Engineering, Executive |
+| **General** (services/software) | Gorobei, Shi | Project management, Product management → [`profiles-general.md`](profiles-general.md) |
+| **Manufacturing** (factory/OEM) | Kojo, Kensa, Shuri, Soko, Anzen | Production, Quality, Maintenance, Warehouse, HSE → [`profiles-manufacturing.md`](profiles-manufacturing.md) |
+| **Retail** (stores/e-commerce) | Tenpo, Shohin, Denshi, Kokyaku, Ryutsu, Hyoji | Stores, Merchandising, E-commerce, CRM-Loyalty, Supply Chain, VM → [`profiles-retail.md`](profiles-retail.md) |
+
+> **Deploy:** `./install.sh --deploy all --industry manufacturing` — creates 13 profiles total.
+> **Deploy:** `./install.sh --deploy all --industry general` — creates 10 profiles total.
+> **Deploy:** `./install.sh --deploy all --industry retail` — creates 14 profiles total.
+
+---
+
+## Provider Abstractions (NEW in v3.9.0)
+
+Every domain has a unified provider abstraction with pluggable backends:
+
+| Domain | Providers | Contract Tools | Bridge |
+|--------|-----------|---------------|--------|
+| **HR / Time-Tracking** | Jibble, Kami | 11 `tt_*` tools | `recipes/hr/` |
+| **Accounting** | Bukku, QuickBooks, Xero | 11 `acct_*` tools | `recipes/accounting/` |
+| **Procurement** | — | 11 `proc_*` tools | `recipes/procurement/` |
+| **CRM** | HubSpot | 11 `crm_*` tools | `recipes/crm/` |
+| **Marketing** | — | 11 `mkt_*` tools | `recipes/marketing/` |
+| **Compliance** | — | 11 `comp_*` tools | `recipes/compliance/` |
+| **Support** | — | 11 `spt_*` tools | `recipes/support/` |
+| **Engineering** | — | 11 `eng_*` tools | `recipes/engineering/` |
+| **Projects** | — | 11 `proj_*` tools | `recipes/projects/` |
+| **Product** | — | 11 `pd_*` tools | `recipes/product/` |
+
+**Pattern:** One MCP bridge per domain. Provider plugins loaded via `importlib` from `plugins/` directory. Config via `ACCT_PROVIDER` env var. OAuth tokens cached at `~/.hermes/mcp-tokens/<domain>-<provider>.json`.
+
+See [`docs/recipes/creating-provider-abstractions.md`](docs/recipes/creating-provider-abstractions.md) for the full guide.
+
+---
+
 ## Quick Start
+
+### Option A: Full Install (Profiles + Web Portal)
 
 ```bash
 # 1. Prerequisites
@@ -187,11 +229,95 @@ cd shogun-os
 # 5. Deploy all 10 department profiles
 ./scripts/install.sh --deploy all
 
-# 6. Verify everything is in place
+# 6. Set up web portal (NEW)
+./scripts/install-web.sh
+
+# 7. Verify everything is in place
 ./scripts/verify-install.sh
+./scripts/verify-web.sh
+```
+
+### Option B: Web Portal Only
+
+```bash
+# 1. Clone and install web dependencies
+git clone https://github.com/limcheehow/shogun-os.git
+cd shogun-os/shogun-web
+
+# 2. Install and verify
+./scripts/install-web.sh
+./scripts/verify-web.sh
+
+# 3. Start the portal
+cd server && python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+# Visit http://localhost:8000
 ```
 
 The full end-to-end setup playbook (Google DWD, Slack bot configuration, cron wiring) lives in [`SETUP.md`](SETUP.md).
+
+---
+
+## Web Portal Setup (NEW)
+
+The web portal gives every install a `*.shogun-os.ai` subdomain with:
+
+- **Login page** — Google/Microsoft OAuth + email/password
+- **Onboarding wizard** — 4-step setup flow
+- **Department dashboards** — Chat, Brain, Docs per department
+- **Central registry** — Routes subdomains to tenant backends
+
+### Prerequisites
+
+1. **Domain registered** — `shogun-os.ai` (or your own domain)
+2. **Cloudflare account** — Free plan works
+3. **VPS** — For central registry (Hetzner, DigitalOcean, AWS, etc.)
+
+### Setup Steps
+
+```bash
+# 1. Deploy registry to VPS
+cd shogun-web/registry
+cp .env.example .env
+# Edit .env: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, REGISTRY_DOMAIN
+
+docker compose up -d
+
+# 2. Create Cloudflare Tunnel (one-time)
+cloudflared tunnel create shogun-registry
+# Note tunnel ID, create CNAME: *.shogun-os.ai → <tunnel-id>.cfargotunnel.com
+
+# 3. Install web portal on each tenant
+./scripts/install-web.sh
+# Generates: subdomain, admin password, registers with central registry
+
+# 4. Visit your subdomain
+open https://<your-subdomain>.shogun-os.ai
+```
+
+### Web Portal Architecture
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Tenant A  │     │   Tenant B  │     │   Tenant C  │
+│  kura-zen-42│     │  hana-mizu-7│     │  tora-yama-3│
+│ .shogun-os.ai│    │ .shogun-os.ai│    │ .shogun-os.ai│
+└──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+       │                   │                   │
+       └───────────────────┴───────────────────┘
+                           │
+                  ┌────────▼────────┐
+                  │ Central Registry │
+                  │  (VPS + Docker)  │
+                  │  Cloudflare Tunnel│
+                  └────────┬────────┘
+                           │
+                  ┌────────▼────────┐
+                  │  *.shogun-os.ai  │
+                  │  Wildcard CNAME  │
+                  └─────────────────┘
+```
+
+---
 
 ## Install by AI Agent (recommended)
 
@@ -204,6 +330,8 @@ https://raw.githubusercontent.com/limcheehow/shogun-os/main/INSTALL_FOR_AGENTS.m
 
 The agent installs Shogun OS, creates profiles, sets up gbrain sources, configures Slack bots, wires scrum crons, and verifies the install end-to-end. ~30 minutes. You answer questions about Slack tokens and channel IDs.
 
+---
+
 ## Contents
 
 | File | What It Covers |
@@ -215,11 +343,14 @@ The agent installs Shogun OS, creates profiles, sets up gbrain sources, configur
 | [`RECIPE_INDEX.md`](RECIPE_INDEX.md) | All 8 integration recipes with dependencies and setup order |
 | [`AGENTS.md`](AGENTS.md) | Agent-first deployment guide (paste this into your agent) |
 | [`INSTALL_FOR_AGENTS.md`](INSTALL_FOR_AGENTS.md) | Full install protocol for AI agents |
-| `templates/` | Profile configs, scrum config templates |
-| `recipes/` | Self-contained integration recipes (DWD, ingest, scrum, etc.) |
-| `skills/` | 6 reusable Hermes skills for any company |
-| `scripts/` | 7 provisioning scripts (install, profile gen, cron wire, etc.) |
+| `shogun-web/` | **NEW:** Web portal (FastAPI + React + registry) |
+| `recipes/` | Provider abstraction recipes (accounting, HR, CRM, etc.) |
+| `templates/` | Profile configs, scrum config templates, web portal config |
+| `skills/` | 25+ reusable Hermes skills for any company |
+| `scripts/` | Provisioning scripts (install, profile gen, cron wire, web portal, etc.) |
 | `examples/` | 9 scrum config templates with placeholders |
+
+---
 
 ## Shared Skills
 
@@ -252,6 +383,8 @@ Every profile loads shared Hermes skills shipped with this repo:
 | `verify-first` | Behavioral overlay — verify before claiming, challenge assumptions |
 | `search-router` | Intelligent search routing — analyzes query intent and routes to best source |
 
+---
+
 ## What You Get
 
 ### 10 Department Agents
@@ -263,6 +396,14 @@ Each runs as an isolated Hermes Agent profile with:
 - **Cron jobs** — 3-tier daily scrum + department-specific extras
 - **gbrain source** — isolated knowledge store with federated read of `shared/`
 
+### Web Portal (NEW)
+
+- **Multi-tenant** — each install gets a unique `*.shogun-os.ai` subdomain
+- **Onboarding wizard** — 4-step setup: departments → company info → provider config → launch
+- **Department dashboards** — Chat, Brain, Docs for each department
+- **Unified auth** — Google/Microsoft OAuth + email/password with forced first-login change
+- **Provider config** — Per-department API keys and settings
+
 ### 54 Automated Cron Jobs
 
 | Category | Jobs | Type |
@@ -272,7 +413,7 @@ Each runs as an isolated Hermes Agent profile with:
 | Department-specific (pipeline, budget, leave, etc.) | 15 | Agent |
 | Health & monitoring | 4 | no_agent |
 
-### 25 Reusable Skills
+### 25+ Reusable Skills
 
 Shipped in this repo, installable via Hermes skill tap:
 ```bash
@@ -285,12 +426,16 @@ hermes skills install shogun-os/company-workflow
 | Script | What It Does |
 |--------|-------------|
 | `install.sh` | Install skills, scripts, templates, check gbrain version, deploy profiles |
+| `install-web.sh` | **NEW:** Set up web portal (build React, generate config, register tenant) |
 | `generate-profile.py` | Generate a new Hermes profile with SOUL.md + config.yaml from template |
 | `wire-crons.py` | Generate and apply cron jobs per profile type |
 | `init-gbrain.sh` | Initialize gbrain with all 11 department sources |
 | `verify-install.sh` | Full install verification with MCP connectivity probe |
+| `verify-web.sh` | **NEW:** Verify web portal setup |
 | `backup-crons.py` | Export all cron jobs to portable JSON for migration |
 | `restore-crons.py` | Restore cron jobs from backup |
+
+---
 
 ## Troubleshooting
 
@@ -322,6 +467,14 @@ python3 scripts/generate-profile.py hr-manager --type hr --force
 Each agent is scoped to its own gbrain source. If it needs cross-department context, ensure:
 1. Federated read is enabled in config.yaml: `GBRAIN_FEDERATED_READ=true`
 2. The data lives in `shared/` source (visible to all profiles)
+
+### Web portal not loading (NEW)
+1. Check React build exists: `ls shogun-web/ui/dist/`
+2. Verify static_dir in `~/.shogun-os/web.json` points to `ui/dist`
+3. Check backend logs: `python3 -m uvicorn main:app --host 0.0.0.0 --port 8000`
+4. Verify registry is running (if using subdomains): `docker compose ps`
+
+---
 
 ## License
 
