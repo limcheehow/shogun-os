@@ -33,7 +33,7 @@ These profiles handle project delivery and product management — the core of se
 |-------|-------|
 | Persona | Gorobei — Project execution, delivery management |
 | gbrain source | `projects/` |
-| Skills | `risk-scorer`, `gantt-renderer`, `meeting-extractor`, `pm-interview`, `procurement-planner` |
+| Skills | `risk-scorer`, `gantt-renderer`, `meeting-extractor`, `pm-interview`, `procurement-planner`, `projects-provider` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Scrum | ✅ 3-tier — `scrum.yaml` included as example |
 | Extra Crons | (none — scrum-only) |
@@ -45,7 +45,7 @@ These profiles handle project delivery and product management — the core of se
 |-------|-------|
 | Persona | Shi — Product vision, feature prioritization, stakeholder alignment |
 | gbrain source | `products/` |
-| Skills | `competitive-intel`, `roadmap`, `brainstorming` |
+| Skills | `competitive-intel`, `roadmap`, `brainstorming`, `product-provider` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Scrum | ✅ 3-tier — `scrum.yaml` needed |
 | Extra Crons | Sprint cycle (bi-weekly Mon) |
@@ -189,10 +189,10 @@ These profiles handle stores, merchandising, e-commerce, CRM/loyalty, supply cha
 |-------|-------|
 | Persona | Jinzai — People Operations, culture builder |
 | gbrain source | `hr/` |
-| Skills | `mc-application`, `jibble-compliance`, `leave-balance`, `leave-management`, `people-ops` |
+| Skills | `mc-application`, `jibble-compliance`, `leave-balance`, `leave-management`, `people-ops`, `time-tracking` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Scrum | ✅ 3-tier — `scrum.yaml` needed |
-| Extra Crons | Candidate pipeline (Mon 10AM), Recruitment GDrive sync (daily 6AM), Jibble attendance (weekdays 9:30AM), Jibble timesheet (Mon 10AM) |
+| Extra Crons | Candidate pipeline (Mon 10AM), Recruitment GDrive sync (daily 6AM), Time tracking attendance (weekdays 9:30AM), Time tracking timesheet (Mon 10AM) |
 | Task IDs | `HR-\\d+` |
 
 ### 2. Finance — Koku (石 — "Stone")
@@ -201,7 +201,7 @@ These profiles handle stores, merchandising, e-commerce, CRM/loyalty, supply cha
 |-------|-------|
 | Persona | Koku — Financial stability, budget discipline |
 | gbrain source | `finance/` |
-| Skills | (none beyond shared) |
+| Skills | `accounting-provider` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Scrum | ✅ 3-tier — `scrum.yaml` needed |
 | Extra Crons | Daily burn rate (8AM), Invoice aging (Mon 8AM), Monthly P&L (1st 8AM), Weekly budget (Mon 8AM) |
@@ -213,7 +213,7 @@ These profiles handle stores, merchandising, e-commerce, CRM/loyalty, supply cha
 |-------|-------|
 | Persona | Kura — Supply chain, vendor management, procurement optimization |
 | gbrain source | `procurement/` |
-| Skills | (none beyond shared) |
+| Skills | `procurement-provider` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Scrum | ✅ 3-tier — `scrum.yaml` needed |
 | Extra Crons | Contract expiry (Mon 9AM) |
@@ -225,7 +225,7 @@ These profiles handle stores, merchandising, e-commerce, CRM/loyalty, supply cha
 |-------|-------|
 | Persona | Kizuna — Client relationships, deal pipeline, account management |
 | gbrain source | `crm/` |
-| Skills | `crm-assistant`, `crm-deal-pipeline` |
+| Skills | `crm-assistant`, `crm-deal-pipeline`, `crm-provider` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Scrum | ✅ 3-tier — `scrum.yaml` needed |
 | Extra Crons | Deal activity sync (hourly 9-18), Sales pipeline (Mon 9AM), Weekly summary (Fri 5PM) |
@@ -236,7 +236,7 @@ These profiles handle stores, merchandising, e-commerce, CRM/loyalty, supply cha
 |-------|-------|
 | Persona | Haiku — Brand, narrative, campaigns, presentations |
 | gbrain source | `marketing/` |
-| Skills | `your-company-deck`, `your-company-brand`, `campaign-manager`, `haiku`, `your-company-presentations`, `competitive-intel`, `roadmap` |
+| Skills | `your-company-deck`, `your-company-brand`, `campaign-manager`, `haiku`, `your-company-presentations`, `competitive-intel`, `roadmap`, `marketing-provider` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Scrum | ✅ 3-tier — `scrum.yaml` needed |
 
@@ -246,7 +246,7 @@ These profiles handle stores, merchandising, e-commerce, CRM/loyalty, supply cha
 |-------|-------|
 | Persona | Kata — Standards, audits, policy enforcement |
 | gbrain source | `compliance/` |
-| Skills | `compliance-policy-lifecycle` |
+| Skills | `compliance-policy-lifecycle`, `compliance-provider` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Scrum | ✅ 3-tier — `scrum.yaml` needed |
 
@@ -256,7 +256,7 @@ These profiles handle stores, merchandising, e-commerce, CRM/loyalty, supply cha
 |-------|-------|
 | Persona | Boei — Client shield, ticket resolution, escalation management |
 | gbrain source | `support/` |
-| Skills | `support-tickets` |
+| Skills | `support-tickets`, `support-provider` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Scrum | ✅ 3-tier — `scrum.yaml` needed |
 | Task IDs | `TS-20\\d{2}-\\d{3}` |
@@ -267,7 +267,7 @@ These profiles handle stores, merchandising, e-commerce, CRM/loyalty, supply cha
 |-------|-------|
 | Persona | Takumi — Engineering craft, code quality, architecture |
 | gbrain source | `engineering/` |
-| Skills | `github-code-review`, `github-issues`, `simplify-code`, `code-review`, `debugging`, `skill-authoring`, `your-company-app-dev` |
+| Skills | `github-code-review`, `github-issues`, `simplify-code`, `code-review`, `debugging`, `skill-authoring`, `your-company-app-dev`, `engineering-provider` |
 | Shared | `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Scrum | ❌ (ad-hoc — no daily standup) |
 

@@ -92,7 +92,7 @@ Runs `tokscale monthly --json` and generates a formatted markdown report showing
 | Depends on | — |
 | Crons | Daily attendance 9:30AM + Weekly timesheet Mon 10AM (hr-manager) |
 
-MCP bridge + skill + cron templates for Jibble time tracking. Query time entries, detect late arrivals, compile weekly timesheets.
+⚠️ **DEPRECATED — Superseded by `recipes/hr/time-tracking/`.** The new provider abstraction covers Jibble and any other provider through the standard MCP contract. See `recipes/hr/time-tracking/` for the current implementation.
 
 ### 7. `slides-deck-gen` — Google Slides Integration
 
@@ -206,7 +206,7 @@ Migrate from per-profile SQLite to shared Postgres for multi-profile deployments
 
 All 15 production pitfalls from running department-scrum in production. Read this before deploying scrum for the first time. See `recipes/scrum-production-hardening.md` and `skills/department-scrum/references/production-pitfalls.md`.
 
-### 16. `time-tracking` — Provider Abstraction
+### 16. `time-tracking` — HR Provider Abstraction
 
 | Field | Value |
 |-------|-------|
@@ -216,7 +216,126 @@ All 15 production pitfalls from running department-scrum in production. Read thi
 | Depends on | — |
 | Cron | (none — reference) |
 
-Generic MCP contract for time-tracking providers (Jibble, Kami, etc.). Defines a universal interface so any profile can query attendance, timesheets, and clock-in status without hardcoding provider-specific logic. See `recipes/time-tracking/` for the contract and provider implementations.
+Generic MCP contract for time-tracking providers (Jibble, Kami, etc.). Defines a universal interface so any profile can query attendance, timesheets, and clock-in status without hardcoding provider-specific logic. See `recipes/hr/time-tracking/` for the contract and provider implementations.
+
+### 17. `accounting` — Accounting Provider Abstraction
+
+| Field | Value |
+|-------|-------|
+| Category | connector |
+| Setup time | 10 min |
+| Cost | $0 |
+| Depends on | — |
+| Cron | (none — reference) |
+
+Generic MCP contract for accounting providers (Bukku, QuickBooks, Xero). Defines a universal interface with 11 standard `acct_*` tools for sales invoices, purchase bills, contacts, products, P&L, balance sheet, and aging reports. Uses a unified bridge that loads provider plugins dynamically. See `recipes/accounting/` for the contract, bridge, and provider implementations.
+
+### 18. `procurement` — Procurement Provider Abstraction
+
+| Field | Value |
+|-------|-------|
+| Category | connector |
+| Setup time | 5 min |
+| Cost | $0 |
+| Depends on | — |
+| Cron | (none — reference) |
+
+Standard interface for purchase orders, vendor management, and contract lifecycle. See `recipes/procurement/`.
+
+### 19. `crm` — CRM Provider Abstraction
+
+| Field | Value |
+|-------|-------|
+| Category | connector |
+| Setup time | 5 min |
+| Cost | $0 |
+| Depends on | — |
+| Cron | (none — reference) |
+
+Standard interface for contacts, deals/pipeline, and activities. See `recipes/crm/`.
+
+### 20. `marketing` — Marketing Provider Abstraction
+
+| Field | Value |
+|-------|-------|
+| Category | connector |
+| Setup time | 5 min |
+| Cost | $0 |
+| Depends on | — |
+| Cron | (none — reference) |
+
+Standard interface for campaigns, audience lists, analytics, and social posts. See `recipes/marketing/`.
+
+### 21. `compliance` — Compliance Provider Abstraction
+
+| Field | Value |
+|-------|-------|
+| Category | connector |
+| Setup time | 5 min |
+| Cost | $0 |
+| Depends on | — |
+| Cron | (none — reference) |
+
+Standard interface for e-signatures, policy management, and audit trails. See `recipes/compliance/`.
+
+### 22. `support` — Customer Support Provider Abstraction
+
+| Field | Value |
+|-------|-------|
+| Category | connector |
+| Setup time | 5 min |
+| Cost | $0 |
+| Depends on | — |
+| Cron | (none — reference) |
+
+Standard interface for tickets, SLAs, and knowledge base. See `recipes/support/`.
+
+### 23. `engineering` — Engineering Provider Abstraction
+
+| Field | Value |
+|-------|-------|
+| Category | connector |
+| Setup time | 5 min |
+| Cost | $0 |
+| Depends on | — |
+| Cron | (none — reference) |
+
+Standard interface for repos, issues, PRs, CI/CD, and deployments. See `recipes/engineering/`.
+
+### 24. `projects` — Project Management Provider Abstraction
+
+| Field | Value |
+|-------|-------|
+| Category | connector |
+| Setup time | 5 min |
+| Cost | $0 |
+| Depends on | — |
+| Cron | (none — reference) |
+
+Standard interface for projects, tasks, milestones, and timelines. See `recipes/projects/`.
+
+### 25. `product` — Product Management Provider Abstraction
+
+| Field | Value |
+|-------|-------|
+| Category | connector |
+| Setup time | 5 min |
+| Cost | $0 |
+| Depends on | — |
+| Cron | (none — reference) |
+
+Standard interface for ideas, roadmaps, releases, and feedback. See `recipes/product/`.
+
+---
+
+### Guide: Creating Provider Abstractions
+
+See [`docs/recipes/creating-provider-abstractions.md`](docs/recipes/creating-provider-abstractions.md) for a step-by-step guide on:
+
+- How to create a new domain abstraction (CONTRACT + GENERIC_SKILL + bridge)
+- How to wire multiple connectors into a single department profile
+- How to add a new provider to an existing domain
+- Full lifecycle checklist for adding abstractions to the repo
 
 ## Installation Order
 
@@ -236,5 +355,14 @@ Generic MCP contract for time-tracking providers (Jibble, Kami, etc.). Defines a
 13. cron-management         # Ops — for backup/restore
 14. session-db-postgres     # Infra — for multi-profile deployments
 15. scrum-production-hardening  # Reference — read before going live with scrum
-16. time-tracking             # Reference — provider abstraction contract
+16. time-tracking             # HR — time tracking provider abstraction
+17. accounting                # Finance — accounting provider abstraction
+18. procurement               # Procurement — PO/vendor provider abstraction
+19. crm                       # CRM — sales pipeline provider abstraction
+20. marketing                 # Marketing — campaign provider abstraction
+21. compliance                # Compliance — document/policy provider abstraction
+22. support                   # Support — ticket/SLA provider abstraction
+23. engineering               # Engineering — repo/CI provider abstraction
+24. projects                  # Projects — task/milestone provider abstraction
+25. product                   # Product — idea/roadmap provider abstraction
 ```

@@ -90,7 +90,7 @@ PROFILE_META = {
     "hr": {
         "description": "HR profile with leave management — Jinzai (人材)",
         "template": "base-config.yaml",
-        "skills": ["company-workflow", "department-scrum"],
+        "skills": ["company-workflow", "department-scrum", "time-tracking"],
         "cron_templates": ["cron-9am", "cron-11am", "cron-5pm"],
         "gbrain_source": "hr",
         "soul_snippet": "hr-soul",
@@ -98,7 +98,7 @@ PROFILE_META = {
     "finance": {
         "description": "Finance profile with budget tracking — Koku (石)",
         "template": "base-config.yaml",
-        "skills": ["company-workflow"],
+        "skills": ["company-workflow", "accounting-provider"],
         "cron_templates": [],
         "gbrain_source": "finance",
         "soul_snippet": "finance-soul",
@@ -106,7 +106,7 @@ PROFILE_META = {
     "procurement": {
         "description": "Procurement profile with contract lifecycle — Kura (蔵)",
         "template": "base-config.yaml",
-        "skills": ["company-workflow"],
+        "skills": ["company-workflow", "procurement-provider"],
         "cron_templates": [],
         "gbrain_source": "procurement",
         "soul_snippet": "procurement-soul",
@@ -114,7 +114,7 @@ PROFILE_META = {
     "crm": {
         "description": "CRM profile for sales — Kizuna (絆)",
         "template": "base-config.yaml",
-        "skills": ["company-workflow"],
+        "skills": ["company-workflow", "crm-provider"],
         "cron_templates": [],
         "gbrain_source": "crm",
         "soul_snippet": "crm-soul",
@@ -122,7 +122,7 @@ PROFILE_META = {
     "product": {
         "description": "Product management profile — Shi (志)",
         "template": "base-config.yaml",
-        "skills": ["company-workflow"],
+        "skills": ["company-workflow", "product-provider"],
         "cron_templates": [],
         "gbrain_source": "products",
         "soul_snippet": "product-soul",
@@ -130,7 +130,7 @@ PROFILE_META = {
     "marketing": {
         "description": "Marketing profile — Haiku (俳句)",
         "template": "base-config.yaml",
-        "skills": ["company-workflow"],
+        "skills": ["company-workflow", "marketing-provider"],
         "cron_templates": [],
         "gbrain_source": "marketing",
         "soul_snippet": "marketing-soul",
@@ -138,7 +138,7 @@ PROFILE_META = {
     "compliance": {
         "description": "Compliance profile — Kata (型)",
         "template": "base-config.yaml",
-        "skills": ["company-workflow"],
+        "skills": ["company-workflow", "compliance-provider"],
         "cron_templates": [],
         "gbrain_source": "compliance",
         "soul_snippet": "compliance-soul",
@@ -146,7 +146,7 @@ PROFILE_META = {
     "support": {
         "description": "Customer support profile — Bōei (防衛)",
         "template": "base-config.yaml",
-        "skills": ["company-workflow"],
+        "skills": ["company-workflow", "support-provider"],
         "cron_templates": [],
         "gbrain_source": "support",
         "soul_snippet": "support-soul",

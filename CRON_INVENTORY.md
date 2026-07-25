@@ -36,14 +36,14 @@ Cron templates at `skills/department-scrum/templates/` — copy and fill placeho
 | crm-manager | Deal Activity Sync | Hourly 9-18 weekdays |
 | crm-manager | Sales Pipeline | Mon 9AM |
 | crm-manager | Weekly Summary | Fri 5PM |
-| finance-manager | Daily Burn Rate | Daily 8AM |
-| finance-manager | Invoice Aging | Mon 8AM |
-| finance-manager | Monthly P&L | 1st of month 8AM |
+| finance-manager | Daily Burn Rate | Daily 8AM (uses `acct_*` tools) |
+| finance-manager | Invoice Aging | Mon 8AM (uses `acct_*` tools) |
+| finance-manager | Monthly P&L | 1st of month 8AM (uses `acct_*` tools) |
 | finance-manager | Weekly Budget | Mon 8AM |
 | procurement-manager | Contract Expiry | Mon 9AM |
 | product-manager | Sprint Cycle | Bi-weekly Mon |
-| hr-manager | Jibble Attendance | Weekdays 9:30AM |
-| hr-manager | Jibble Timesheet | Weekly Mon 10AM |
+| hr-manager | Time Tracking Attendance | Weekdays 9:30AM |
+| hr-manager | Time Tracking Timesheet | Weekly Mon 10AM |
 
 ## Manufacturing Industry Crons
 

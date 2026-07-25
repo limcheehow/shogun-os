@@ -1,5 +1,21 @@
 # Changelog
 
+## [3.9.0] — 2026-07-25
+
+### Provider Abstraction Architecture (All 10 Domains)
+
+- **New: Accounting provider abstraction** (`recipes/accounting/`) — Bukku, QuickBooks, Xero with unified MCP bridge (`acct-bridge.py`) that loads provider plugins dynamically. Includes 11 P0 `acct_*` tools, shared OAuth2 helper, and full provider setup docs.
+- **New: 8 domain abstractions scaffolded** — Procurement (`proc_*`), CRM (`crm_*`), Marketing (`mkt_*`), Compliance (`comp_*`), Support (`spt_*`), Engineering (`eng_*`), Projects (`proj_*`), Product (`pd_*`). Each with CONTRACT.md + GENERIC_SKILL.md ready for provider plugins.
+- **Refactored: Time-tracking** — Moved from `recipes/time-tracking/` to `recipes/hr/time-tracking/` under the HR domain. Added `providers/jibble.md` provider doc.
+- **New: Creating Provider Abstractions guide** (`docs/recipes/creating-provider-abstractions.md`) — 500+ line step-by-step guide covering CONTRACT creation, bridge strategies, multi-connector profiles, lifecycle checklist, and 8 documented pitfalls.
+- **Updated: PROFILE_CATALOG.md** — All 10 profiles now list their domain provider abstraction skills.
+- **Updated: CRON_INVENTORY.md** — Finance crons tagged as using `acct_*` tools; HR crons renamed to provider-agnostic names.
+- **Updated: RECIPE_INDEX.md** — All 25 recipes documented including installation order.
+- **Updated: scripts/generate-profile.py** — All 8 profile types now include their domain provider abstraction skill.
+- **Updated: scripts/install.sh** — Installs all 10 provider abstraction directories.
+- **Updated: scripts/verify-install.sh** — Checks all 10 provider abstractions exist.
+- **Updated: docs/architecture/PROVIDER_ABSTRACTION.md** — Full accounting contract table added, references to new guide.
+
 ## [3.8.2] — 2026-07-24
 
 ### GBrain Model Tier Inheritance

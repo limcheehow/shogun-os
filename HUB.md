@@ -53,6 +53,16 @@ hermes skills install limcheehow/shogun-os/brain-ingest-pipeline
 | `google-workspace` | Google Workspace API operations (Gmail, Calendar, Drive, Docs) |
 | `lark-workspace` | Lark/Feishu API operations (Calendar, messaging) |
 | `profile-management` | Manage Hermes profiles end-to-end — persona authoring, config, lifecycle |
+| `time-tracking` | HR time tracking — Jibble, Kami, etc. via MCP provider abstraction |
+| `accounting-provider` | Accounting provider — Bukku, QuickBooks, Xero via unified MCP bridge |
+| `procurement-provider` | Procurement — PO, vendor, contract provider abstraction |
+| `crm-provider` | CRM — contacts, deals, pipeline provider abstraction |
+| `marketing-provider` | Marketing — campaigns, audience, analytics provider abstraction |
+| `compliance-provider` | Compliance — documents, e-sign, policy provider abstraction |
+| `support-provider` | Support — tickets, SLA, knowledge base provider abstraction |
+| `engineering-provider` | Engineering — repos, issues, PRs, CI provider abstraction |
+| `projects-provider` | Project management — tasks, milestones, timeline provider abstraction |
+| `product-provider` | Product management — ideas, roadmap, releases provider abstraction |
 
 ## Repository Structure
 

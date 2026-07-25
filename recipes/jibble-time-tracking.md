@@ -3,9 +3,9 @@ id: jibble-time-tracking
 name: Jibble Time Tracking
 version: 2.0.0
 description: >
-  ⚠ SUPERSEDED by Provider Abstraction. See recipes/time-tracking/ instead.
-  Jibble is now a reference bridge at recipes/time-tracking/bridges/tt-bridge-jibble.py.
-  The generic time tracking skill at recipes/time-tracking/GENERIC_SKILL.md works
+  > **⚠ SUPERSEDED by Provider Abstraction. See recipes/hr/time-tracking/ instead.**
+  > Jibble is now a reference bridge at recipes/hr/time-tracking/bridges/tt-bridge-jibble.py.
+  The generic time tracking skill at recipes/hr/time-tracking/GENERIC_SKILL.md works
   with any provider that implements the CONTRACT.md standard tools.
 category: connector
 requires: []
@@ -40,10 +40,10 @@ mcp_servers:
 
 ```bash
 # Symlink the reference bridge into ~/.hermes/scripts/
-ln -sf ~/shogun-os/recipes/time-tracking/bridges/tt-bridge-jibble.py ~/.hermes/scripts/tt-bridge-jibble.py
+ln -sf ~/shogun-os/recipes/hr/time-tracking/bridges/tt-bridge-jibble.py ~/.hermes/scripts/tt-bridge-jibble.py
 ```
 
-> See [`bridges/tt-bridge-jibble.py`](../time-tracking/bridges/tt-bridge-jibble.py) for the reference implementation.
+> See [`bridges/tt-bridge-jibble.py`](../hr/time-tracking/bridges/tt-bridge-jibble.py) for the reference implementation.
 
 ## IMPORTANT: Instructions for the Agent
 

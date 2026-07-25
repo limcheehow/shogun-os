@@ -293,6 +293,34 @@ else
   warn "Old recipe still exists: recipes/calendar-to-brain.md"
 fi
 
+# ── Provider abstraction directories ──
+echo -e "${CYAN}━━━ Provider Abstraction Recipes ━━━${NC}"
+
+check_abstraction() {
+  local name="$1"
+  local path="$REPO_ROOT/recipes/$1"
+  if [[ -d "$path" ]]; then
+    if [[ -f "$path/CONTRACT.md" && -f "$path/GENERIC_SKILL.md" ]]; then
+      ok "Abstraction: $name"
+    else
+      warn "Abstraction directory exists but missing CONTRACT.md or GENERIC_SKILL.md: $name"
+    fi
+  else
+    fail "Abstraction not found: $name"
+  fi
+}
+
+check_abstraction "hr/time-tracking"
+check_abstraction "accounting"
+check_abstraction "procurement"
+check_abstraction "crm"
+check_abstraction "marketing"
+check_abstraction "compliance"
+check_abstraction "support"
+check_abstraction "engineering"
+check_abstraction "projects"
+check_abstraction "product"
+
 if [[ -d "$REPO_ROOT/docs" ]]; then
   ok "docs/ directory present"
 else

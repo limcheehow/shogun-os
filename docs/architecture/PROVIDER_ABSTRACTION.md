@@ -62,7 +62,7 @@ Currently, every provider integration is hardcoded. Jibble → Jibble API calls 
 
 Define a set of **standard tool names** for each domain. These are what the generic skill uses. The bridge maps these to real API calls.
 
-**Time Tracking Contract** (`tt_*`):
+**Time Tracking Contract** (`tt_*`) — located at `recipes/hr/time-tracking/CONTRACT.md`:
 
 | Standard Tool | Purpose | Required Fields |
 |--------------|---------|-----------------|
@@ -75,6 +75,22 @@ Define a set of **standard tool names** for each domain. These are what the gene
 | `tt_create_project` | Create a project | `name`, `description?`, `budget?` |
 | `tt_update_project` | Update a project | `projectId`, `name?`, `description?` |
 | `tt_delete_project` | Archive/disable project | `projectId` |
+
+**Accounting Contract** (`acct_*`) — located at `recipes/accounting/CONTRACT.md`:
+
+| Standard Tool | Purpose | Required Fields |
+|--------------|---------|-----------------|
+| `acct_list_sales_invoices` | List sales invoices | `search?`, `contact_id?`, `date_from?`, `date_to?`, `status?` |
+| `acct_create_sales_invoice` | Create sales invoice | `contact_id`, `date`, `payment_mode`, `status`, `tax_mode` |
+| `acct_list_purchase_bills` | List purchase bills | `search?`, `contact_id?`, `date_from?`, `date_to?` |
+| `acct_create_purchase_bill` | Create purchase bill | `contact_id`, `date`, `payment_mode`, `status`, `tax_mode` |
+| `acct_list_contacts` | List customers/vendors | `type?`, `search?` |
+| `acct_create_contact` | Create customer/vendor | `name`, `type` |
+| `acct_list_products` | List products/services | `search?` |
+| `acct_get_profit_loss` | Get P&L summary | `date_from`, `date_to` |
+| `acct_get_balance_sheet` | Get balance sheet | `as_of_date?` |
+| `acct_get_aging_report` | Get AR/AP aging | `type` (receivable/payable) |
+| `acct_update_invoice_status` | Update invoice status | `id`, `type`, `status` |
 
 **HR Leave Contract** (`leave_*`):
 
@@ -208,14 +224,28 @@ If the provider isn't Jibble (which ships as reference), the user:
 
 ```
 recipes/
-├── time-tracking/                          # Provider abstraction directory
-│   ├── CONTRACT.md                         # Standard tool names + response shapes
-│   ├── GENERIC_SKILL.md                    # Skill that works with any provider
+├── hr/time-tracking/                      # Time tracking provider abstraction
+│   ├── CONTRACT.md
+│   ├── GENERIC_SKILL.md
 │   ├── bridges/
-│   │   └── tt-bridge-jibble.py             # Reference bridge (Jibble)
+│   │   └── tt-bridge-jibble.py
 │   └── providers/
-│       ├── jibble.md                       # How to set up Jibble
-│       └── kami.md                         # How to set up Kami
+│       ├── jibble.md
+│       └── kami.md
+├── accounting/                            # Accounting provider abstraction
+│   ├── CONTRACT.md
+│   ├── GENERIC_SKILL.md
+│   ├── bridges/
+│   │   └── acct-bridge.py                 # Unified bridge (plugin loader)
+│   ├── plugins/
+│   │   ├── bukku.py
+│   │   ├── quickbooks.py
+│   │   └── xero.py
+│   ├── oauth-helper.py                    # Shared OAuth2 helper
+│   └── providers/
+│       ├── bukku.md
+│       ├── quickbooks.md
+│       └── xero.md
 ```
 
 ## Benefits
@@ -240,3 +270,16 @@ hermes tt test                      # Verify all standard tools work
 ```
 
 That's a longer-term addition. The architecture above works with zero changes to Hermes itself — just pure MCP + skill design.
+
+---
+
+## How-To Guide
+
+For a step-by-step walkthrough with examples, see
+[`docs/recipes/creating-provider-abstractions.md`](../recipes/creating-provider-abstractions.md).
+It covers:
+
+- Creating a new domain abstraction from scratch
+- Adding multiple connectors to a single department profile
+- Adding a new provider to an existing domain
+- Full lifecycle checklist for repo contributions

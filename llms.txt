@@ -38,8 +38,18 @@ Repo: https://github.com/limcheehow/shogun-os
 | [brain-ingest-pipeline.md](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/brain-ingest-pipeline.md) | ingest | 10 min |
 | [drive-to-brain.md](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/drive-to-brain.md) | ingest | 20 min |
 | [token-utilization.md](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/token-utilization.md) | monitor | 5 min |
-| [jibble-time-tracking.md](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/jibble-time-tracking.md) | connector | 15 min |
+| [time-tracking](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/hr/time-tracking/GENERIC_SKILL.md) | hr | 10 min |
+| [accounting](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/accounting/GENERIC_SKILL.md) | connector | 10 min |
+| [procurement](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/procurement/CONTRACT.md) | connector | 5 min |
+| [crm](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/crm/CONTRACT.md) | connector | 5 min |
+| [marketing](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/marketing/CONTRACT.md) | connector | 5 min |
+| [compliance](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/compliance/CONTRACT.md) | connector | 5 min |
+| [support](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/support/CONTRACT.md) | connector | 5 min |
+| [engineering](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/engineering/CONTRACT.md) | connector | 5 min |
+| [projects](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/projects/CONTRACT.md) | connector | 5 min |
+| [product](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/product/CONTRACT.md) | connector | 5 min |
 | [slides-deck-gen.md](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/slides-deck-gen.md) | connector | 15 min |
+| [creating-provider-abstractions](https://raw.githubusercontent.com/limcheehow/shogun-os/main/docs/recipes/creating-provider-abstractions.md) | architecture | 20 min |
 | [department-scrum.md](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/department-scrum.md) | workflow | 15 min per profile |
 
 ## Scripts

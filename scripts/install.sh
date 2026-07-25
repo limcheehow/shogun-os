@@ -19,7 +19,7 @@
 
 set -euo pipefail
 
-VERSION="3.8.0"
+VERSION="3.9.0"
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR")"
@@ -315,11 +315,25 @@ section_recipes() {
     COUNT_RECIPES=$((COUNT_RECIPES + 1))
   done < <(find "$recipes_src" -name '*.md' -type f | sort)
 
-  # Also copy the time-tracking provider abstraction directory
-  if [[ -d "$recipes_src/time-tracking" ]]; then
-    install_file "$recipes_src/time-tracking" "$recipes_dst/time-tracking" "time-tracking abstraction"
-    COUNT_RECIPES=$((COUNT_RECIPES + 1))
-  fi
+  # Copy provider abstraction directories (CONTRACT.md + GENERIC_SKILL.md + bridges + plugins)
+  local abstraction_dirs=(
+    "hr/time-tracking"
+    "accounting"
+    "procurement"
+    "crm"
+    "marketing"
+    "compliance"
+    "support"
+    "engineering"
+    "projects"
+    "product"
+  )
+  for dir in "${abstraction_dirs[@]}"; do
+    if [[ -d "$recipes_src/$dir" ]]; then
+      install_file "$recipes_src/$dir" "$recipes_dst/$dir" "$dir abstraction"
+      COUNT_RECIPES=$((COUNT_RECIPES + 1))
+    fi
+  done
 }
 
 # ═══════════════════════════════════════════════════════════════════════
