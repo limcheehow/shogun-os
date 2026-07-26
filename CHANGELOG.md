@@ -1,5 +1,35 @@
 # Changelog
 
+## [3.13.0] — 2026-07-26
+
+### Profile Dashboards — CRM CEO dashboard in Shogun web portal
+
+Replaces the "Reports" placeholder tab with a fully functional "Dashboard" tab that
+shows profile-specific operational dashboards, starting with CRM.
+
+**Backend:**
+- New shared gbrain HTTP client (`gbrain_client.py`) — fetch pages, search, single page
+- New `dashboard.py` FastAPI router with CEO stats aggregation (Python port of the
+  CRM Next.js API route — full 348-line aggregation: ownerMap, stageMap, partnerMap,
+  productMap, monthly trends, at-risk tracking, top deals)
+- All dashboard data sourced from gbrain MCP (local Postgres) — no Supabase dependency
+
+**Frontend:**
+- Recharts v3.10.1 as the standard charting library
+- Shared chart wrappers (BarChart, LineChart, PieChart, FunnelChart) enforcing
+  Shogun design tokens + empty-state handling
+- DashboardViewer generic wrapper + DashboardSubNav pill navigation
+- CRM dashboard with 5 sub-tabs: Sales Booking, Pipeline & Forecast,
+  Partner Performance, Manager Performance, Deals Deep-Dive
+- Manager drill-down modal overlay with per-owner KPIs
+
+**Data flow:**
+```
+SPA → /api/departments/{name}/dashboard/ceo-stats
+    → FastAPI → gbrain MCP (port 7432) → local Postgres
+    → Aggregated JSON → Recharts in sub-tabs
+```
+
 ## [3.12.3] — 2026-07-26
 
 ### Fix: URL claim is install-time, not web UX (chicken-and-egg fix)
