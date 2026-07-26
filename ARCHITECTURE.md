@@ -7,9 +7,10 @@ Shogun OS runs on four layers:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │              Layer 0: Web Portal (Multi-Tenant UI)              │
-│   *.shogun-os.ai → Cloudflare Tunnel → VPS Registry → Tenant    │
-│   FastAPI (server/) + React (ui/) + registry/                   │
-│   Onboarding · Dept dashboards · Unified chat                   │
+│   Random *.shogun-os.ai ← OUR Cloudflare (customer never logs in)│
+│   ONE company dashboard for ALL department agents               │
+│   FastAPI (server/) + React (ui/) + central registry/           │
+│   Onboarding · Unified dashboard · Dept agent workspaces        │
 └────────────────────────────┬────────────────────────────────────┘
                              │
 ┌────────────────────────────▼────────────────────────────────────┐
@@ -28,15 +29,22 @@ Shogun OS runs on four layers:
 
 ### Layer 0: Web Portal
 
-Multi-tenant **FastAPI + React** application. Each tenant gets a unique subdomain (`*.shogun-os.ai`).
+Multi-tenant **FastAPI + React** application. Product rules:
 
-- **Central registry on VPS** with Cloudflare Tunnel wildcard routing maps subdomains to tenant backends
-- **Onboarding wizard**, department dashboards, and a unified chat interface
+1. **One URL per customer company**, randomly assigned (e.g. `quiet-lotus-42.shogun-os.ai`)
+2. **DNS + tunnels only from OUR Cloudflare account** — customers never need CF
+3. **One dashboard** listing all department agents (not a portal per department)
+4. Hermes still uses **one profile per department** under the hood (isolation)
+
+- **Central registry on our VPS** creates random subdomains and (optionally) per-tenant Cloudflare tunnels via the Cloudflare API
+- Customer installer registers with a shared token and receives `public_url` + tunnel connector token
 - Repo layout under `shogun-web/`:
-  - `server/` — FastAPI backend
-  - `ui/` — React frontend
-  - `registry/` — central routing / tenant registry
+  - `server/` — tenant portal API
+  - `ui/` — single React app (Dashboard + department workspaces)
+  - `registry/` — central routing / tenant registry (operator deploy)
 - Provisioning & checks: `install-web.sh` + `verify-web.sh`
+- Design doc: [`docs/architecture/WEB_PORTAL.md`](docs/architecture/WEB_PORTAL.md)
+- Operator Cloudflare checklist: [`docs/ops/cloudflare-registry-setup.md`](docs/ops/cloudflare-registry-setup.md)
 
 ### Layer 1: Hermes Agent Profiles
 

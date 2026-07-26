@@ -5,9 +5,14 @@
 # Sets up shogun-web (FastAPI + React), tenant config, registry registration,
 # and systemd user services for the portal + department Hermes gateways.
 #
+# Product design:
+#   - ONE company dashboard for ALL department agents (not per-dept portals)
+#   - URL is assigned centrally by OUR registry/Cloudflare (random slug)
+#   - Customers never need a Cloudflare account or pick a subdomain
+#
 # Usage:
 #   ./scripts/install-web.sh
-#   ./scripts/install-web.sh --subdomain acme --admin-email admin@acme.com
+#   ./scripts/install-web.sh --admin-email admin@acme.com
 #   ./scripts/install-web.sh --dry-run
 #   ./scripts/install-web.sh --skip-registry --skip-systemd
 #   ./scripts/install-web.sh --help
@@ -15,7 +20,7 @@
 
 set -euo pipefail
 
-VERSION="0.1.0"
+VERSION="0.2.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null || echo "$(cd "$SCRIPT_DIR/.." && pwd)")"
 SHOGUN_WEB_DIR="${SHOGUN_WEB_DIR:-$REPO_ROOT/shogun-web}"
@@ -24,14 +29,17 @@ HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 TEMPLATE_DIR="$REPO_ROOT/templates/web-portal"
 
 # Defaults (overridable via flags / env)
+# SUBDOMAIN is assigned by central registry after register. Local placeholder
+# until then; do NOT ask the customer to choose one.
 SUBDOMAIN="${SHOGUN_SUBDOMAIN:-}"
+VANITY_SUBDOMAIN=""
 ADMIN_EMAIL="${SHOGUN_ADMIN_EMAIL:-admin@localhost}"
 DISPLAY_NAME="${SHOGUN_DISPLAY_NAME:-}"
 WEB_PORT="${SHOGUN_WEB_PORT:-8787}"
 WEB_HOST="${SHOGUN_WEB_HOST:-0.0.0.0}"
-REGISTRY_URL="${SHOGUN_REGISTRY_URL:-https://registry.shogun.os}"
+REGISTRY_URL="${SHOGUN_REGISTRY_URL:-https://registry.shogun-os.ai}"
 REGISTRY_TOKEN="${SHOGUN_REGISTRY_TOKEN:-}"
-DOMAIN_SUFFIX="${SHOGUN_DOMAIN_SUFFIX:-shogun.os}"
+DOMAIN_SUFFIX="${SHOGUN_DOMAIN_SUFFIX:-shogun-os.ai}"
 GOOGLE_CLIENT_ID="${SHOGUN_GOOGLE_CLIENT_ID:-}"
 GOOGLE_CLIENT_SECRET="${SHOGUN_GOOGLE_CLIENT_SECRET:-}"
 MS_CLIENT_ID="${SHOGUN_MS_CLIENT_ID:-}"
@@ -45,6 +53,7 @@ SKIP_SYSTEMD=false
 SKIP_UI_BUILD=false
 SKIP_DEPT_SERVICES=false
 START_SERVICES=true
+CREATE_TUNNEL=true
 
 # Python deps required by shogun-web
 PYTHON_DEPS=(
@@ -93,17 +102,23 @@ usage() {
   cat <<EOF
 Shogun OS Web Portal Installer v${VERSION}
 
+Product:
+  One company URL + one dashboard for all department agents.
+  Subdomain is assigned randomly by our central registry/Cloudflare.
+  Customers never need a Cloudflare account.
+
 USAGE:
   ./scripts/install-web.sh [OPTIONS]
 
 OPTIONS:
-  --subdomain <name>       Tenant subdomain (e.g. acme → acme.${DOMAIN_SUFFIX})
   --admin-email <email>    Admin login email (default: admin@localhost)
   --display-name <name>    Company display name
   --port <n>               shogun-web HTTP port (default: 8787)
   --host <addr>            Bind address (default: 0.0.0.0)
   --registry-url <url>     Central registry base URL
-  --registry-token <tok>   Optional registry API bearer token
+  --registry-token <tok>   Registration token (from us)
+  --no-tunnel              Do not request per-tenant Cloudflare tunnel
+  --vanity-subdomain <s>   Admin/escape-hatch only (ignored unless registry allows)
   --skip-registry          Do not POST /api/register
   --skip-systemd           Do not install systemd units
   --skip-ui-build          Skip npm install / build
@@ -113,15 +128,18 @@ OPTIONS:
   --dry-run                Preview actions only
   --help                   This message
 
+DEPRECATED (still accepted, ignored for customer URL assignment):
+  --subdomain <name>       Use --vanity-subdomain instead; random is default
+
 ENVIRONMENT:
-  SHOGUN_SUBDOMAIN, SHOGUN_ADMIN_EMAIL, SHOGUN_DISPLAY_NAME
+  SHOGUN_ADMIN_EMAIL, SHOGUN_DISPLAY_NAME
   SHOGUN_WEB_PORT, SHOGUN_WEB_HOST, SHOGUN_HOME, SHOGUN_WEB_DIR
-  SHOGUN_REGISTRY_URL, SHOGUN_REGISTRY_TOKEN
+  SHOGUN_REGISTRY_URL, SHOGUN_REGISTRY_TOKEN, SHOGUN_DOMAIN_SUFFIX
   SHOGUN_GOOGLE_CLIENT_ID, SHOGUN_GOOGLE_CLIENT_SECRET
   SHOGUN_MS_CLIENT_ID, SHOGUN_MS_CLIENT_SECRET, SHOGUN_MS_TENANT_ID
 
 EXAMPLES:
-  ./scripts/install-web.sh --subdomain acme --admin-email admin@acme.com
+  ./scripts/install-web.sh --admin-email admin@acme.com
   ./scripts/install-web.sh --dry-run
   ./scripts/install-web.sh --skip-registry --port 8080
 EOF
@@ -130,13 +148,20 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --subdomain)          SUBDOMAIN="$2"; shift 2 ;;
+    --subdomain)
+      # Back-compat: treat as vanity request (still ignored by default registry)
+      VANITY_SUBDOMAIN="$2"
+      warn "--subdomain is deprecated; URLs are assigned centrally. Treating as vanity request."
+      shift 2
+      ;;
+    --vanity-subdomain)   VANITY_SUBDOMAIN="$2"; shift 2 ;;
     --admin-email)        ADMIN_EMAIL="$2"; shift 2 ;;
     --display-name)       DISPLAY_NAME="$2"; shift 2 ;;
     --port)               WEB_PORT="$2"; shift 2 ;;
     --host)               WEB_HOST="$2"; shift 2 ;;
     --registry-url)       REGISTRY_URL="$2"; shift 2 ;;
     --registry-token)     REGISTRY_TOKEN="$2"; shift 2 ;;
+    --no-tunnel)          CREATE_TUNNEL=false; shift ;;
     --skip-registry)      SKIP_REGISTRY=true; shift ;;
     --skip-systemd)       SKIP_SYSTEMD=true; shift ;;
     --skip-ui-build)      SKIP_UI_BUILD=true; shift ;;
@@ -223,26 +248,28 @@ ok "shogun-web directory: $SHOGUN_WEB_DIR"
 [[ -d "$TEMPLATE_DIR" ]] || die "templates missing: $TEMPLATE_DIR"
 ok "templates: $TEMPLATE_DIR"
 
-# Prompt subdomain if missing
+# Resolve assigned subdomain: prefer existing install identity; never prompt.
+# New installs use a local pending-* placeholder until the central registry
+# assigns a random public slug (customers never pick URLs).
 if [[ -z "$SUBDOMAIN" ]]; then
   if [[ -f "$SHOGUN_HOME/web.json" && "$FORCE" != true ]]; then
     SUBDOMAIN="$("$PYTHON" -c "import json; print(json.load(open('$SHOGUN_HOME/web.json')).get('subdomain',''))" 2>/dev/null || true)"
   fi
 fi
 if [[ -z "$SUBDOMAIN" ]]; then
-  if [[ -t 0 ]]; then
-    read -r -p "  Tenant subdomain (e.g. acme): " SUBDOMAIN
-  else
-    SUBDOMAIN="tenant-$(random_hex | cut -c1-8)"
-    warn "No TTY — generated subdomain: $SUBDOMAIN"
-  fi
+  SUBDOMAIN="pending-$(random_hex | cut -c1-8)"
+  info "Local placeholder until registry assigns URL: $SUBDOMAIN"
 fi
 SUBDOMAIN="$(slugify "$SUBDOMAIN")"
 [[ -n "$SUBDOMAIN" ]] || die "subdomain is empty after sanitizing"
 if [[ -z "$DISPLAY_NAME" ]]; then
-  DISPLAY_NAME="$SUBDOMAIN"
+  if [[ -t 0 ]]; then
+    read -r -p "  Company display name (optional): " DISPLAY_NAME || true
+  fi
+  DISPLAY_NAME="${DISPLAY_NAME:-My Company}"
 fi
-ok "Subdomain: ${SUBDOMAIN}.${DOMAIN_SUFFIX}"
+ok "Installer ready — public URL will be assigned by central registry (${DOMAIN_SUFFIX})"
+info "One dashboard for all department agents (not separate portals per dept)"
 
 # ── 1. Python dependencies ───────────────────────────────────────────────
 echo ""
@@ -537,69 +564,90 @@ fi
 
 # ── 6. Registry registration ─────────────────────────────────────────────
 echo ""
-echo -e "${CYAN}━━━ Central registry ━━━${NC}"
+echo -e "${CYAN}━━━ Central registry (assigns your public URL) ━━━${NC}"
 
 if [[ "$SKIP_REGISTRY" == true ]]; then
   warn "Skipping registry registration (--skip-registry)"
+  info "Portal is local-only until you register: https://docs → WEB_PORTAL.md"
 elif [[ "$DRY_RUN" == true ]]; then
-  info "[DRY-RUN] Would POST ${REGISTRY_URL}/api/register"
+  info "[DRY-RUN] Would POST ${REGISTRY_URL}/api/register (no preferred subdomain)"
 else
   PAYLOAD="$(mktemp)"
+  REG_BODY="$(mktemp)"
+  # Payload matches registry RegisterRequest schema. Do NOT send customer-chosen
+  # subdomain — central registry assigns adjective-noun-NN randomly.
   "$PYTHON" - <<PY > "$PAYLOAD"
 import json
 from pathlib import Path
-web = json.loads(Path("$WEB_JSON").read_text()) if Path("$WEB_JSON").exists() else {}
-print(json.dumps({
-  "tenant_id": "$TENANT_ID",
-  "subdomain": "$SUBDOMAIN",
-  "display_name": "$DISPLAY_NAME",
+web = {}
+p = Path("$WEB_JSON")
+if p.exists():
+    web = json.loads(p.read_text())
+tenant_id = web.get("tenant_id") or "$TENANT_ID"
+payload = {
+  "host": "127.0.0.1",
   "port": int("$WEB_PORT"),
-  "public_url": f"https://$SUBDOMAIN.$DOMAIN_SUFFIX",
-  "local_url": f"http://127.0.0.1:$WEB_PORT",
-  "departments": web.get("departments", []),
-  "version": "$VERSION",
-}))
+  "create_tunnel": $( [[ "$CREATE_TUNNEL" == true ]] && echo true || echo false ),
+  "tenant_id": tenant_id if not str(tenant_id).startswith("pending") else None,
+  "metadata": {
+    "display_name": "$DISPLAY_NAME",
+    "admin_email": "$ADMIN_EMAIL",
+    "local_url": f"http://127.0.0.1:$WEB_PORT",
+    "version": "$VERSION",
+    "departments": web.get("departments", []),
+  },
+}
+if "$REGISTRY_TOKEN":
+    payload["registration_token"] = "$REGISTRY_TOKEN"
+vanity = "$(slugify "${VANITY_SUBDOMAIN}")".strip()
+if vanity:
+    # Only honored when registry ALLOW_PREFERRED_SUBDOMAIN=true
+    payload["preferred_subdomain"] = vanity
+# Drop null tenant_id
+if payload.get("tenant_id") is None:
+    payload.pop("tenant_id", None)
+print(json.dumps(payload))
 PY
-  CURL_ARGS=(-sS -X POST "${REGISTRY_URL%/}/api/register"
-    -H "Content-Type: application/json"
-    -d @"$PAYLOAD"
-    --connect-timeout 5
-    --max-time 20)
-  if [[ -n "$REGISTRY_TOKEN" ]]; then
-    CURL_ARGS+=(-H "Authorization: Bearer ${REGISTRY_TOKEN}")
-  fi
   if ! command -v curl >/dev/null 2>&1; then
     warn "curl not found — cannot register with registry"
+    rm -f "$PAYLOAD" "$REG_BODY"
   else
     set +e
-    RESP="$(curl "${CURL_ARGS[@]}" 2>&1)"
-    CODE=$?
-    HTTP_CODE="$(curl -sS -o /tmp/shogun-reg-body.$$ -w '%{http_code}' -X POST "${REGISTRY_URL%/}/api/register" \
+    HTTP_CODE="$(curl -sS -o "$REG_BODY" -w '%{http_code}' -X POST "${REGISTRY_URL%/}/api/register" \
       -H "Content-Type: application/json" \
+      -H "Accept: application/json" \
       ${REGISTRY_TOKEN:+-H "Authorization: Bearer ${REGISTRY_TOKEN}"} \
-      -d @"$PAYLOAD" --connect-timeout 5 --max-time 20 2>/dev/null || echo "000")"
+      -d @"$PAYLOAD" --connect-timeout 8 --max-time 45 2>/dev/null || echo "000")"
     set -e
-    BODY="$(cat /tmp/shogun-reg-body.$$ 2>/dev/null || echo "$RESP")"
-    rm -f /tmp/shogun-reg-body.$$ "$PAYLOAD"
+    BODY="$(cat "$REG_BODY" 2>/dev/null || true)"
+    rm -f "$PAYLOAD" "$REG_BODY"
     if [[ "$HTTP_CODE" =~ ^2 ]]; then
-      ok "Registered with registry (HTTP $HTTP_CODE)"
-      if [[ -f "$WEB_JSON" ]]; then
-        "$PYTHON" - <<PY
-import json
-from pathlib import Path
-from datetime import datetime, timezone
-p = Path("$WEB_JSON")
-data = json.loads(p.read_text())
-data.setdefault("registry", {})
-data["registry"]["registered"] = True
-data["registry"]["registered_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-p.write_text(json.dumps(data, indent=2) + "\n")
-PY
+      ok "Registered with central registry (HTTP $HTTP_CODE)"
+      # Apply assigned subdomain + public_url + optional tunnel token
+      REG_JSON_FILE="$(mktemp)"
+      printf '%s' "$BODY" > "$REG_JSON_FILE"
+      "$PYTHON" "$SCRIPT_DIR/apply-registry-response.py" \
+        "$REG_JSON_FILE" "$WEB_JSON" "$CRED_FILE" "$SHOGUN_HOME" "$DOMAIN_SUFFIX" "$REGISTRY_URL" \
+        >/dev/null || warn "Could not apply registry response to web.json"
+      rm -f "$REG_JSON_FILE"
+      ASSIGNED_SUB="$("$PYTHON" -c "import json;print(json.load(open('$WEB_JSON')).get('subdomain',''))" 2>/dev/null || true)"
+      PUBLIC_URL="$("$PYTHON" -c "import json;print(json.load(open('$WEB_JSON')).get('server',{}).get('public_url',''))" 2>/dev/null || true)"
+      if [[ -n "$ASSIGNED_SUB" ]]; then
+        SUBDOMAIN="$ASSIGNED_SUB"
+      fi
+      if [[ -n "$PUBLIC_URL" ]]; then
+        ok "Your portal URL: ${BOLD}${PUBLIC_URL}${NC}"
+      else
+        ok "Assigned subdomain: ${SUBDOMAIN}.${DOMAIN_SUFFIX}"
+      fi
+      if [[ -f "$SHOGUN_HOME/tunnel.token" ]]; then
+        ok "Cloudflare tunnel token saved → $SHOGUN_HOME/tunnel.token"
+        info "Run connector: cloudflared tunnel run --token \"\$(cat $SHOGUN_HOME/tunnel.token)\""
       fi
     else
-      warn "Registry registration failed (HTTP ${HTTP_CODE:-$CODE}) — portal still usable locally"
+      warn "Registry registration failed (HTTP ${HTTP_CODE:-?}) — portal still usable locally"
       info "Response: ${BODY:0:200}"
-      info "Re-run later or use --skip-registry"
+      info "Re-run later once registry is up, or use --skip-registry for local-only"
     fi
   fi
 fi

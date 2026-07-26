@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.12.1] — 2026-07-26
+
+### Web portal product contract
+
+- **One random URL per company** assigned by central registry + **our** Cloudflare (customers never need a CF account or subdomain choice).
+- **One dashboard** for all department agents (not per-department portals).
+- `install-web.sh` v0.2: no subdomain prompt; register payload matches registry schema; persists assigned `public_url` + tunnel token.
+- Registry: `ALLOW_PREFERRED_SUBDOMAIN=false` by default; auto tunnel when provisioning enabled; tunnel targets `127.0.0.1:{port}` on tenant.
+- Docs: `docs/architecture/WEB_PORTAL.md`, `docs/ops/cloudflare-registry-setup.md`.
+
 ## [3.12.0] — 2026-07-26
 
 ### Shogunify — agent skillify for Shogun OS

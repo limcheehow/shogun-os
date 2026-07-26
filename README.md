@@ -11,7 +11,7 @@ Shogun OS is a reference architecture for running an entire organization through
 Choose your **industry vertical** during setup: **General** (services, consulting, software) or **Manufacturing** (factory, production, OEM). Shared profiles deploy regardless of industry; department-specific profiles activate based on your selection.
 
 > **~30 minutes to a working multi-agent setup.** Clone the repo, run the installer, wire Slack bots. Your agents handle the rest.
-> **~10 minutes to a working web portal.** Run the web installer, set up Cloudflare Tunnel, visit your subdomain.
+> **~10 minutes to a working web portal.** Run the web installer; we assign a random `*.shogun-os.ai` URL from our Cloudflare. One dashboard for all departments.
 
 > **Agents:** start with [`AGENTS.md`](AGENTS.md). **Humans:** start with [`SETUP.md`](SETUP.md). **LLMs:** fetch [`llms.txt`](llms.txt) for the documentation map.
 
@@ -28,11 +28,11 @@ Choose your **industry vertical** during setup: **General** (services, consultin
 - **Wiring** — `generate-profile.py` shared skills, `install.sh`, `verify-install.sh`, `HUB.md`
 
 ### v3.10.0 — Web Portal
-- **Multi-tenant web portal** at `*.shogun-os.ai` with per-tenant subdomains
+- **Multi-tenant web portal** — random `*.shogun-os.ai` URL per company (our Cloudflare)
+- **One company dashboard** for all department agents (not per-dept portals)
 - **Onboarding wizard** — 4-step setup: departments → company info → provider config → launch
-- **Department dashboards** — Chat, Brain, Docs for each department
 - **Unified auth** — Google/Microsoft OAuth + email/password with forced first-login change
-- **Central registry** — Cloudflare Tunnel wildcard routing to tenant instances
+- **Central registry** — assigns URLs + tunnels; customers never touch Cloudflare
 - **Provider abstractions** — Bukku, QuickBooks, Xero for accounting; Jibble for HR time-tracking
 
 ### v3.9.0 — Provider Abstractions
@@ -85,7 +85,7 @@ sudo apt install postgresql-16 postgresql-16-pgvector
 | **Slack Bot** | Every department agent communicates via Slack | [api.slack.com/apps](https://api.slack.com/apps) — create one bot per profile |
 | **Google Workspace SA-DWD** | Gmail/Calendar/Drive access via service accounts | See [`recipes/google-dwd.md`](recipes/google-dwd.md) |
 | **Ollama** | Local embeddings (768d, zero cost) — auto-installed by init-gbrain.sh if not present | `curl -fsSL https://ollama.com/install.sh \| sh` |
-| **Cloudflare Account** | Web portal subdomain routing (`*.shogun-os.ai`) | [cloudflare.com](https://cloudflare.com) — free plan works |
+| **Cloudflare Account (operator)** | Our zone only — customers never need CF | [cloudflare.com](https://cloudflare.com) — free plan works |
 | **Docker** | Registry service deployment | `sudo apt install docker.io docker-compose` |
 
 ### Quick Check
@@ -150,7 +150,8 @@ which psql    && echo "✅ PostgreSQL" || echo "⚠️  PostgreSQL (auto-install
 
 ### Four Layers
 
-**Layer 0: Web Portal (NEW)** — Multi-tenant FastAPI + React application. Each tenant gets a `*.shogun-os.ai` subdomain via Cloudflare Tunnel wildcard routing. Central registry on VPS routes subdomains to tenant backends. Onboarding wizard, department dashboards, unified chat interface.
+**Layer 0: Web Portal** — Multi-tenant FastAPI + React. Each company gets **one** random `*.shogun-os.ai` URL assigned by **our** central registry + Cloudflare (customers never log into CF). **One dashboard** for all department agents; Hermes profiles stay isolated underneath. See [`docs/architecture/WEB_PORTAL.md`](docs/architecture/WEB_PORTAL.md).
+
 
 **Layer 1: Hermes Agent Profiles** — Each department gets a dedicated Hermes profile with its own SOUL.md (persona), config.yaml (model config + MCP servers + Slack connection), skills, cron jobs, and gbrain source. Physical isolation prevents cross-dept data leaks.
 
@@ -268,64 +269,57 @@ The full end-to-end setup playbook (Google DWD, Slack bot configuration, cron wi
 
 ---
 
-## Web Portal Setup (NEW)
+## Web Portal Setup
 
-The web portal gives every install a `*.shogun-os.ai` subdomain with:
+Each install gets **one random** `*.shogun-os.ai` URL and **one dashboard** for all department agents.
 
-- **Login page** — Google/Microsoft OAuth + email/password
-- **Onboarding wizard** — 4-step setup flow
-- **Department dashboards** — Chat, Brain, Docs per department
-- **Central registry** — Routes subdomains to tenant backends
+- **Login** — Google/Microsoft OAuth + email/password  
+- **Onboarding** — company + departments + providers (once)  
+- **Dashboard** — all department agents in one place (chat / status / activate)  
+- **Central registry (ours)** — assigns URL + Cloudflare tunnel; customers never open Cloudflare  
 
-### Prerequisites
+### Prerequisites (operator / Tapway)
 
-1. **Domain registered** — `shogun-os.ai` (or your own domain)
-2. **Cloudflare account** — Free plan works
-3. **VPS** — For central registry (Hetzner, DigitalOcean, AWS, etc.)
+1. Domain on **our** Cloudflare zone — `shogun-os.ai`  
+2. Registry VPS with Docker  
+3. Follow **[`docs/ops/cloudflare-registry-setup.md`](docs/ops/cloudflare-registry-setup.md)**  
+
+Customers only need: a machine, Docker/Python, and a registration token you give them.
 
 ### Setup Steps
 
 ```bash
-# 1. Deploy registry to VPS
-cd shogun-web/registry
-cp .env.example .env
-# Edit .env: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, REGISTRY_DOMAIN
+# ── Operator (once) ──────────────────────────────────────────
+# See docs/ops/cloudflare-registry-setup.md
+cd shogun-web/registry && cp .env.example .env
+# Set CLOUDFLARE_*, REGISTRATION_TOKEN, ENABLE_TUNNEL_PROVISIONING=true
+docker compose up -d --build
 
-docker compose up -d
-
-# 2. Create Cloudflare Tunnel (one-time)
-cloudflared tunnel create shogun-registry
-# Note tunnel ID, create CNAME: *.shogun-os.ai → <tunnel-id>.cfargotunnel.com
-
-# 3. Install web portal on each tenant
-./scripts/install-web.sh
-# Generates: subdomain, admin password, registers with central registry
-
-# 4. Visit your subdomain
-open https://<your-subdomain>.shogun-os.ai
+# ── Customer machine ─────────────────────────────────────────
+export SHOGUN_REGISTRY_URL=https://registry.shogun-os.ai
+export SHOGUN_REGISTRY_TOKEN=<token-from-us>
+./scripts/install-web.sh --admin-email admin@customer.com
+# Prints assigned URL, e.g. https://quiet-lotus-42.shogun-os.ai
+# No subdomain prompt. No Cloudflare login.
 ```
+
+Design contract: [`docs/architecture/WEB_PORTAL.md`](docs/architecture/WEB_PORTAL.md).
 
 ### Web Portal Architecture
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Tenant A  │     │   Tenant B  │     │   Tenant C  │
-│  kura-zen-42│     │  hana-mizu-7│     │  tora-yama-3│
-│ .shogun-os.ai│    │ .shogun-os.ai│    │ .shogun-os.ai│
-└──────┬──────┘     └──────┬──────┘     └──────┬──────┘
-       │                   │                   │
-       └───────────────────┴───────────────────┘
-                           │
-                  ┌────────▼────────┐
-                  │ Central Registry │
-                  │  (VPS + Docker)  │
-                  │  Cloudflare Tunnel│
-                  └────────┬────────┘
-                           │
-                  ┌────────▼────────┐
-                  │  *.shogun-os.ai  │
-                  │  Wildcard CNAME  │
-                  └─────────────────┘
+┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+│  Tenant A    │   │  Tenant B    │   │  Tenant C    │
+│ quiet-lotus-42│  │ hana-mizu-17 │   │ tora-yama-3  │
+│  ONE dashboard│  │  ONE dashboard│  │  ONE dashboard│
+└──────┬───────┘   └──────┬───────┘   └──────┬───────┘
+       │ cloudflared      │                  │
+       └──────────────────┴──────────────────┘
+                          │
+                 ┌────────▼────────┐
+                 │ Our Cloudflare  │  zone: shogun-os.ai
+                 │ + Registry VPS  │  assigns random slugs
+                 └─────────────────┘
 ```
 
 ---
@@ -410,13 +404,14 @@ Each runs as an isolated Hermes Agent profile with:
 - **Cron jobs** — 3-tier daily scrum + department-specific extras
 - **gbrain source** — isolated knowledge store with federated read of `shared/`
 
-### Web Portal (NEW)
+### Web Portal
 
-- **Multi-tenant** — each install gets a unique `*.shogun-os.ai` subdomain
+- **Multi-tenant** — each company install gets one random `*.shogun-os.ai` URL (our Cloudflare)
+- **One dashboard** — all department agents in a single UI (not separate portals)
 - **Onboarding wizard** — 4-step setup: departments → company info → provider config → launch
-- **Department dashboards** — Chat, Brain, Docs for each department
 - **Unified auth** — Google/Microsoft OAuth + email/password with forced first-login change
 - **Provider config** — Per-department API keys and settings
+- **Central registry** — assigns URL + tunnel; customers never need a Cloudflare account
 
 ### 54 Automated Cron Jobs
 
