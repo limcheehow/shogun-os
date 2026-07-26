@@ -45,6 +45,7 @@ Multi-tenant **FastAPI + React** application. Product rules:
 - Provisioning & checks: `install-web.sh` + `verify-web.sh`
 - Design doc: [`docs/architecture/WEB_PORTAL.md`](docs/architecture/WEB_PORTAL.md)
 - Operator Cloudflare checklist: [`docs/ops/cloudflare-registry-setup.md`](docs/ops/cloudflare-registry-setup.md)
+- **WSL / Azure Windows deploy (agent runbook):** [`docs/ops/deploy-registry-wsl-azure.md`](docs/ops/deploy-registry-wsl-azure.md)
 
 ### Layer 1: Hermes Agent Profiles
 
