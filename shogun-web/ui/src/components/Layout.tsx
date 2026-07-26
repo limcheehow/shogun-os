@@ -23,7 +23,7 @@ import {
 import clsx from 'clsx';
 import { departmentsApi, authApi } from '../lib/api';
 import { useAuth } from '../lib/auth';
-import { DEPARTMENT_CATALOG, type DepartmentKey, type Department } from '../lib/types';
+import { DEPARTMENT_CATALOG, type DepartmentKey } from '../lib/types';
 import StatusBadge from './StatusBadge';
 
 const ICONS: Record<string, LucideIcon> = {
@@ -57,8 +57,9 @@ export default function Layout() {
   });
 
   const rawDepts = deptsQuery.data || [];
-  const allDepts: Department[] = Array.isArray(rawDepts) ? rawDepts : (rawDepts as { departments?: Department[] }).departments || [];
-  const activeDepts = allDepts.filter((d) => d.active);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allDepts: any[] = Array.isArray(rawDepts) ? rawDepts : (rawDepts as { departments?: any[] }).departments || [];
+  const activeDepts = allDepts.filter((d: any) => d.active || d.status === 'active');
   const canManageStaff = user?.role === 'admin' || user?.role === 'hr_manager';
 
   const handleLogout = async () => {

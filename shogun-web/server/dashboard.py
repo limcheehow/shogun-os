@@ -164,9 +164,9 @@ def _run_ceo_aggregation(pages: List[dict]) -> dict:
     def _is_next_quarter(iso: str) -> bool:
         if not iso: return False
         d = datetime.fromisoformat(iso.replace("Z", "+00:00"))
-        if d.year != cy:
-            return d.year == cy + 1 and cq == 3
-        return d.month // 3 == cq + 1
+        next_q = (cq + 1) % 4
+        next_q_year = cy + (1 if cq == 3 else 0)
+        return d.year == next_q_year and d.month // 3 == next_q
 
     def _days_since(iso: str) -> int:
         if not iso: return 0

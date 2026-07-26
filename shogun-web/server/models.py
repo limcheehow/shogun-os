@@ -102,6 +102,7 @@ class User(Base):
             "oauth_provider": self.oauth_provider,
             "role": self.role,
             "first_login": self.first_login,
+            "is_temporary_password": self.is_temporary_password,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
         if include_sensitive:

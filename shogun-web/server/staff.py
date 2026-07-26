@@ -58,6 +58,7 @@ def _generate_temp_password(length: int = 10) -> str:
 
 def _staff_response(user: User, db: Session) -> Dict[str, Any]:
     """Build staff response with assignments."""
+    tenant = get_primary_tenant(db)
     assignments = (
         db.execute(
             select(UserDepartment).where(UserDepartment.user_id == user.id)
@@ -136,6 +137,8 @@ async def create_staff(
         if dept:
             ud = UserDepartment(user_id=new_user.id, department_id=dept.id, title=a.title)
             db.add(ud)
+        else:
+            logger.warning("Unknown department '%s' in staff assignment for %s", a.department, body.email)
 
     db.commit()
     db.refresh(new_user)
@@ -152,8 +155,9 @@ async def get_staff(
     db: Session = Depends(get_db),
 ) -> dict:
     """Get a single staff member with assignments."""
+    tenant = get_primary_tenant(db)
     staff_user = db.get(User, staff_id)
-    if staff_user is None:
+    if staff_user is None or staff_user.tenant_id != tenant.id:
         raise HTTPException(status_code=404, detail="Staff not found")
     return {"user": _staff_response(staff_user, db)}
 
@@ -166,8 +170,9 @@ async def update_staff(
     db: Session = Depends(get_db),
 ) -> dict:
     """Update staff name, role, and/or department assignments."""
+    tenant = get_primary_tenant(db)
     staff_user = db.get(User, staff_id)
-    if staff_user is None:
+    if staff_user is None or staff_user.tenant_id != tenant.id:
         raise HTTPException(status_code=404, detail="Staff not found")
 
     if body.name is not None:
@@ -194,8 +199,10 @@ async def update_staff(
             if dept:
                 ud = UserDepartment(user_id=staff_user.id, department_id=dept.id, title=a.title)
                 db.add(ud)
+            else:
+                logger.warning("Unknown department '%s' in update for staff %s", a.department, staff_user.email)
 
-    db.add(staff_user)
+        db.add(staff_user)
     db.commit()
     db.refresh(staff_user)
     return {"ok": True, "user": _staff_response(staff_user, db)}
@@ -208,8 +215,9 @@ async def delete_staff(
     db: Session = Depends(get_db),
 ) -> dict:
     """Remove a staff member's department assignments (soft-unlink)."""
+    tenant = get_primary_tenant(db)
     staff_user = db.get(User, staff_id)
-    if staff_user is None:
+    if staff_user is None or staff_user.tenant_id != tenant.id:
         raise HTTPException(status_code=404, detail="Staff not found")
 
     # Remove all department assignments (cascading)
@@ -229,8 +237,9 @@ async def reset_staff_password(
     db: Session = Depends(get_db),
 ) -> dict:
     """Generate a new temporary password for a staff member."""
+    tenant = get_primary_tenant(db)
     staff_user = db.get(User, staff_id)
-    if staff_user is None:
+    if staff_user is None or staff_user.tenant_id != tenant.id:
         raise HTTPException(status_code=404, detail="Staff not found")
 
     temp_password = _generate_temp_password()
