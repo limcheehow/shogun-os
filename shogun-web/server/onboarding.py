@@ -304,9 +304,36 @@ async def list_departments(
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
     tenant = get_primary_tenant(db)
-    depts = list(
-        db.execute(select(Department).where(Department.tenant_id == tenant.id)).scalars()
-    )
+    # Admins and HR see all departments; regular users see only their assigned ones
+    if user.role in {"admin", "owner", "hr_manager"}:
+        depts = list(
+            db.execute(select(Department).where(Department.tenant_id == tenant.id)).scalars()
+        )
+    else:
+        # Filter by UserDepartment assignments
+        from models import UserDepartment
+
+        rows = (
+            db.execute(
+                select(UserDepartment).where(UserDepartment.user_id == user.id)
+            )
+            .scalars()
+            .all()
+        )
+        dept_ids = [r.department_id for r in rows]
+        if dept_ids:
+            depts = (
+                db.execute(
+                    select(Department).where(
+                        Department.tenant_id == tenant.id,
+                        Department.id.in_(dept_ids),
+                    )
+                )
+                .scalars()
+                .all()
+            )
+        else:
+            depts = []
     items = []
     for d in depts:
         item = d.to_dict()

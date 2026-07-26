@@ -79,12 +79,17 @@ class User(Base):
     oauth_id: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
     role: Mapped[str] = mapped_column(String(64), nullable=False, default="admin")
     first_login: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_temporary_password: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    invited_by_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utcnow
     )
 
     tenant: Mapped["Tenant"] = relationship(back_populates="users")
     sessions: Mapped[List["Session"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    department_assignments: Mapped[List["UserDepartment"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
 
@@ -103,6 +108,38 @@ class User(Base):
             data["oauth_id"] = self.oauth_id
             data["has_password"] = bool(self.password_hash)
         return data
+
+
+class UserDepartment(Base):
+    """Many-to-many: users assigned to departments with a title."""
+
+    __tablename__ = "user_departments"
+    __table_args__ = (UniqueConstraint("user_id", "department_id", name="uq_user_dept"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    department_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("departments.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    title: Mapped[str] = mapped_column(String(256), nullable=False, default="")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utcnow
+    )
+
+    user: Mapped["User"] = relationship(back_populates="department_assignments")
+    department: Mapped["Department"] = relationship()
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "department_id": self.department_id,
+            "department_name": self.department.name if self.department else "",
+            "title": self.title,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
 
 
 class Department(Base):

@@ -15,14 +15,15 @@ import {
   Package,
   Shield,
   Users,
+  UserCog,
   Wallet,
   X,
   type LucideIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { departmentsApi } from '../lib/api';
+import { departmentsApi, authApi } from '../lib/api';
 import { useAuth } from '../lib/auth';
-import { DEPARTMENT_CATALOG, type DepartmentKey } from '../lib/types';
+import { DEPARTMENT_CATALOG, type DepartmentKey, type Department } from '../lib/types';
 import StatusBadge from './StatusBadge';
 
 const ICONS: Record<string, LucideIcon> = {
@@ -49,7 +50,16 @@ export default function Layout() {
     queryFn: () => departmentsApi.list(),
   });
 
-  const activeDepts = (deptsQuery.data || []).filter((d) => d.active);
+  const accessQuery = useQuery({
+    queryKey: ['my-access'],
+    queryFn: () => authApi.myAccess(),
+    staleTime: 30_000,
+  });
+
+  const rawDepts = deptsQuery.data || [];
+  const allDepts: Department[] = Array.isArray(rawDepts) ? rawDepts : (rawDepts as { departments?: Department[] }).departments || [];
+  const activeDepts = allDepts.filter((d) => d.active);
+  const canManageStaff = user?.role === 'admin' || user?.role === 'hr_manager';
 
   const handleLogout = async () => {
     await logout();
@@ -84,6 +94,24 @@ export default function Layout() {
           <LayoutDashboard className="h-4 w-4" />
           Dashboard
         </NavLink>
+
+        {canManageStaff && (
+          <NavLink
+            to="/staff"
+            onClick={() => setMobileOpen(false)}
+            className={({ isActive }) =>
+              clsx(
+                'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition',
+                isActive
+                  ? 'bg-white/10 text-white'
+                  : 'text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-text',
+              )
+            }
+          >
+            <UserCog className="h-4 w-4" />
+            Staff
+          </NavLink>
+        )}
 
         <div className="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-sidebar-muted/80">
           Departments

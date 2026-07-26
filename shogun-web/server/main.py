@@ -24,6 +24,7 @@ import departments
 import gateway
 import onboarding
 import registry
+import staff
 
 logging.basicConfig(
     level=logging.INFO,
@@ -114,6 +115,7 @@ def create_app() -> FastAPI:
     app.include_router(gateway.router, prefix="/api")
     app.include_router(registry.router, prefix="/api")
     app.include_router(dashboard.router, prefix="/api")
+    app.include_router(staff.router, prefix="/api")
 
     @app.get("/api/health")
     async def api_health() -> dict:

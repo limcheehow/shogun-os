@@ -361,6 +361,37 @@ async def me(user: User = Depends(get_current_user)) -> Dict[str, Any]:
     return {"user": _user_response(user)}
 
 
+@router.get("/me/access")
+async def my_access(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """Return the current user's access info — assigned departments and role."""
+    from models import UserDepartment
+
+    rows = (
+        db.execute(
+            select(UserDepartment).where(UserDepartment.user_id == user.id)
+        )
+        .scalars()
+        .all()
+    )
+    assigned = [
+        {
+            "department": r.department.name,
+            "title": r.title,
+            "department_name": r.department.name.capitalize(),
+        }
+        for r in rows
+        if r.department
+    ]
+    return {
+        "role": user.role,
+        "assigned_departments": assigned,
+        "has_access": len(assigned) > 0 or user.role in {"admin", "owner"},
+    }
+
+
 @router.post("/logout")
 async def logout(
     request: Request,

@@ -17,29 +17,37 @@ import Chat from '../components/Chat';
 import DocsViewer from '../components/DocsViewer';
 import { DashboardViewer } from '../components/dashboards/DashboardViewer';
 import StatusBadge from '../components/StatusBadge';
-import { departmentsApi } from '../lib/api';
+import { authApi, departmentsApi } from '../lib/api';
+import { useAuth } from '../lib/auth';
 import {
   DEPARTMENT_CATALOG,
   type DepartmentKey,
   type ProviderConfig,
 } from '../lib/types';
 
-const TABS = [
+const TABS: { id: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'chat', label: 'Chat', icon: MessageSquare },
   { id: 'brain', label: 'Brain', icon: Brain },
   { id: 'docs', label: 'Docs', icon: FileText },
   { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
   { id: 'settings', label: 'Settings', icon: Settings },
-] as const;
+];
 
-type TabId = (typeof TABS)[number]['id'];
+type TabId = string;
 
 export default function Department() {
   const { name = '' } = useParams();
   const key = name.toLowerCase() as DepartmentKey;
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = (searchParams.get('tab') || 'chat') as TabId;
-  const tab = TABS.some((t) => t.id === tabParam) ? tabParam : 'chat';
+
+  const tabs = useMemo(() => {
+    if (user?.role === 'admin' || user?.role === 'owner') return TABS;
+    return TABS.filter((t) => t.id !== 'settings');
+  }, [user?.role]);
+
+  const tab = tabs.some((t) => t.id === tabParam) ? tabParam : tabs[0]?.id || 'chat';
   const queryClient = useQueryClient();
 
   const meta = DEPARTMENT_CATALOG[key];
@@ -150,7 +158,7 @@ export default function Department() {
         </div>
 
         <nav className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
-          {TABS.map((t) => {
+          {tabs.map((t) => {
             const Icon = t.icon;
             const active = tab === t.id;
             return (

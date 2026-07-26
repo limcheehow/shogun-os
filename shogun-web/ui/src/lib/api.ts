@@ -7,6 +7,7 @@ import {
   type SetStateAction,
 } from 'react';
 import type {
+  AccessInfo,
   AuthResponse,
   BrainLink,
   BrainPage,
@@ -15,6 +16,7 @@ import type {
   ChatMessage,
   Company,
   ConnectionTestResult,
+  CreateStaffPayload,
   DashboardConfig,
   Department,
   DepartmentKey,
@@ -22,6 +24,7 @@ import type {
   LoginPayload,
   OnboardingState,
   ProviderConfig,
+  StaffMember,
   User,
 } from './types';
 
@@ -115,6 +118,28 @@ export const authApi = {
   oauthUrl: (provider: 'google' | 'microsoft') => `/api/auth/oauth/${provider}`,
   oauthCallback: (params: URLSearchParams) =>
     apiFetch<AuthResponse>(`/api/auth/callback?${params.toString()}`),
+  myAccess: () => apiFetch<AccessInfo>('/api/auth/me/access'),
+};
+
+export const staffApi = {
+  list: () => apiFetch<{ staff: StaffMember[] }>('/api/staff'),
+  get: (id: number) => apiFetch<{ user: StaffMember }>(`/api/staff/${id}`),
+  create: (payload: CreateStaffPayload) =>
+    apiFetch<{ ok: boolean; user: StaffMember & { temporary_password?: string } }>('/api/staff', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  update: (id: number, payload: Partial<CreateStaffPayload>) =>
+    apiFetch<{ ok: boolean; user: StaffMember }>(`/api/staff/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
+  remove: (id: number) =>
+    apiFetch<{ ok: boolean }>(`/api/staff/${id}`, { method: 'DELETE' }),
+  resetPassword: (id: number) =>
+    apiFetch<{ ok: boolean; temporary_password: string }>(`/api/staff/${id}/reset-password`, {
+      method: 'POST',
+    }),
 };
 
 export const onboardingApi = {

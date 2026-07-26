@@ -7,7 +7,9 @@ import ChangePassword from './pages/ChangePassword';
 import Dashboard from './pages/Dashboard';
 import Department from './pages/Department';
 import Login from './pages/Login';
+import NoAccess from './pages/NoAccess';
 import Onboarding from './pages/Onboarding';
+import StaffManagement from './pages/StaffManagement';
 
 function AuthCallback() {
   const [searchParams] = useSearchParams();
@@ -100,6 +102,8 @@ export default function App() {
       >
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/department/:name" element={<Department />} />
+        <Route path="/staff" element={<StaffManagement />} />
+        <Route path="/no-access" element={<NoAccess />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />

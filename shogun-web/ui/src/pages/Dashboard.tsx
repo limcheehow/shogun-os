@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Copy, ExternalLink, Globe2, Loader2, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DepartmentCard from '../components/DepartmentCard';
-import { departmentsApi, onboardingApi } from '../lib/api';
+import { authApi, departmentsApi, onboardingApi } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import {
   DEPARTMENT_CATALOG,
@@ -54,6 +55,22 @@ export default function Dashboard() {
 
   const publicUrl = statusQuery.data?.registry?.public_url || statusQuery.data?.onboarding?.public_url;
   const isLive = Boolean(statusQuery.data?.registry?.live || publicUrl);
+
+  // Non-admin users: redirect to first assigned department or no-access
+  const accessQuery = useQuery({
+    queryKey: ['my-access'],
+    queryFn: () => authApi.myAccess(),
+    staleTime: 30_000,
+  });
+
+  if (accessQuery.data && user?.role !== 'admin' && user?.role !== 'owner') {
+    if (!accessQuery.data.has_access) {
+      return <Navigate to="/no-access" replace />;
+    }
+    if (accessQuery.data.assigned_departments.length > 0) {
+      return <Navigate to={`/department/${accessQuery.data.assigned_departments[0].department}`} replace />;
+    }
+  }
 
   const departments = useMemo(() => mergeCatalog(deptsQuery.data), [deptsQuery.data]);
   const active = departments.filter((d) => d.active);

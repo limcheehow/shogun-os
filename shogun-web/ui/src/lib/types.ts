@@ -243,6 +243,41 @@ export interface DashboardTab {
   icon: string;
 }
 
+// ─── Staff Management Types ───
+
+export interface StaffAssignment {
+  department: string;
+  title: string;
+  department_name?: string;
+  department_id?: number;
+  user_id?: number;
+  id?: number;
+}
+
+export interface StaffMember {
+  id: number;
+  email: string;
+  name: string;
+  role: 'admin' | 'hr_manager' | 'user';
+  first_login: boolean;
+  is_temporary_password: boolean;
+  created_at?: string;
+  assignments: StaffAssignment[];
+}
+
+export interface AccessInfo {
+  role: string;
+  assigned_departments: { department: string; title: string; department_name: string }[];
+  has_access: boolean;
+}
+
+export interface CreateStaffPayload {
+  email: string;
+  name: string;
+  role: string;
+  assignments: { department: string; title: string }[];
+}
+
 export interface DashboardConfig {
   enabled: boolean;
   tabs: DashboardTab[];
