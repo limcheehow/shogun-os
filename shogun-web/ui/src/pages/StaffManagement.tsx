@@ -241,6 +241,11 @@ function AddStaffModal({
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState('user');
+  const [phone, setPhone] = useState('');
+  const [slackId, setSlackId] = useState('');
+  const [telegramId, setTelegramId] = useState('');
+  const [employeeId, setEmployeeId] = useState('');
+  const [managerEmail, setManagerEmail] = useState('');
   const [assignments, setAssignments] = useState<{ department: string; title: string }[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -265,6 +270,11 @@ function AddStaffModal({
         email: email.trim(),
         name: name.trim(),
         role,
+        phone: phone || undefined,
+        slack_user_id: slackId || undefined,
+        telegram_user_id: telegramId || undefined,
+        employee_id: employeeId || undefined,
+        manager_email: managerEmail || undefined,
         assignments: assignments.map((a) => ({ department: a.department, title: a.title })),
       });
       toast.success('Staff created');
@@ -303,6 +313,29 @@ function AddStaffModal({
               </select>
             </div>
           )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="label">Phone</label>
+              <input className="input" placeholder="+60123456789" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Slack ID</label>
+              <input className="input" placeholder="U0XXXXXXX" value={slackId} onChange={(e) => setSlackId(e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Telegram ID</label>
+              <input className="input" placeholder="123456789" value={telegramId} onChange={(e) => setTelegramId(e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Employee ID</label>
+              <input className="input" placeholder="EMP-042" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <label className="label">Manager Email</label>
+            <input className="input" placeholder="manager@company.com" value={managerEmail} onChange={(e) => setManagerEmail(e.target.value)} />
+          </div>
 
           <div>
             <label className="label">Department Assignments</label>
