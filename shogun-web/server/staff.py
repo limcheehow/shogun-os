@@ -445,3 +445,19 @@ async def staff_directory(
         "limit": limit,
         "offset": offset,
     }
+
+
+@router.post("/sync-briohr")
+async def sync_briohr(
+    user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Trigger BrioHR employee sync."""
+    from briohr_sync import sync_employees
+
+    try:
+        result = await sync_employees(db)
+        return {"ok": True, **result}
+    except Exception as exc:
+        logger.exception("BrioHR sync failed")
+        raise HTTPException(status_code=502, detail=str(exc))

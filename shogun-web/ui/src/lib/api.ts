@@ -158,6 +158,8 @@ export const staffApi = {
     if (params?.offset) sp.set('offset', String(params.offset));
     return apiFetch<{ staff: StaffMember[]; total: number; limit: number; offset: number }>(`/api/staff/directory?${sp.toString()}`);
   },
+  syncBriohr: () =>
+    apiFetch<{ ok: boolean; created: number; updated: number; errors: string[]; synced_at?: string }>('/api/staff/sync-briohr', { method: 'POST' }),
 };
 
 export const onboardingApi = {

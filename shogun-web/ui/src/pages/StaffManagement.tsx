@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus, Shield, Trash2, UserCog, KeyRound, X } from 'lucide-react';
+import { Loader2, Plus, Shield, Trash2, UserCog, KeyRound, Upload, RefreshCw, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { staffApi, departmentsApi, authApi } from '../lib/api';
 import { useAuth } from '../lib/auth';
@@ -10,7 +10,9 @@ export default function StaffManagement() {
   const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showCsvModal, setShowCsvModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState<{ id: number; name: string; password: string } | null>(null);
+  const [syncingBriohr, setSyncingBriohr] = useState(false);
 
   const staffQuery = useQuery({
     queryKey: ['staff'],
@@ -43,18 +45,50 @@ export default function StaffManagement() {
     <div className="mx-auto max-w-5xl">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Staff Management</h1>
+          <h1 className="text-xl font-semibold text-slate-900">Staff Directory</h1>
           <p className="text-sm text-slate-500">
-            {staff.length} staff member{staff.length !== 1 ? 's' : ''} · {allDepts.length} departments
+            {staff.length} staff · {allDepts.length} departments
           </p>
         </div>
-        <button type="button" className="btn-primary" onClick={() => setShowAddModal(true)}>
-          <Plus className="h-4 w-4" />
-          Add Staff
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="btn-secondary" onClick={() => setShowCsvModal(true)}>
+            <Upload className="h-4 w-4" />
+            Import CSV
+          </button>
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={syncingBriohr}
+            onClick={async () => {
+              setSyncingBriohr(true);
+              try {
+                const res = await staffApi.syncBriohr();
+                toast.success(`Synced: ${res.created} created, ${res.updated} updated`);
+                queryClient.invalidateQueries({ queryKey: ['staff'] });
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : 'BrioHR sync failed');
+              } finally {
+                setSyncingBriohr(false);
+              }
+            }}
+          >
+            {syncingBriohr ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            BrioHR Sync
+          </button>
+          <button type="button" className="btn-primary" onClick={() => setShowAddModal(true)}>
+            <Plus className="h-4 w-4" />
+            Add Staff
+          </button>
+        </div>
       </div>
 
-      {/* Staff table */}
+      {/* BrioHR sync status */}
+      <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-500">
+        <RefreshCw className="mr-1 inline h-3 w-3" />
+        BrioHR sync available. Staff created via sync get auto-generated brain pages at <code className="rounded bg-slate-200 px-1">shared/staff/{'{'}<var>slug</var>{'}'}.md</code>
+      </div>
+ 
+            {/* Staff table */}
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -62,8 +96,9 @@ export default function StaffManagement() {
               <tr className="border-b border-surface-border text-xs font-medium uppercase tracking-wide text-slate-500">
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Email</th>
-                <th className="px-4 py-3">Role</th>
-                <th className="px-4 py-3">Departments</th>
+                <th className="px-4 py-3">Dept</th>
+                <th className="px-4 py-3">Comms</th>
+                <th className="px-4 py-3">Source</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
