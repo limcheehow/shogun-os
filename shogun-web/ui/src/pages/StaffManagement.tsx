@@ -106,7 +106,7 @@ export default function StaffManagement() {
             <tbody>
               {staff.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-slate-500">
+                  <td colSpan={7} className="px-4 py-12 text-center text-sm text-slate-500">
                     No staff members yet. Add one to get started.
                   </td>
                 </tr>
@@ -215,7 +215,6 @@ function StaffRow({
     <tr className="border-b border-surface-border last:border-0 hover:bg-slate-50">
       <td className="px-4 py-3 font-medium text-slate-900">{staff.name}</td>
       <td className="px-4 py-3 text-slate-600">{staff.email}</td>
-      <td className="px-4 py-3">{roleBadge(staff.role)}</td>
       <td className="px-4 py-3">
         <div className="flex flex-wrap gap-1">
           {staff.assignments.map((a) => (
@@ -223,8 +222,21 @@ function StaffRow({
               {a.department_name || a.department}{a.title ? ` — ${a.title}` : ''}
             </span>
           ))}
-          {staff.assignments.length === 0 && <span className="text-xs text-slate-400">None</span>}
+          {staff.assignments.length === 0 && <span className="text-xs text-slate-400">—</span>}
         </div>
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex flex-wrap gap-1 text-xs text-slate-600">
+          {staff.phone && <span title="Phone">{staff.phone}</span>}
+          {staff.slack_user_id && <span className="rounded bg-purple-50 px-1.5 py-0.5 font-mono text-purple-700">S:{staff.slack_user_id}</span>}
+          {staff.telegram_user_id && <span className="rounded bg-sky-50 px-1.5 py-0.5 font-mono text-sky-700">T:{staff.telegram_user_id}</span>}
+          {!staff.phone && !staff.slack_user_id && !staff.telegram_user_id && <span className="text-slate-300">—</span>}
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">
+          {staff.source || 'manual'}
+        </span>
       </td>
       <td className="px-4 py-3">
         <span className={`inline-flex items-center gap-1 text-xs ${staff.first_login ? 'text-amber-600' : 'text-emerald-600'}`}>
