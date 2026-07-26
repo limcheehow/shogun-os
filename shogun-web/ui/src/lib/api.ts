@@ -140,6 +140,24 @@ export const staffApi = {
     apiFetch<{ ok: boolean; temporary_password: string }>(`/api/staff/${id}/reset-password`, {
       method: 'POST',
     }),
+  importCsv: (file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return apiFetch<{ ok: boolean; created: number; updated: number; skipped: number; errors: string[]; temporary_passwords: Record<string, string> }>('/api/staff/import-csv', {
+      method: 'POST',
+      body: fd,
+    });
+  },
+  directory: (params?: { q?: string; department?: string; role?: string; source?: string; limit?: number; offset?: number }) => {
+    const sp = new URLSearchParams();
+    if (params?.q) sp.set('q', params.q);
+    if (params?.department) sp.set('department', params.department);
+    if (params?.role) sp.set('role', params.role);
+    if (params?.source) sp.set('source', params.source);
+    if (params?.limit) sp.set('limit', String(params.limit));
+    if (params?.offset) sp.set('offset', String(params.offset));
+    return apiFetch<{ staff: StaffMember[]; total: number; limit: number; offset: number }>(`/api/staff/directory?${sp.toString()}`);
+  },
 };
 
 export const onboardingApi = {

@@ -81,6 +81,17 @@ class User(Base):
     first_login: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_temporary_password: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     invited_by_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
+    phone: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    slack_user_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    telegram_user_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    employee_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    manager_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
+    manager: Mapped[Optional["User"]] = relationship(
+        remote_side="User.id", back_populates="direct_reports"
+    )
+    avatar_url: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
+    source: Mapped[str] = mapped_column(String(32), nullable=False, default="manual")
+    last_synced_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utcnow
     )
@@ -91,6 +102,9 @@ class User(Base):
     )
     department_assignments: Mapped[List["UserDepartment"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
+    )
+    direct_reports: Mapped[List["User"]] = relationship(
+        back_populates="manager", cascade="all, delete-orphan"
     )
 
     def to_dict(self, include_sensitive: bool = False) -> Dict[str, Any]:
@@ -103,6 +117,12 @@ class User(Base):
             "role": self.role,
             "first_login": self.first_login,
             "is_temporary_password": self.is_temporary_password,
+            "phone": self.phone,
+            "slack_user_id": self.slack_user_id,
+            "telegram_user_id": self.telegram_user_id,
+            "employee_id": self.employee_id,
+            "source": self.source,
+            "last_synced_at": self.last_synced_at.isoformat() if self.last_synced_at else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
         if include_sensitive:

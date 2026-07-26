@@ -263,6 +263,13 @@ export interface StaffMember {
   is_temporary_password: boolean;
   created_at?: string;
   assignments: StaffAssignment[];
+  phone?: string;
+  slack_user_id?: string;
+  telegram_user_id?: string;
+  employee_id?: string;
+  manager_name?: string;
+  source?: string;
+  last_synced_at?: string;
 }
 
 export interface AccessInfo {
@@ -276,6 +283,11 @@ export interface CreateStaffPayload {
   name: string;
   role: string;
   assignments: { department: string; title: string }[];
+  phone?: string;
+  slack_user_id?: string;
+  telegram_user_id?: string;
+  employee_id?: string;
+  manager_email?: string;
 }
 
 export interface DashboardConfig {
