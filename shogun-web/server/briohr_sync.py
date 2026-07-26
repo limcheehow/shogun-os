@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 
 from auth import hash_password
 from brain_sync import sync_staff_to_brain as _sync_to_brain
+from database import get_primary_tenant
 from models import Department, User, UserDepartment
 
 logger = logging.getLogger(__name__)
@@ -42,11 +43,11 @@ def _get_credentials() -> Tuple[str, str, str]:
         except (json.JSONDecodeError, OSError):
             pass
     if not username:
-        username = os.environ.get("BRIOHR_USERNAME", "64cc80f22f7f810008ab86f8")
+        username = os.environ.get("BRIOHR_USERNAME")
     if not password:
-        password = os.environ.get("BRIOHR_PASSWORD", "b4mvkDz2GjweMwiKsgvn")
+        password = os.environ.get("BRIOHR_PASSWORD")
     if not company:
-        company = os.environ.get("BRIOHR_COMPANY", "64cc80f22f7f810008ab86f8")
+        company = os.environ.get("BRIOHR_COMPANY")
     return username, password, company
 
 
@@ -79,7 +80,7 @@ def _generate_temp_password(length: int = 10) -> str:
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
-async def sync_employees(db: Session) -> Dict[str, Any]:
+async def sync_employees(db: Session, tenant_id: int = 1) -> Dict[str, Any]:
     """Fetch employee list from BrioHR, upsert Users, create brain pages."""
     username, password, company = _get_credentials()
     csv_content = _fetch_csv(
@@ -87,13 +88,6 @@ async def sync_employees(db: Session) -> Dict[str, Any]:
     )
     if not csv_content:
         return {"created": 0, "updated": 0, "errors": ["Could not fetch employee CSV from BrioHR"]}
-
-    from config import get_config
-    from database import get_primary_tenant
-
-    # We need to get the tenant — the db session is already from the caller
-    # Use the config to find tenant
-    tenant_id = 1  # single-tenant; will be resolved properly in portal endpoint
 
     created = 0
     updated = 0
@@ -113,7 +107,7 @@ async def sync_employees(db: Session) -> Dict[str, Any]:
         emp_id = (row.get("employee_id") or row.get("employeeId") or "").strip()
 
         # Find or create user
-        existing = db.query(User).filter(User.email == email).first()
+        existing = db.query(User).filter(User.email == email, User.tenant_id == tenant_id).first()
         new_user = None
         if existing:
             existing.name = name
@@ -127,6 +121,7 @@ async def sync_employees(db: Session) -> Dict[str, Any]:
         else:
             temp_pw = _generate_temp_password()
             new_user = User(
+                tenant_id=tenant_id,
                 email=email,
                 name=name,
                 role="user",
