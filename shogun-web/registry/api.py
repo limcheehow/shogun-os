@@ -258,7 +258,9 @@ class RegistryAPI:
                 )
 
         subdomain: Optional[str] = None
-        if body.preferred_subdomain:
+        # Product default: always random. Vanity / preferred only when
+        # ALLOW_PREFERRED_SUBDOMAIN=true (admin / paid escape hatch).
+        if body.preferred_subdomain and self.settings.allow_preferred_subdomain:
             if not validate_subdomain(body.preferred_subdomain):
                 raise HTTPException(
                     status_code=400, detail="Invalid preferred_subdomain"
@@ -269,11 +271,15 @@ class RegistryAPI:
             elif not self.db.subdomain_exists(body.preferred_subdomain):
                 subdomain = body.preferred_subdomain
             else:
-                # Preferred taken and not multi-instance attach
                 logger.info(
-                    "Preferred subdomain %s taken; generating new",
+                    "Preferred subdomain %s taken; generating random",
                     body.preferred_subdomain,
                 )
+        elif body.preferred_subdomain and not self.settings.allow_preferred_subdomain:
+            logger.info(
+                "Ignoring preferred_subdomain=%s (allow_preferred_subdomain=false)",
+                body.preferred_subdomain,
+            )
 
         if not subdomain:
             subdomain = generate_subdomain(self.db)
@@ -288,7 +294,15 @@ class RegistryAPI:
         )
 
         tunnel_model: Optional[Tunnel] = None
-        if body.create_tunnel and self.settings.enable_tunnel_provisioning:
+        want_tunnel = False
+        if self.settings.enable_tunnel_provisioning:
+            if body.create_tunnel is True:
+                want_tunnel = True
+            elif body.create_tunnel is False:
+                want_tunnel = False
+            else:
+                want_tunnel = bool(self.settings.default_create_tunnel)
+        if want_tunnel:
             tunnel_model = await self._provision_tunnel(tenant)
 
         public = f"https://{tenant.subdomain}.{self.settings.registry_domain}"
@@ -313,10 +327,11 @@ class RegistryAPI:
             logger.warning("Tunnel requested but Cloudflare is not configured")
             return None
         try:
+            # cloudflared runs on the tenant machine; always target localhost there.
             result = await self.cf.ensure_tenant_tunnel(
                 subdomain=tenant.subdomain,
                 domain=self.settings.registry_domain,
-                local_service=f"http://{tenant.host}:{tenant.port}",
+                local_service=f"http://127.0.0.1:{tenant.port}",
             )
             tunnel = self.db.create_tunnel(
                 tenant_id=tenant.id,

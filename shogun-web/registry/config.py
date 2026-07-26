@@ -70,6 +70,21 @@ class Settings(BaseSettings):
         default=False,
         description="If true, create CF tunnels/DNS on register when credentials set",
     )
+    allow_preferred_subdomain: bool = Field(
+        default=False,
+        description=(
+            "If false (default), ignore preferred_subdomain on /api/register and "
+            "always assign a random adjective-noun-NN slug. Vanity names are "
+            "admin-only product escape hatches — customers never pick URLs."
+        ),
+    )
+    default_create_tunnel: bool = Field(
+        default=True,
+        description=(
+            "When tunnel provisioning is enabled, create a per-tenant tunnel "
+            "unless the register payload explicitly sets create_tunnel=false."
+        ),
+    )
 
     # Local dev convenience
     allow_insecure_local_db: bool = Field(

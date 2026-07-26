@@ -78,7 +78,10 @@ class RegisterRequest(BaseModel):
     port: int = Field(..., ge=1, le=65535)
     preferred_subdomain: Optional[str] = Field(
         default=None,
-        description="Optional preferred slug; assigned only if free",
+        description=(
+            "Optional vanity slug. Ignored unless registry "
+            "ALLOW_PREFERRED_SUBDOMAIN=true. Product default is random assignment."
+        ),
     )
     instance_id: Optional[str] = Field(
         default=None,
@@ -90,9 +93,12 @@ class RegisterRequest(BaseModel):
     )
     weight: int = Field(default=100, ge=1, le=1000)
     metadata: dict[str, Any] = Field(default_factory=dict)
-    create_tunnel: bool = Field(
-        default=False,
-        description="Request Cloudflare tunnel provisioning if enabled",
+    create_tunnel: Optional[bool] = Field(
+        default=None,
+        description=(
+            "Request Cloudflare tunnel provisioning. None = use registry "
+            "DEFAULT_CREATE_TUNNEL when ENABLE_TUNNEL_PROVISIONING is on."
+        ),
     )
     registration_token: Optional[str] = None
 

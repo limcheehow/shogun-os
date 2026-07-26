@@ -18,11 +18,13 @@ This directory documents the phased development of Shogun OS, a Hermes Agent com
 ## Quick Reference
 
 - **Skills:** [`../skills/`](../skills/) — `shogunify`, `department-scrum`, `brain-ingest-pipeline`, `company-workflow`, …
-- **Scripts:** [`../scripts/`](../scripts/) — `install.sh`, `generate-profile.py`, `wire-crons.py`, `verify-install.sh`
+- **Scripts:** [`../scripts/`](../scripts/) — `install.sh`, `generate-profile.py`, `install-web.sh`, `wire-crons.py`, `verify-install.sh`
 - **Templates:** [`../templates/`](../templates/) — profile configs
 - **Examples:** [`../examples/`](../examples/) — scrum configs, gmail batch configs
 - **Recipes:** [`../recipes/`](../recipes/) — integration guides
 - **Schema:** [`../schema/`](../schema/) — config schemas
+- **Web portal design:** [`architecture/WEB_PORTAL.md`](architecture/WEB_PORTAL.md) — one dashboard, random URL, our Cloudflare
+- **Cloudflare (operator):** [`ops/cloudflare-registry-setup.md`](ops/cloudflare-registry-setup.md)
 - **Shogunify (add skill/connector/workflow):** [`recipes/shogunify.md`](recipes/shogunify.md) — slash `/shogunify`
 - **Provider abstractions guide:** [`recipes/creating-provider-abstractions.md`](recipes/creating-provider-abstractions.md)
 - **Microsoft 365 Integration:** [`../skills/devops/microsoft-integration/`](../skills/devops/microsoft-integration/) — Graph API client for mail, calendar, OneDrive, and directory

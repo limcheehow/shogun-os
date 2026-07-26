@@ -64,9 +64,12 @@ export default function Dashboard() {
     <div className="mx-auto max-w-6xl">
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+            Company dashboard
+          </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Welcome back{user?.name ? `, ${user.name}` : ''}. Manage your department agents.
+            Welcome back{user?.name ? `, ${user.name}` : ''}. One place for every
+            department agent — activate, chat, and monitor from here.
           </p>
         </div>
         {inactive.length > 0 && (
