@@ -50,6 +50,30 @@ Adds role-based access control and staff management to the web portal.
 
 **OAuth flow:** Self-registered users get zero access until admin assigns them via Staff Management.
 
+## [3.14.0] — 2026-07-26
+
+### Staff Directory v2 — Comms IDs, CSV Import, HR Provider Abstraction
+
+**User model expansion:**
+- New fields: `phone`, `slack_user_id`, `telegram_user_id`, `employee_id`, `manager_id`, `source`, `last_synced_at`
+- `manager` / `direct_reports` self-referential relationships
+
+**Staff API:**
+- `POST /api/staff/import-csv` — bulk create/update from CSV with temp password generation
+- `GET /api/staff/directory` — searchable, filterable staff listing
+- All CRUD endpoints expanded with comms/platform ID fields
+
+**Brain sync:**
+- Auto-generates/updates `shared/staff/{slug}.md` on every staff create/update
+- Staff profiles now searchable via gbrain across all profiles
+
+**HR Provider abstraction:**
+- `recipes/hr/staff-directory/CONTRACT.md`, `GENERIC_SKILL.md`, `providers/briohr.md`
+- BrioHR is the first reference implementation
+
+**Frontend:**
+- Add Staff form expanded with phone, Slack ID, Telegram ID, Employee ID, Manager Email
+
 ## [3.12.3] — 2026-07-26
 
 ### Fix: URL claim is install-time, not web UX (chicken-and-egg fix)
