@@ -30,6 +30,26 @@ SPA → /api/departments/{name}/dashboard/ceo-stats
     → Aggregated JSON → Recharts in sub-tabs
 ```
 
+### Staff Management & Access Control
+
+Adds role-based access control and staff management to the web portal.
+
+**Backend:**
+- New `UserDepartment` model — many-to-many user↔department with title
+- Staff CRUD router (`/api/staff`) — create, update, delete, reset-password
+- Role system: `admin` | `hr_manager` | `user`
+- Department listing filtered by user assignments (non-admin/HR users see only assigned depts)
+- `/api/auth/me/access` endpoint — returns role + assigned departments
+
+**Frontend:**
+- Staff Management page (`/staff`) — table with add/edit/reset-password modals
+- No Access wall (`/no-access`) for unassigned users
+- Staff nav link in sidebar (gated to admin/HR)
+- Settings tab hidden from non-admin users
+- Dashboard redirects non-admin users to first assigned department or no-access wall
+
+**OAuth flow:** Self-registered users get zero access until admin assigns them via Staff Management.
+
 ## [3.12.3] — 2026-07-26
 
 ### Fix: URL claim is install-time, not web UX (chicken-and-egg fix)
