@@ -70,7 +70,6 @@ def _generate_temp_password(length: int = 10) -> str:
 
 def _staff_response(user: User, db: Session) -> Dict[str, Any]:
     """Build staff response with assignments."""
-    tenant = get_primary_tenant(db)
     assignments = (
         db.execute(
             select(UserDepartment).where(UserDepartment.user_id == user.id)
@@ -92,6 +91,8 @@ def _staff_response(user: User, db: Session) -> Dict[str, Any]:
         "source": user.source,
         "last_synced_at": user.last_synced_at.isoformat() if user.last_synced_at else None,
         "manager_name": user.manager.name if user.manager else "",
+        "manager_id": user.manager_id,
+        "avatar_url": user.avatar_url,
         "created_at": user.created_at.isoformat() if user.created_at else None,
         "assignments": [a.to_dict() for a in assignments],
     }
@@ -342,7 +343,7 @@ async def import_staff_csv(
         dept = None
         if dept_name:
             dept = db.execute(
-                select(Department).where(Department.tenant_id == tenant.id, Department.name == dept_name)
+                select(Department).where(Department.tenant_id == tenant.id, Department.name == dept_name.lower())
             ).scalar_one_or_none()
             if not dept:
                 errors.append(f"Row {row_num}: unknown department '{dept_name}'")

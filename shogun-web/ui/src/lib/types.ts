@@ -268,6 +268,8 @@ export interface StaffMember {
   telegram_user_id?: string;
   employee_id?: string;
   manager_name?: string;
+  manager_id?: number;
+  avatar_url?: string;
   source?: string;
   last_synced_at?: string;
 }

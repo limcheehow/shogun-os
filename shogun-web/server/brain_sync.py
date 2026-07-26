@@ -8,19 +8,22 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from config import get_config
 from models import User, UserDepartment
 
 logger = logging.getLogger(__name__)
 
-STAFF_BRAIN_DIR = Path.home() / "brain" / "shared" / "staff"
+cfg = get_config()
+STAFF_BRAIN_DIR = Path(cfg.brain_root).expanduser() / "shared" / "staff"
 
 
 def _user_slug(user: User) -> str:
-    """Generate a brain-page slug from user name."""
+    """Generate a unique brain-page slug from user name + id."""
     name = user.name or user.email.split("@")[0]
     slug = name.lower().replace(" ", "-")
     slug = re.sub(r"[^a-z0-9-]", "", slug)
-    return slug.strip("-") or f"user-{user.id}"
+    base = slug.strip("-") or f"user-{user.id}"
+    return f"{base}-{user.id}"
 
 
 def sync_staff_to_brain(user: User, db: Session) -> Optional[Path]:

@@ -54,12 +54,12 @@ def _auth_header(username: str, password: str) -> str:
     return f"Basic {base64.b64encode(f'{username}:{password}'.encode()).decode()}"
 
 
-def _fetch_csv(url: str, username: str, password: str, company: str) -> Optional[str]:
+def _fetch_csv(url: str, username: str, password: str, company: str, resource_type: str = "leave-summaries") -> Optional[str]:
     """Fetch a CSV from BrioHR. Returns content or None on failure."""
     req = Request(url)
     req.add_header("Authorization", _auth_header(username, password))
     req.add_header("x-api-context-company", company)
-    req.add_header("x-resource-type", "leave-summaries")
+    req.add_header("x-resource-type", resource_type)
     try:
         with urlopen(req, timeout=30) as resp:
             return resp.read().decode("utf-8-sig")
@@ -81,11 +81,9 @@ def _generate_temp_password(length: int = 10) -> str:
 
 async def sync_employees(db: Session) -> Dict[str, Any]:
     """Fetch employee list from BrioHR, upsert Users, create brain pages."""
-    import os
-
     username, password, company = _get_credentials()
     csv_content = _fetch_csv(
-        f"{BRIOHR_BASE}{EMPLOYEE_ENDPOINT}?format=csv", username, password, company
+        f"{BRIOHR_BASE}{EMPLOYEE_ENDPOINT}?format=csv", username, password, company, "employee-list"
     )
     if not csv_content:
         return {"created": 0, "updated": 0, "errors": ["Could not fetch employee CSV from BrioHR"]}
@@ -178,7 +176,7 @@ async def sync_leave_balances(db: Session) -> Dict[str, Any]:
     username, password, company = _get_credentials()
     csv_content = _fetch_csv(
         f"{BRIOHR_BASE}{LEAVE_ENDPOINT}?format=csv&leaveType=annual",
-        username, password, company,
+        username, password, company, "leave-summaries",
     )
     if not csv_content:
         return {"ok": False, "error": "Could not fetch leave CSV"}
