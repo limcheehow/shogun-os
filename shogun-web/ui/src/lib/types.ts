@@ -59,6 +59,15 @@ export interface OnboardingState {
   company?: Partial<Company>;
   department_configs?: Partial<Record<DepartmentKey, ProviderConfig>>;
   completed: boolean;
+  public_url?: string | null;
+  subdomain?: string | null;
+  go_live?: {
+    ok?: boolean;
+    public_url?: string | null;
+    subdomain?: string | null;
+    message?: string | null;
+    tunnel?: Record<string, unknown>;
+  };
 }
 
 export interface BrainPage {

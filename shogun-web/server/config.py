@@ -60,10 +60,11 @@ class WebConfig:
         ]
     )
 
-    # Central registry
-    registry_url: str = ""
+    # Central registry (defaults = seamless public cloud)
+    registry_url: str = "https://registry.shogun-os.ai"
     registry_api_key: str = ""
-    auto_register: bool = True
+    auto_register: bool = False  # claim URL via onboarding Go Live, not silently on boot
+    tenant_id: str = ""
 
     # OAuth
     public_base_url: str = "http://localhost:8787"
@@ -193,9 +194,10 @@ def load_config(force_reload: bool = False) -> WebConfig:
         gbrain_base_url=str(data.get("gbrain_base_url", "http://127.0.0.1:7432")),
         brain_root=str(data.get("brain_root", str(Path.home() / "brain"))),
         cors_origins=list(data.get("cors_origins") or WebConfig().cors_origins),
-        registry_url=str(data.get("registry_url", "") or ""),
+        registry_url=str(data.get("registry_url", "https://registry.shogun-os.ai") or "https://registry.shogun-os.ai"),
         registry_api_key=str(data.get("registry_api_key", "") or ""),
-        auto_register=bool(data.get("auto_register", True)),
+        auto_register=bool(data.get("auto_register", False)),
+        tenant_id=str(data.get("tenant_id", "") or ""),
         public_base_url=str(data.get("public_base_url", "http://localhost:8787")),
         google_oauth=google,
         microsoft_oauth=microsoft,
