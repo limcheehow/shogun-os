@@ -130,6 +130,28 @@ class RegisterResponse(BaseModel):
     message: str = "registered"
 
 
+class BootstrapRequest(BaseModel):
+    """Public installer handshake — no shared registration secret required."""
+
+    email: Optional[str] = Field(
+        default=None,
+        description="Optional contact email (abuse / support correlation)",
+    )
+    display_name: Optional[str] = Field(default=None, max_length=200)
+    installer_version: Optional[str] = Field(default=None, max_length=64)
+
+
+class BootstrapResponse(BaseModel):
+    install_token: str = Field(description="Single-use token for POST /api/register")
+    expires_at: str
+    expires_in_seconds: int
+    registry_url: str = Field(
+        description="Base URL installers should use (e.g. https://registry.shogun-os.ai)"
+    )
+    domain: str = Field(description="Tenant domain suffix, e.g. shogun-os.ai")
+    message: str = "ok"
+
+
 class HeartbeatRequest(BaseModel):
     tenant_id: str
     instance_id: Optional[str] = None

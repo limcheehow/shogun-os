@@ -20,7 +20,7 @@
 
 set -euo pipefail
 
-VERSION="0.2.0"
+VERSION="0.3.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null || echo "$(cd "$SCRIPT_DIR/.." && pwd)")"
 SHOGUN_WEB_DIR="${SHOGUN_WEB_DIR:-$REPO_ROOT/shogun-web}"
@@ -568,10 +568,43 @@ echo -e "${CYAN}━━━ Central registry (assigns your public URL) ━━━${
 
 if [[ "$SKIP_REGISTRY" == true ]]; then
   warn "Skipping registry registration (--skip-registry)"
-  info "Portal is local-only until you register: https://docs → WEB_PORTAL.md"
+  info "Portal is local-only until you register: docs/architecture/WEB_PORTAL.md"
 elif [[ "$DRY_RUN" == true ]]; then
-  info "[DRY-RUN] Would POST ${REGISTRY_URL}/api/register (no preferred subdomain)"
+  info "[DRY-RUN] Would bootstrap + POST ${REGISTRY_URL}/api/register"
 else
+  # Seamless path: if no operator token, mint a short-lived install ticket.
+  # Customers never need REGISTRATION_TOKEN.
+  if [[ -z "$REGISTRY_TOKEN" ]]; then
+    info "Requesting install ticket from ${REGISTRY_URL}/api/install/bootstrap …"
+    BOOT_BODY="$(mktemp)"
+    set +e
+    BOOT_CODE="$(curl -sS -o "$BOOT_BODY" -w '%{http_code}' -X POST \
+      "${REGISTRY_URL%/}/api/install/bootstrap" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json" \
+      -d "{\"email\":\"${ADMIN_EMAIL}\",\"display_name\":\"${DISPLAY_NAME}\",\"installer_version\":\"${VERSION}\"}" \
+      --connect-timeout 8 --max-time 30 2>/dev/null || echo "000")"
+    set -e
+    if [[ "$BOOT_CODE" =~ ^2 ]]; then
+      REGISTRY_TOKEN="$("$PYTHON" -c "import json,sys; print(json.load(open(sys.argv[1])).get('install_token',''))" "$BOOT_BODY" 2>/dev/null || true)"
+      BOOT_DOMAIN="$("$PYTHON" -c "import json,sys; print(json.load(open(sys.argv[1])).get('domain',''))" "$BOOT_BODY" 2>/dev/null || true)"
+      if [[ -n "$BOOT_DOMAIN" ]]; then
+        DOMAIN_SUFFIX="$BOOT_DOMAIN"
+      fi
+      if [[ -n "$REGISTRY_TOKEN" ]]; then
+        ok "Install ticket issued (single-use, short-lived)"
+      else
+        warn "Bootstrap OK but no install_token in response"
+      fi
+    else
+      warn "Bootstrap failed (HTTP ${BOOT_CODE:-?}) — cannot register without ticket"
+      info "Response: $(head -c 200 "$BOOT_BODY" 2>/dev/null || true)"
+    fi
+    rm -f "$BOOT_BODY"
+  else
+    info "Using provided registry token (operator / env override)"
+  fi
+
   PAYLOAD="$(mktemp)"
   REG_BODY="$(mktemp)"
   # Payload matches registry RegisterRequest schema. Do NOT send customer-chosen
@@ -588,7 +621,7 @@ payload = {
   "host": "127.0.0.1",
   "port": int("$WEB_PORT"),
   "create_tunnel": $( [[ "$CREATE_TUNNEL" == true ]] && echo true || echo false ),
-  "tenant_id": tenant_id if not str(tenant_id).startswith("pending") else None,
+  "tenant_id": tenant_id if tenant_id and not str(tenant_id).startswith("pending") else None,
   "metadata": {
     "display_name": "$DISPLAY_NAME",
     "admin_email": "$ADMIN_EMAIL",
@@ -597,13 +630,13 @@ payload = {
     "departments": web.get("departments", []),
   },
 }
-if "$REGISTRY_TOKEN":
-    payload["registration_token"] = "$REGISTRY_TOKEN"
-vanity = "$(slugify "${VANITY_SUBDOMAIN}")".strip()
+tok = """$REGISTRY_TOKEN"""
+if tok.strip():
+    payload["registration_token"] = tok.strip()
+vanity = """$(slugify "${VANITY_SUBDOMAIN}")""".strip()
 if vanity:
     # Only honored when registry ALLOW_PREFERRED_SUBDOMAIN=true
     payload["preferred_subdomain"] = vanity
-# Drop null tenant_id
 if payload.get("tenant_id") is None:
     payload.pop("tenant_id", None)
 print(json.dumps(payload))
@@ -611,12 +644,14 @@ PY
   if ! command -v curl >/dev/null 2>&1; then
     warn "curl not found — cannot register with registry"
     rm -f "$PAYLOAD" "$REG_BODY"
+  elif [[ -z "$REGISTRY_TOKEN" ]]; then
+    warn "No install ticket or registry token — skipping register"
+    rm -f "$PAYLOAD" "$REG_BODY"
   else
     set +e
     HTTP_CODE="$(curl -sS -o "$REG_BODY" -w '%{http_code}' -X POST "${REGISTRY_URL%/}/api/register" \
       -H "Content-Type: application/json" \
       -H "Accept: application/json" \
-      ${REGISTRY_TOKEN:+-H "Authorization: Bearer ${REGISTRY_TOKEN}"} \
       -d @"$PAYLOAD" --connect-timeout 8 --max-time 45 2>/dev/null || echo "000")"
     set -e
     BODY="$(cat "$REG_BODY" 2>/dev/null || true)"

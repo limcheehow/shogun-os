@@ -86,6 +86,26 @@ class Settings(BaseSettings):
         ),
     )
 
+    # Public install bootstrap (seamless install.sh — no shared secret for customers)
+    enable_public_bootstrap: bool = Field(
+        default=True,
+        description=(
+            "If true, POST /api/install/bootstrap issues short-lived single-use "
+            "install tickets so installers never need REGISTRATION_TOKEN."
+        ),
+    )
+    bootstrap_ticket_ttl_seconds: int = Field(
+        default=3600,
+        ge=60,
+        le=86400,
+        description="Lifetime of a bootstrap install ticket (default 1h)",
+    )
+    bootstrap_rate_limit_per_ip: int = Field(
+        default=10,
+        ge=1,
+        le=1000,
+        description="Max bootstrap tickets per client IP per hour",
+    )
     # Local dev convenience
     allow_insecure_local_db: bool = Field(
         default=False,
