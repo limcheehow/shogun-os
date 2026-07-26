@@ -28,7 +28,7 @@ import {
   type ProviderConfig,
 } from '../lib/types';
 
-const STEPS = ['Departments', 'Company', 'Providers', 'Go live'] as const;
+const STEPS = ['Departments', 'Company', 'Providers', 'Review'] as const;
 
 const emptyConfig = (): ProviderConfig => ({
   provider: '',
@@ -52,10 +52,6 @@ export default function Onboarding() {
   const [testing, setTesting] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<Record<string, string>>({});
   const [publicUrl, setPublicUrl] = useState<string | null>(null);
-  const [goLiveBusy, setGoLiveBusy] = useState(false);
-  const [goLiveError, setGoLiveError] = useState<string | null>(null);
-  const [goLiveDetail, setGoLiveDetail] = useState<string | null>(null);
-  const [autoGoLiveTried, setAutoGoLiveTried] = useState(false);
 
   const stateQuery = useQuery({
     queryKey: ['onboarding'],
@@ -135,7 +131,6 @@ export default function Onboarding() {
           await companyApi.update({ name: companyName.trim(), timezone });
         }
       } catch (err) {
-        // company endpoint may not exist yet during scaffold — still save onboarding
         console.warn(err);
       }
       await persist({
@@ -189,63 +184,12 @@ export default function Onboarding() {
     }
   };
 
-  const runGoLive = async (force = false) => {
-    setGoLiveBusy(true);
-    setGoLiveError(null);
-    setGoLiveDetail('Connecting to Shogun cloud…');
-    try {
-      const res = await onboardingApi.goLive({ create_tunnel: true, force });
-      const url = res.public_url || res.onboarding?.public_url || null;
-      if (url) setPublicUrl(url);
-      const tunnelMsg = res.tunnel?.connector?.started
-        ? 'Public tunnel started'
-        : res.tunnel?.token_saved
-          ? 'Tunnel token saved — connector will finish linking shortly'
-          : null;
-      setGoLiveDetail(tunnelMsg || res.message || 'Your company URL is ready');
-      toast.success(url ? `Live at ${url}` : 'Go live complete');
-      await persist({ step: 3 });
-      await queryClient.invalidateQueries({ queryKey: ['onboarding'] });
-      return res;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Could not claim public URL';
-      setGoLiveError(msg);
-      setGoLiveDetail(null);
-      toast.error(msg);
-      throw err;
-    } finally {
-      setGoLiveBusy(false);
-    }
-  };
-
-  // Dummy-proof: auto claim URL when customer reaches Go live step
-  useEffect(() => {
-    if (step !== 3 || autoGoLiveTried || publicUrl || goLiveBusy) return;
-    setAutoGoLiveTried(true);
-    void runGoLive(false).catch(() => undefined);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step]);
-
   const launch = async () => {
     try {
-      if (!publicUrl) {
-        setGoLiveDetail('Finishing public URL setup…');
-        try {
-          await runGoLive(false);
-        } catch {
-          // still allow local dashboard if cloud unreachable
-          toast.error('Continuing with local dashboard — you can retry Go live anytime');
-        }
-      }
-      const done = await onboardingApi.complete();
-      const url =
-        (done as { go_live?: { public_url?: string } }).go_live?.public_url ||
-        (done as OnboardingState).public_url ||
-        publicUrl;
-      if (url) setPublicUrl(url);
+      await onboardingApi.complete();
       await persist({ step: 3, completed: true });
       await refreshUser();
-      toast.success(url ? `Welcome — ${url}` : 'Welcome to Shogun OS');
+      toast.success(publicUrl ? `Welcome - ${publicUrl}` : 'Welcome to Shogun OS');
       navigate('/dashboard', { replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not complete onboarding');
@@ -398,7 +342,7 @@ export default function Onboarding() {
                     style={{ backgroundColor: d.color }}
                   />
                   <h3 className="font-semibold text-slate-900">
-                    {d.name} · {d.persona}
+                    {d.name} &middot; {d.persona}
                   </h3>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -406,7 +350,7 @@ export default function Onboarding() {
                     <label className="label">Provider</label>
                     <input
                       className="input"
-                      placeholder="e.g. billease, hubspot, slack"
+                      placeholder="e.g. openai, openrouter, anthropic"
                       value={cfg.provider || ''}
                       onChange={(e) =>
                         setConfigs((prev) => ({
@@ -435,7 +379,7 @@ export default function Onboarding() {
                     <input
                       className="input"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
                       value={cfg.api_key || ''}
                       onChange={(e) =>
                         setConfigs((prev) => ({
@@ -483,24 +427,25 @@ export default function Onboarding() {
       );
     }
 
-    // Step 3 — Go live (public URL). Fully automatic; no tokens or Cloudflare.
+    // Step 3 — Review. Shows the public URL that was claimed during installation.
     return (
       <div className="mx-auto max-w-xl text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
-          {goLiveBusy ? <Loader2 className="h-7 w-7 animate-spin" /> : <Globe2 className="h-7 w-7" />}
+          {publicUrl ? <Globe2 className="h-7 w-7" /> : <Rocket className="h-7 w-7" />}
         </div>
         <h2 className="text-xl font-semibold text-slate-900">
-          {publicUrl ? 'Your company is live' : 'Getting your public URL'}
+          {publicUrl ? 'Your company is live' : 'Ready to go'}
         </h2>
         <p className="mt-2 text-sm text-slate-500">
-          We assign a random <span className="font-medium text-slate-700">*.shogun-os.ai</span> address
-          and connect it for you. No Cloudflare account. No setup tokens.
+          {publicUrl
+            ? 'Your public URL was assigned during installation. Here\'s the summary.'
+            : 'Everything looks good. Click below to open the dashboard.'}
         </p>
 
         <div className="mt-6 rounded-xl border border-surface-border bg-white p-5 text-left shadow-sm">
           <div className="mb-4">
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Company</div>
-            <div className="mt-1 font-medium text-slate-900">{companyName || '—'}</div>
+            <div className="mt-1 font-medium text-slate-900">{companyName || '&mdash;'}</div>
             <div className="text-sm text-slate-500">{timezone}</div>
           </div>
           <div className="mb-4">
@@ -509,7 +454,7 @@ export default function Onboarding() {
             </div>
             <ul className="mt-2 space-y-1">
               {selected.length === 0 && (
-                <li className="text-sm text-slate-500">None selected — add later anytime</li>
+                <li className="text-sm text-slate-500">None selected &mdash; add later anytime</li>
               )}
               {selected.map((key) => (
                 <li key={key} className="flex items-center gap-2 text-sm text-slate-700">
@@ -520,21 +465,17 @@ export default function Onboarding() {
             </ul>
           </div>
 
-          <div className="rounded-lg border border-dashed border-brand/30 bg-brand-light/40 p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-brand">Public URL</div>
-            {goLiveBusy && !publicUrl && (
-              <p className="mt-2 flex items-center gap-2 text-sm text-slate-600">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {goLiveDetail || 'Talking to Shogun cloud…'}
-              </p>
-            )}
-            {publicUrl ? (
+          {publicUrl && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+              <div className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                Public URL
+              </div>
               <div className="mt-2">
                 <a
                   href={publicUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="break-all text-lg font-semibold text-brand hover:underline"
+                  className="break-all text-lg font-semibold text-emerald-700 hover:underline"
                 >
                   {publicUrl}
                 </a>
@@ -548,52 +489,19 @@ export default function Onboarding() {
                     Open
                   </a>
                 </div>
-                {goLiveDetail && <p className="mt-2 text-xs text-slate-500">{goLiveDetail}</p>}
               </div>
-            ) : (
-              !goLiveBusy && (
-                <p className="mt-2 text-sm text-slate-600">
-                  {goLiveError || 'Click below to claim your URL.'}
-                </p>
-              )
-            )}
-            {goLiveError && publicUrl === null && (
-              <p className="mt-2 text-sm text-rose-600">{goLiveError}</p>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          {!publicUrl && (
-            <button
-              type="button"
-              className="btn-primary w-full sm:w-auto"
-              disabled={goLiveBusy}
-              onClick={() => void runGoLive(true)}
-            >
-              {goLiveBusy ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Claiming URL…
-                </>
-              ) : (
-                <>
-                  <Globe2 className="h-4 w-4" />
-                  Get my public URL
-                </>
-              )}
-            </button>
-          )}
-          <button
-            type="button"
-            className={publicUrl ? 'btn-primary w-full sm:w-auto' : 'btn-secondary w-full sm:w-auto'}
-            disabled={goLiveBusy}
-            onClick={() => void launch()}
-          >
-            <Rocket className="h-4 w-4" />
-            {publicUrl ? 'Open company dashboard' : 'Continue locally'}
-          </button>
-        </div>
+        <button
+          type="button"
+          className="btn-primary mt-8 w-full sm:w-auto"
+          onClick={() => void launch()}
+        >
+          <Rocket className="h-4 w-4" />
+          Open company dashboard
+        </button>
       </div>
     );
   }, [
@@ -606,9 +514,6 @@ export default function Onboarding() {
     testing,
     testResults,
     publicUrl,
-    goLiveBusy,
-    goLiveError,
-    goLiveDetail,
   ]);
 
   if (stateQuery.isLoading) {
@@ -626,7 +531,7 @@ export default function Onboarding() {
           <div className="text-sm font-semibold text-brand">Shogun OS setup</div>
           <h1 className="mt-1 text-2xl font-semibold text-slate-900">Set up your company</h1>
           <p className="mt-2 text-sm text-slate-500">
-            A few clicks — we handle the public URL and cloud connection for you.
+            A few clicks &mdash; your public URL was already assigned during installation.
           </p>
         </div>
 

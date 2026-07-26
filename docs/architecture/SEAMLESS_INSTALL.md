@@ -30,11 +30,11 @@ POST /api/register  { registration_token: "inst_…", host, port, … }
 
 ## Customer UX
 
+The URL is claimed during installation (not in the web UI):
+
 ```bash
-git clone https://github.com/limcheehow/shogun-os.git
-cd shogun-os
 ./scripts/install-web.sh --admin-email you@company.com
-# → https://quiet-lotus-42.shogun-os.ai
+# → random URL, no token, no Cloudflare
 ```
 
 No Cloudflare account. No subdomain choice. No token from sales.
