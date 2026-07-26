@@ -10,10 +10,12 @@ import type {
   AuthResponse,
   BrainLink,
   BrainPage,
+  CeoDashboardStats,
   ChangePasswordPayload,
   ChatMessage,
   Company,
   ConnectionTestResult,
+  DashboardConfig,
   Department,
   DepartmentKey,
   DocumentArtifact,
@@ -211,6 +213,10 @@ export const departmentsApi = {
     apiFetch<{ status: string; gateway_status: string; provider_status: string }>(
       `/api/departments/${name}/status`,
     ),
+  dashboardConfig: (name: string) =>
+    apiFetch<DashboardConfig>(`/api/departments/${name}/dashboard`),
+  dashboardCeoStats: (dept: string) =>
+    apiFetch<CeoDashboardStats>(`/api/departments/${dept}/dashboard/ceo-stats`),
 };
 
 export const brainApi = {

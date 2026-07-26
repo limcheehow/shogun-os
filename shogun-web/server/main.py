@@ -19,6 +19,7 @@ from database import init_db, session_scope
 from registry import register_with_central
 
 import auth
+import dashboard
 import departments
 import gateway
 import onboarding
@@ -112,6 +113,7 @@ def create_app() -> FastAPI:
     app.include_router(departments.router, prefix="/api")
     app.include_router(gateway.router, prefix="/api")
     app.include_router(registry.router, prefix="/api")
+    app.include_router(dashboard.router, prefix="/api")
 
     @app.get("/api/health")
     async def api_health() -> dict:

@@ -235,6 +235,124 @@ export const DEPARTMENT_CATALOG: Record<
 
 export const DEPARTMENT_KEYS = Object.keys(DEPARTMENT_CATALOG) as DepartmentKey[];
 
+// ─── Dashboard Types ───
+
+export interface DashboardTab {
+  id: string;
+  label: string;
+  icon: string;
+}
+
+export interface DashboardConfig {
+  enabled: boolean;
+  tabs: DashboardTab[];
+}
+
+export interface ManagerEntry {
+  owner: string;
+  salesMTD: number;
+  salesQTD: number;
+  salesYTD: number;
+  deals: number;
+  wonDeals: number;
+  pipelineValue: number;
+  weightedPipeline: number;
+  closeThisMonth: number;
+  closeThisQ: number;
+  closeNextQ: number;
+  closeThisYear: number;
+  winRate: number;
+}
+
+export interface PartnerStatsEntry {
+  partner: string;
+  booking: number;
+  dealsWon: number;
+  pipelineDeals: number;
+  pipelineValue: number;
+  winRate: number;
+  avgDealSize: number;
+  primaryOwner: string;
+}
+
+export interface FunnelEntry {
+  stage: string;
+  count: number;
+  value: number;
+}
+
+export interface MonthEntry {
+  month: string;
+  value: number;
+}
+
+export interface PriorityEntry {
+  priority: string;
+  count: number;
+}
+
+export interface ProductEntry {
+  product: string;
+  value: number;
+  count: number;
+}
+
+export interface ManagerRiskEntry {
+  owner: string;
+  atRiskDeals: number;
+  atRiskValue: number;
+}
+
+export interface PartnerRiskEntry {
+  partner: string;
+  atRiskDeals: number;
+  atRiskValue: number;
+  primaryOwner: string;
+}
+
+export interface DealRow {
+  slug: string;
+  title: string;
+  customer: string;
+  amount: number;
+  stage: string;
+  priority: string;
+  owner: string;
+  partner: string | null;
+  closeDate: string;
+  winProbability: number;
+  daysInStage: number;
+  hot: boolean;
+}
+
+export interface CeoDashboardStats {
+  salesMTD: number;
+  salesQTD: number;
+  salesYTD: number;
+  totalPipelineValue: number;
+  weightedPipelineValue: number;
+  pipelineCoverage: number;
+  winRate: number;
+  avgDealSize: number;
+  salesCycleDays: number;
+  totalActiveDeals: number;
+  hotDeals: number;
+  warmDeals: number;
+  coldDeals: number;
+  wonDeals: number;
+  byManager: ManagerEntry[];
+  byPartner: PartnerStatsEntry[];
+  byStage: FunnelEntry[];
+  byMonth: MonthEntry[];
+  byPriority: PriorityEntry[];
+  wonByMonth: MonthEntry[];
+  byProduct: ProductEntry[];
+  atRiskByManager: ManagerRiskEntry[];
+  atRiskByPartner: PartnerRiskEntry[];
+  byManagerByPartner: { owner: string; partner: string; deals: number }[];
+  topDeals: DealRow[];
+}
+
 export const TIMEZONES = [
   'Asia/Kuala_Lumpur',
   'Asia/Singapore',
