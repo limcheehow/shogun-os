@@ -281,36 +281,11 @@ async def complete_onboarding(
     user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Mark onboarding complete; auto go-live if not yet public."""
+    """Mark onboarding complete. URL was already claimed during installation."""
     tenant = get_primary_tenant(db)
     if user.tenant_id != tenant.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tenant mismatch")
     state = _get_onboarding(db, tenant.id)
-
-    go_live_result: Dict[str, Any] = {}
-    cfg = get_config()
-    needs_live = (
-        not cfg.subdomain
-        or cfg.subdomain in {"local", "pending"}
-        or "localhost" in (cfg.public_base_url or "")
-    )
-    if needs_live:
-        try:
-            go_live_result = await registry_go_live(db, create_tunnel=True, force=False)
-            merged = dict(state.data or {})
-            if go_live_result.get("public_url"):
-                merged["public_url"] = go_live_result["public_url"]
-            merged["go_live"] = {
-                "ok": bool(go_live_result.get("ok") or go_live_result.get("skipped")),
-                "public_url": go_live_result.get("public_url"),
-                "subdomain": go_live_result.get("subdomain"),
-                "tunnel": go_live_result.get("tunnel"),
-                "at": datetime.now(timezone.utc).isoformat(),
-            }
-            state.data = merged
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("Auto go-live on complete failed: %s", exc)
-            go_live_result = {"ok": False, "error": str(exc)}
 
     state.completed_at = datetime.now(timezone.utc)
     state.current_step = "done"
@@ -320,7 +295,7 @@ async def complete_onboarding(
     db.commit()
     db.refresh(state)
     db.refresh(tenant)
-    return {"ok": True, "state": _ui_state(state, tenant), "go_live": go_live_result}
+    return {"ok": True, "state": _ui_state(state, tenant), "go_live": None}
 
 
 @router.get("/departments")

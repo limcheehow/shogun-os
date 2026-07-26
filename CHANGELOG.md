@@ -1,14 +1,17 @@
 # Changelog
 
+## [3.12.3] — 2026-07-26
+
+### Fix: URL claim is install-time, not web UX (chicken-and-egg fix)
+
+The "Go live" step in web onboarding was wrong — you can't claim a URL from a web portal that
+doesn't have a URL yet. Redesigned:
+- **install-web.sh** is the canonical URL claim path (bootstrap + register, already worked)
+- **Web onboarding** step 4 is now "Review" — shows the URL that was claimed during install
+- **Dashboard** has a fallback "Claim URL" button if registry was skipped during install
+- Server `onboarding/complete` no longer attempts auto-go-live
+
 ## [3.12.2] — 2026-07-26
-
-### Seamless web install (no shared registration token)
-
-- **Public bootstrap:** `POST /api/install/bootstrap` issues short-lived single-use install tickets.
-- **Customer path:** `install-web.sh` calls bootstrap automatically — no `SHOGUN_REGISTRY_TOKEN`.
-- Operator `REGISTRATION_TOKEN` remains valid for admin/automation only.
-- Rate limit: 10 tickets / IP / hour (configurable).
-
 ## [3.12.1] — 2026-07-26
 
 ### Web portal product contract
