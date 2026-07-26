@@ -52,6 +52,7 @@ Approximate inventory: **~40+ installable skill packages** under `skills/` (78 `
 | `verify-first` | Behavioral overlay — verify before claiming |
 | `search-router` | Intelligent search routing |
 | `company-workflow` | Mandatory 6-gate workflow enforcement |
+| `shogunify` | Structured questionnaire to add skills/connectors/workflows (slash `/shogunify`) |
 | `document-processing` | Extract text from PDFs, scans, and documents with OCR |
 | `google-workspace` | Google Workspace API operations (Gmail, Calendar, Drive, Docs) |
 | `lark-workspace` | Lark/Feishu API operations (Calendar, messaging) |

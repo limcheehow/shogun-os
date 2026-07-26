@@ -430,6 +430,10 @@ See [`docs/recipes/creating-provider-abstractions.md`](docs/recipes/creating-pro
 - Full lifecycle checklist for adding abstractions to the repo
 - Pitfalls (importlib paths, env naming, OAuth token cache layout)
 
+### Meta: Shogunify (agent-facing questionnaire)
+
+Use **`/shogunify`** — docs: [`docs/recipes/shogunify.md`](docs/recipes/shogunify.md), skill: [`skills/shogunify/`](skills/shogunify/). Structured walkthrough that produces profile-aware skills, connectors, and workflows. Installs onto every Hermes profile via `skills/shogunify/scripts/install-to-profiles.py`. E2E: `python3 skills/shogunify/scripts/e2e_test_shogunify.py`.
+
 ## Installation Order
 
 ```

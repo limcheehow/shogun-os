@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.12.0] — 2026-07-26
+
+### Shogunify — agent skillify for Shogun OS
+
+Structured, profile-aware questionnaire so agents can add skills, connectors, workflows, and department profiles correctly (Hermes path rules + gbrain compliance).
+
+- **New skill: `skills/shogunify/`** — slash command **`/shogunify`** (Hermes auto-registers skill names as slash commands on CLI + messaging gateways).
+- **Questionnaires:** integration/connector, skill, workflow/cron, new department profile (`references/questionnaire-*.md`).
+- **Path map:** `references/path-map.md` — default vs named-profile skill/cron/env/MCP destinations.
+- **Templates:** skill SKILL.md, CONTRACT, GENERIC_SKILL, provider doc stubs.
+- **`scripts/install-to-profiles.py`:** symlink or copy a skill into `~/.hermes/skills/` and every `~/.hermes/profiles/*/skills/`.
+- **`scripts/e2e_test_shogunify.py`:** E2E — install, disposable `test-shogunify` profile, demo skill + connector scaffold, slash registration, path isolation.
+- **Wiring:** `generate-profile.py` `SHARED_PROFILE_SKILLS` always includes `shogunify`; `install.sh` profile required skills; `verify-install.sh` skill check; `HUB.md` + `RECIPE_INDEX.md`.
+- **Docs:** `docs/recipes/shogunify.md`, README What's New + Shared Skills, `docs/README.md`, `AGENTS.md` common task.
+
 ## [3.11.0] — 2026-07-26
 
 ### GBrain Production Integration

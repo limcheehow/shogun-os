@@ -4,7 +4,9 @@
 
 Shogun OS is a reference architecture for running an entire organization through AI agents. Built on [Hermes Agent](https://hermes-agent.nousresearch.com) + [GBrain](https://github.com/garrytan/gbrain), it gives each department a dedicated AI operator with role-specific tools, memory, and autonomy — isolated from every other department by design.
 
-**NEW in v3.10.0:** Web Portal — every install gets a `*.shogun-os.ai` subdomain with onboarding wizard, department dashboards, and unified chat interface.
+**NEW in v3.12.0:** **Shogunify** — `/shogunify` slash command on every profile to scaffold skills, connectors, and workflows the right way (profile-aware + gbrain-compliant).
+
+**Also recent:** v3.10.0 Web Portal (`*.shogun-os.ai`); v3.9.0 provider abstractions across 10 domains.
 
 Choose your **industry vertical** during setup: **General** (services, consulting, software) or **Manufacturing** (factory, production, OEM). Shared profiles deploy regardless of industry; department-specific profiles activate based on your selection.
 
@@ -16,6 +18,14 @@ Choose your **industry vertical** during setup: **General** (services, consultin
 ---
 
 ## What's New
+
+### v3.12.0 — Shogunify
+- **`/shogunify` slash command** on all Hermes profiles (skill auto-registers as slash)
+- **Questionnaires** for skill, integration/connector, workflow/cron, and new department profile
+- **Profile path map** — writes land in the correct `~/.hermes/profiles/<name>/` tree
+- **`install-to-profiles.py`** — symlink/copy a skill into default + named profiles
+- **E2E suite** — disposable test profile, demo skill + connector scaffold, slash registration checks
+- **Wiring** — `generate-profile.py` shared skills, `install.sh`, `verify-install.sh`, `HUB.md`
 
 ### v3.10.0 — Web Portal
 - **Multi-tenant web portal** at `*.shogun-os.ai` with per-tenant subdomains
@@ -203,7 +213,8 @@ Every domain has a unified provider abstraction with pluggable backends:
 
 **Pattern:** One MCP bridge per domain. Provider plugins loaded via `importlib` from `plugins/` directory. Config via `ACCT_PROVIDER` env var. OAuth tokens cached at `~/.hermes/mcp-tokens/<domain>-<provider>.json`.
 
-See [`docs/recipes/creating-provider-abstractions.md`](docs/recipes/creating-provider-abstractions.md) for the full guide.
+See [`docs/recipes/creating-provider-abstractions.md`](docs/recipes/creating-provider-abstractions.md) for the full guide.  
+**Agent shortcut:** run **`/shogunify`** (see [`docs/recipes/shogunify.md`](docs/recipes/shogunify.md)) to scaffold a domain or provider with the profile-aware questionnaire.
 
 ---
 
@@ -358,6 +369,7 @@ Every profile loads shared Hermes skills shipped with this repo:
 
 | Skill | Purpose |
 |-------|---------|
+| **`shogunify`** | **Slash `/shogunify`** — structured questionnaire to add skills, connectors, workflows, and profiles (profile-path aware) |
 | `company-workflow` | Mandatory 6-gate workflow enforcement (Triage→RCA→Brainstorm→Plan→TDD→E2E) for any feature/bug request |
 | `department-scrum` | Cross-department 3-tier scrum workflow (9am/11am/5pm), production-hardened v3.0.0 with 15 documented pitfalls |
 | `brain-ingest-pipeline` | Unified 5-phase COLLECT → ROUTE → BRIDGE → ENRICH → VALIDATE data pipeline |
@@ -382,6 +394,8 @@ Every profile loads shared Hermes skills shipped with this repo:
 | `plan` | Plan mode — write markdown plans without execution |
 | `verify-first` | Behavioral overlay — verify before claiming, challenge assumptions |
 | `search-router` | Intelligent search routing — analyzes query intent and routes to best source |
+
+Docs: [`docs/recipes/shogunify.md`](docs/recipes/shogunify.md).
 
 ---
 
@@ -428,6 +442,7 @@ hermes skills install shogun-os/company-workflow
 | `install.sh` | Install skills, scripts, templates, and deploy profiles |
 | `install-web.sh` | **NEW:** Set up web portal (build React, generate config, register tenant) |
 | `generate-profile.py` | Generate a new Hermes profile with SOUL.md + config.yaml from template |
+| `install-to-profiles.py` | *(in `skills/shogunify/scripts/`)* Install/symlink a skill into default + named profiles for slash commands |
 | `wire-crons.py` | Generate and apply cron jobs per profile type |
 | `init-gbrain.sh` | Initialize gbrain with all 11 department sources |
 | `verify-install.sh` | Full install verification with MCP connectivity probe |
