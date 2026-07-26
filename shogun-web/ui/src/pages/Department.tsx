@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 import BrainViewer from '../components/BrainViewer';
 import Chat from '../components/Chat';
 import DocsViewer from '../components/DocsViewer';
+import { DashboardViewer } from '../components/dashboards/DashboardViewer';
 import StatusBadge from '../components/StatusBadge';
 import { departmentsApi } from '../lib/api';
 import {
@@ -27,7 +28,7 @@ const TABS = [
   { id: 'chat', label: 'Chat', icon: MessageSquare },
   { id: 'brain', label: 'Brain', icon: Brain },
   { id: 'docs', label: 'Docs', icon: FileText },
-  { id: 'reports', label: 'Reports', icon: BarChart3 },
+  { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
   { id: 'settings', label: 'Settings', icon: Settings },
 ] as const;
 
@@ -197,12 +198,8 @@ export default function Department() {
         {!deptQuery.isLoading && tab === 'chat' && <Chat department={key} />}
         {!deptQuery.isLoading && tab === 'brain' && <BrainViewer department={key} />}
         {!deptQuery.isLoading && tab === 'docs' && <DocsViewer department={key} />}
-        {!deptQuery.isLoading && tab === 'reports' && (
-          <div className="flex min-h-[28rem] flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-center">
-            <BarChart3 className="mb-3 h-10 w-10 text-slate-300" />
-            <h2 className="text-lg font-semibold text-slate-800">Reports</h2>
-            <p className="mt-1 max-w-sm text-sm text-slate-500">Coming soon</p>
-          </div>
+        {!deptQuery.isLoading && tab === 'dashboard' && (
+          <DashboardViewer department={key} color={color} />
         )}
         {!deptQuery.isLoading && tab === 'settings' && (
           <form className="card max-w-2xl space-y-4 p-6" onSubmit={onSave}>
