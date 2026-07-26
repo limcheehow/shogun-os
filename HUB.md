@@ -67,6 +67,7 @@ Approximate inventory: **~40+ installable skill packages** under `skills/` (78 `
 | `engineering-provider` | Engineering — repos, issues, PRs, CI provider abstraction (`eng_*`) |
 | `projects-provider` | Project management — tasks, milestones, timeline provider abstraction (`proj_*`) |
 | `product-provider` | Product management — ideas, roadmap, releases provider abstraction (`pd_*`) |
+| `hr-staff-directory` | HR staff directory — sync employees from BrioHR (or any HRMS), auto-generate brain pages |
 | `add-profile-dashboard` | Step-by-step guide to add a profile-specific dashboard (CRM, marketing, projects) with Recharts + gbrain MCP data flow |
 
 ### Related CRM skills (Kizuna post-install)
