@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.12.2] — 2026-07-26
+
+### Seamless web install (no shared registration token)
+
+- **Public bootstrap:** `POST /api/install/bootstrap` issues short-lived single-use install tickets.
+- **Customer path:** `install-web.sh` calls bootstrap automatically — no `SHOGUN_REGISTRY_TOKEN`.
+- Operator `REGISTRATION_TOKEN` remains valid for admin/automation only.
+- Rate limit: 10 tickets / IP / hour (configurable).
+
 ## [3.12.1] — 2026-07-26
 
 ### Web portal product contract

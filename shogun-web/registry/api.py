@@ -8,12 +8,17 @@ import re
 import secrets
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 
 from cloudflare import CloudflareClient, CloudflareError
 from config import Settings, get_settings
 from database import Database
+from datetime import datetime, timedelta, timezone
+
+
 from models import (
+    BootstrapRequest,
+    BootstrapResponse,
     HeartbeatRequest,
     HeartbeatResponse,
     HealthResponse,
@@ -161,6 +166,12 @@ class RegistryAPI:
             response_model=RegisterResponse,
         )
         self.router.add_api_route(
+            "/install/bootstrap",
+            self.install_bootstrap,
+            methods=["POST"],
+            response_model=BootstrapResponse,
+        )
+        self.router.add_api_route(
             "/heartbeat",
             self.heartbeat,
             methods=["POST"],
@@ -216,22 +227,120 @@ class RegistryAPI:
                 detail="Invalid or missing admin credentials",
             )
 
-    def _check_registration_token(self, provided: Optional[str]) -> None:
-        expected = self.settings.registration_token
-        if not expected:
-            return
-        if not provided or not secrets.compare_digest(provided, expected):
+    def _accept_registration_credential(self, provided: Optional[str]) -> Optional[str]:
+        """
+        Validate register auth.
+
+        Accepts either:
+          1) Legacy operator REGISTRATION_TOKEN (shared secret), or
+          2) A single-use public install ticket from /api/install/bootstrap
+
+        Returns ticket token string if a bootstrap ticket was used (to redeem later),
+        else None.
+        """
+        provided = (provided or "").strip()
+        expected = (self.settings.registration_token or "").strip()
+
+        # 1) Shared operator token
+        if expected and provided and secrets.compare_digest(provided, expected):
+            return None
+
+        # 2) Bootstrap install ticket
+        if provided:
+            ticket = self.db.get_install_ticket(provided)
+            if ticket and ticket.get("redeemed_at") is None:
+                exp = ticket["expires_at"]
+                now = datetime.now(timezone.utc)
+                if exp.tzinfo is None:
+                    exp = exp.replace(tzinfo=timezone.utc)
+                if exp >= now:
+                    return provided
+
+        # 3) Open registration when no shared token configured and bootstrap off
+        if not expected and not self.settings.enable_public_bootstrap:
+            return None
+        if not expected and self.settings.enable_public_bootstrap and not provided:
+            # Require a ticket when bootstrap is the public path
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid registration token",
+                detail="Missing install ticket — call POST /api/install/bootstrap first",
             )
+        if expected and not provided:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Missing registration credentials — installer should bootstrap",
+            )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired registration credentials",
+        )
 
     # ------------------------------------------------------------------
     # Endpoints
     # ------------------------------------------------------------------
 
+    async def install_bootstrap(
+        self,
+        body: BootstrapRequest,
+        request: Request,
+    ) -> BootstrapResponse:
+        """Public: issue a short-lived single-use install ticket."""
+        if not self.settings.enable_public_bootstrap:
+            raise HTTPException(status_code=403, detail="Public bootstrap disabled")
+
+        client_ip = None
+        if request is not None:
+            # Prefer first X-Forwarded-For hop (Cloudflare / proxy)
+            xff = request.headers.get("cf-connecting-ip") or request.headers.get(
+                "x-forwarded-for"
+            )
+            if xff:
+                client_ip = xff.split(",")[0].strip()
+            elif request.client:
+                client_ip = request.client.host
+
+        now = datetime.now(timezone.utc)
+        since = now - timedelta(hours=1)
+        since_iso = since.isoformat()
+        count = self.db.count_recent_tickets(client_ip or "", since_iso)
+        if count >= self.settings.bootstrap_rate_limit_per_ip:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Bootstrap rate limit exceeded — try again later",
+            )
+
+        ttl = int(self.settings.bootstrap_ticket_ttl_seconds)
+        expires = now + timedelta(seconds=ttl)
+        token = "inst_" + secrets.token_urlsafe(32)
+        self.db.create_install_ticket(
+            token=token,
+            expires_at=expires,
+            client_ip=client_ip,
+            email=body.email,
+            metadata={
+                "display_name": body.display_name,
+                "installer_version": body.installer_version,
+            },
+        )
+        domain = self.settings.registry_domain
+        registry_url = f"https://registry.{domain}"
+        logger.info(
+            "Issued install ticket ip=%s email=%s ttl=%ss",
+            client_ip,
+            body.email,
+            ttl,
+        )
+        return BootstrapResponse(
+            install_token=token,
+            expires_at=expires.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            expires_in_seconds=ttl,
+            registry_url=registry_url,
+            domain=domain,
+            message="ok",
+        )
+
     async def register(self, body: RegisterRequest) -> RegisterResponse:
-        self._check_registration_token(body.registration_token)
+        ticket_to_redeem = self._accept_registration_credential(body.registration_token)
 
         # Re-register path: keep subdomain
         if body.tenant_id:
@@ -246,6 +355,8 @@ class RegistryAPI:
                     weight=body.weight,
                     metadata=body.metadata,
                 )
+                if ticket_to_redeem:
+                    self.db.redeem_install_ticket(ticket_to_redeem, tenant.id)
                 public = f"https://{tenant.subdomain}.{self.settings.registry_domain}"
                 tunnels = self.db.list_tunnels_for_tenant(tenant.id)
                 return RegisterResponse(
@@ -292,6 +403,15 @@ class RegistryAPI:
             weight=body.weight,
             metadata=body.metadata,
         )
+
+        if ticket_to_redeem:
+            ok = self.db.redeem_install_ticket(ticket_to_redeem, tenant.id)
+            if not ok:
+                # Extremely unlikely race (double-submit). Reject to avoid free multi-tenant.
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Install ticket already used or expired",
+                )
 
         tunnel_model: Optional[Tunnel] = None
         want_tunnel = False

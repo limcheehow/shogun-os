@@ -296,11 +296,10 @@ cd shogun-web/registry && cp .env.example .env
 docker compose up -d --build
 
 # ── Customer machine ─────────────────────────────────────────
-export SHOGUN_REGISTRY_URL=https://registry.shogun-os.ai
-export SHOGUN_REGISTRY_TOKEN=<token-from-us>
+# No registration token needed — installer bootstraps a one-time ticket
 ./scripts/install-web.sh --admin-email admin@customer.com
 # Prints assigned URL, e.g. https://quiet-lotus-42.shogun-os.ai
-# No subdomain prompt. No Cloudflare login.
+# No subdomain prompt. No Cloudflare login. No shared secret.
 ```
 
 Design contract: [`docs/architecture/WEB_PORTAL.md`](docs/architecture/WEB_PORTAL.md).

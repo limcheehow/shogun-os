@@ -102,6 +102,22 @@ class Database:
 
                 CREATE INDEX IF NOT EXISTS idx_tunnels_tenant
                     ON tunnels(tenant_id);
+
+                -- Public install bootstrap tickets (seamless customer install)
+                CREATE TABLE IF NOT EXISTS install_tickets (
+                    token TEXT PRIMARY KEY,
+                    created_at TEXT NOT NULL,
+                    expires_at TEXT NOT NULL,
+                    client_ip TEXT,
+                    email TEXT,
+                    redeemed_at TEXT,
+                    tenant_id TEXT,
+                    metadata TEXT NOT NULL DEFAULT '{}'
+                );
+                CREATE INDEX IF NOT EXISTS idx_install_tickets_ip_created
+                    ON install_tickets(client_ip, created_at);
+                CREATE INDEX IF NOT EXISTS idx_install_tickets_expires
+                    ON install_tickets(expires_at);
                 """
             )
 
@@ -514,4 +530,102 @@ class Database:
     def delete_tunnel(self, tunnel_id: str) -> bool:
         with self.connection() as conn:
             cur = conn.execute("DELETE FROM tunnels WHERE id = ?", (tunnel_id,))
+            return cur.rowcount > 0
+
+    # ------------------------------------------------------------------
+    # Install tickets (public bootstrap)
+    # ------------------------------------------------------------------
+
+    def count_recent_tickets(self, client_ip: str, since_iso: str) -> int:
+        with self.connection() as conn:
+            row = conn.execute(
+                """
+                SELECT COUNT(*) AS c FROM install_tickets
+                WHERE client_ip = ? AND created_at >= ?
+                """,
+                (client_ip or "", since_iso),
+            ).fetchone()
+        return int(row["c"] if row else 0)
+
+    def create_install_ticket(
+        self,
+        *,
+        token: str,
+        expires_at: datetime,
+        client_ip: Optional[str] = None,
+        email: Optional[str] = None,
+        metadata: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
+        now = _utcnow()
+        meta = json.dumps(metadata or {})
+        with self.connection() as conn:
+            conn.execute(
+                """
+                INSERT INTO install_tickets
+                    (token, created_at, expires_at, client_ip, email, redeemed_at, tenant_id, metadata)
+                VALUES (?, ?, ?, ?, ?, NULL, NULL, ?)
+                """,
+                (
+                    token,
+                    _iso(now),
+                    _iso(expires_at),
+                    client_ip or "",
+                    email,
+                    meta,
+                ),
+            )
+        return {
+            "token": token,
+            "created_at": now,
+            "expires_at": expires_at,
+            "client_ip": client_ip,
+            "email": email,
+        }
+
+    def get_install_ticket(self, token: str) -> Optional[dict[str, Any]]:
+        with self.connection() as conn:
+            row = conn.execute(
+                "SELECT * FROM install_tickets WHERE token = ?",
+                (token,),
+            ).fetchone()
+        if not row:
+            return None
+        try:
+            meta = json.loads(row["metadata"] or "{}")
+        except json.JSONDecodeError:
+            meta = {}
+        return {
+            "token": row["token"],
+            "created_at": _parse_dt(row["created_at"]),
+            "expires_at": _parse_dt(row["expires_at"]),
+            "client_ip": row["client_ip"],
+            "email": row["email"],
+            "redeemed_at": _parse_dt(row["redeemed_at"]) if row["redeemed_at"] else None,
+            "tenant_id": row["tenant_id"],
+            "metadata": meta,
+        }
+
+    def redeem_install_ticket(self, token: str, tenant_id: str) -> bool:
+        """Mark ticket redeemed. Returns False if missing/expired/already used."""
+        now = _utcnow()
+        with self.connection() as conn:
+            row = conn.execute(
+                "SELECT expires_at, redeemed_at FROM install_tickets WHERE token = ?",
+                (token,),
+            ).fetchone()
+            if not row:
+                return False
+            if row["redeemed_at"]:
+                return False
+            exp = _parse_dt(row["expires_at"])
+            if exp < now:
+                return False
+            cur = conn.execute(
+                """
+                UPDATE install_tickets
+                SET redeemed_at = ?, tenant_id = ?
+                WHERE token = ? AND redeemed_at IS NULL
+                """,
+                (_iso(now), tenant_id, token),
+            )
             return cur.rowcount > 0
