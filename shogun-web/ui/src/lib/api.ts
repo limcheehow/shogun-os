@@ -125,7 +125,7 @@ export const staffApi = {
   list: () => apiFetch<{ staff: StaffMember[] }>('/api/staff'),
   get: (id: number) => apiFetch<{ user: StaffMember }>(`/api/staff/${id}`),
   create: (payload: CreateStaffPayload) =>
-    apiFetch<{ ok: boolean; user: StaffMember & { temporary_password?: string } }>('/api/staff', {
+    apiFetch<{ ok: boolean; user: StaffMember; temporary_password?: string }>('/api/staff', {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
@@ -225,8 +225,8 @@ export const departmentsApi = {
       body: JSON.stringify(config || {}),
     }),
   updateConfig: (name: string, config: ProviderConfig) =>
-    apiFetch<Department>(`/api/departments/${name}/config`, {
-      method: 'PUT',
+    apiFetch<Department>(`/api/departments/${name}/configure`, {
+      method: 'POST',
       body: JSON.stringify(config),
     }),
   testConnection: (name: string, config?: ProviderConfig) =>

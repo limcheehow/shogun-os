@@ -268,7 +268,7 @@ function AddStaffModal({
         assignments: assignments.map((a) => ({ department: a.department, title: a.title })),
       });
       toast.success('Staff created');
-      onCreated(res.user.temporary_password || '');
+      onCreated(res.temporary_password || '');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to create staff');
     } finally {
