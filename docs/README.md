@@ -25,6 +25,7 @@ This directory documents the phased development of Shogun OS, a Hermes Agent com
 - **Schema:** [`../schema/`](../schema/) — config schemas
 - **Web portal design:** [`architecture/WEB_PORTAL.md`](architecture/WEB_PORTAL.md) — one dashboard, random URL, our Cloudflare
 - **Cloudflare (operator):** [`ops/cloudflare-registry-setup.md`](ops/cloudflare-registry-setup.md)
+- **WSL Azure deploy (for Hermes on Windows VM):** [`ops/deploy-registry-wsl-azure.md`](ops/deploy-registry-wsl-azure.md)
 - **Shogunify (add skill/connector/workflow):** [`recipes/shogunify.md`](recipes/shogunify.md) — slash `/shogunify`
 - **Provider abstractions guide:** [`recipes/creating-provider-abstractions.md`](recipes/creating-provider-abstractions.md)
 - **Microsoft 365 Integration:** [`../skills/devops/microsoft-integration/`](../skills/devops/microsoft-integration/) — Graph API client for mail, calendar, OneDrive, and directory
