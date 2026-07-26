@@ -1,6 +1,6 @@
 # Shogun OS
 
-> Shogun OS is a reference architecture for running an entire organization through Hermes Agent. Each department gets a dedicated AI operator with role-specific tools, memory, and autonomy. Built on Hermes Agent + GBrain. **NEW:** Web Portal gives every install a `*.shogun-os.ai` subdomain with onboarding wizard and department dashboards.
+> Shogun OS is a reference architecture for running an entire organization through Hermes Agent. Each department gets a dedicated AI operator with role-specific tools, memory, and autonomy. Built on Hermes Agent + GBrain. **NEW v3.12.0:** Shogunify (`/shogunify`) scaffolds skills, connectors, and workflows profile-aware. Web Portal gives every install a `*.shogun-os.ai` subdomain.
 
 Repo: https://github.com/limcheehow/shogun-os
 
@@ -51,6 +51,7 @@ Repo: https://github.com/limcheehow/shogun-os
 | [product](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/product/CONTRACT.md) | connector | 5 min |
 | [slides-deck-gen.md](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/slides-deck-gen.md) | connector | 15 min |
 | [creating-provider-abstractions](https://raw.githubusercontent.com/limcheehow/shogun-os/main/docs/recipes/creating-provider-abstractions.md) | architecture | 20 min |
+| [shogunify](https://raw.githubusercontent.com/limcheehow/shogun-os/main/docs/recipes/shogunify.md) | architecture | 5 min |
 | [department-scrum.md](https://raw.githubusercontent.com/limcheehow/shogun-os/main/recipes/department-scrum.md) | workflow | 15 min per profile |
 
 ## Scripts
@@ -61,6 +62,8 @@ Repo: https://github.com/limcheehow/shogun-os
 | [install-web.sh](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/install-web.sh) | **NEW:** Set up web portal (build React, generate config, register tenant) |
 | [verify-web.sh](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/verify-web.sh) | **NEW:** Verify web portal setup |
 | [generate-profile.py](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/generate-profile.py) | Generate Hermes profile with SOUL.md + config.yaml from template |
+| [install-to-profiles.py](https://raw.githubusercontent.com/limcheehow/shogun-os/main/skills/shogunify/scripts/install-to-profiles.py) | Install/symlink a skill into default + named profiles (slash commands) |
+| [e2e_test_shogunify.py](https://raw.githubusercontent.com/limcheehow/shogun-os/main/skills/shogunify/scripts/e2e_test_shogunify.py) | E2E tests for shogunify install + slash registration |
 | [wire-crons.py](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/wire-crons.py) | Generate and apply cron jobs per profile type |
 | [init-gbrain.sh](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/init-gbrain.sh) | Initialize gbrain with all 11 department sources |
 | [verify-install.sh](https://raw.githubusercontent.com/limcheehow/shogun-os/main/scripts/verify-install.sh) | Full install verification with MCP connectivity probe |

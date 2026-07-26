@@ -52,6 +52,21 @@ SKILLS_DIR = REPO_ROOT / "skills"
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes"))
 PROFILES_DIR = HERMES_HOME / "profiles"
 
+# Skills linked onto every generated profile (slash commands + shared ops)
+SHARED_PROFILE_SKILLS = ["company-workflow", "shogunify"]
+
+
+def with_shared_skills(skills: list[str]) -> list[str]:
+    """Prepend shared skills without duplicates, preserving order."""
+    seen: set[str] = set()
+    out: list[str] = []
+    for name in [*SHARED_PROFILE_SKILLS, *skills]:
+        if name not in seen:
+            seen.add(name)
+            out.append(name)
+    return out
+
+
 # ── Profile type → template mapping ────────────────────────────────────
 
 PROFILE_META = {
@@ -937,18 +952,34 @@ def merge_env_settings(existing: str, gbrain_source: str) -> str:
     return "\n".join(kept) + "\n"
 
 
+def resolve_skill_src(skill_name: str) -> Path | None:
+    """Prefer repo skill, then installed default Hermes home skill."""
+    candidates = [
+        SKILLS_DIR / skill_name,
+        HERMES_HOME / "skills" / skill_name,
+        Path.home() / ".hermes" / "skills" / skill_name,
+    ]
+    # Nested category packs (e.g. skills/crm/respondio-bridge)
+    nested = list(SKILLS_DIR.glob(f"*/{skill_name}"))
+    candidates.extend(nested)
+    for c in candidates:
+        if c.is_dir() and (c / "SKILL.md").is_file():
+            return c
+    return None
+
+
 def link_skills(profile_dir: Path, skills_to_link: list[str], dry_run: bool):
-    """Create symlinks from the profile's skills dir to Shogun OS skills."""
+    """Create symlinks from the profile's skills dir to Shogun OS / Hermes skills."""
     profile_skills_dir = profile_dir / "skills"
     if not dry_run:
         profile_skills_dir.mkdir(parents=True, exist_ok=True)
 
     for skill_name in skills_to_link:
-        skill_src = SKILLS_DIR / skill_name
+        skill_src = resolve_skill_src(skill_name)
         skill_dst = profile_skills_dir / skill_name
 
-        if not skill_src.exists():
-            warn(f"Skill not found in repo: {skill_name}")
+        if skill_src is None:
+            warn(f"Skill not found in repo or ~/.hermes/skills: {skill_name}")
             continue
 
         if skill_dst.exists() or skill_dst.is_symlink():
@@ -1079,8 +1110,9 @@ def main():
         env_path.write_text(env_text, encoding="utf-8")
         ok("Created: .env stub")
 
-    # 4. Skill symlinks
-    link_skills(profile_dir, meta["skills"], dry_run=args.dry_run)
+    # 4. Skill symlinks (always include shared skills e.g. shogunify → /shogunify)
+    skills_to_link = with_shared_skills(list(meta["skills"]))
+    link_skills(profile_dir, skills_to_link, dry_run=args.dry_run)
 
     # 5. Gateway port for web portal
     gateway_port = args.gateway_port
@@ -1103,7 +1135,7 @@ def main():
     info(f"Config:    {profile_dir / 'config.yaml'}")
     info(f"SOUL:      {profile_dir / 'SOUL.md'}")
     info(f"Env:       {profile_dir / '.env'}")
-    info(f"Skills:    {meta['skills'] or 'none'}")
+    info(f"Skills:    {skills_to_link or 'none'}")
     info(f"Gateway:   port {gateway_port}")
     print()
     info("Next steps:")

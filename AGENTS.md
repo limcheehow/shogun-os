@@ -85,14 +85,30 @@ export GBRAIN_FEDERATED_READ=true
 hermes -p <dept>-manager --exec "mcp_gbrain_whoami"
 ```
 
-### Add a new shared skill to all profiles
+### Add a new skill, connector, or workflow (preferred)
+
+```bash
+# Ensure /shogunify is on the target profile
+python3 skills/shogunify/scripts/install-to-profiles.py \
+  --skill shogunify --profiles all --force
+
+# Then in Hermes (any surface):
+#   /shogunify
+#   /shogunify skill <name> for <profile>
+#   /shogunify integration <vendor> domain <domain> profile <profile>
+#
+# Docs: docs/recipes/shogunify.md
+```
+
+### Add a new shared skill to all profiles (manual)
 
 ```bash
 # 1. Copy skill to repo's skills/ directory
-# 2. Add to install.sh's full-install loop (auto-picked up by for loop)
-# 3. Add to verify-install.sh's skill check list
-# 4. Re-run install.sh
+# 2. Prefer /shogunify skill mode (above) — or:
+# 3. Add to verify-install.sh's skill check list if core
+# 4. Install + link into profiles
 ./scripts/install.sh
+python3 skills/shogunify/scripts/install-to-profiles.py --skill <name> --profiles all --force
 ```
 
 ### Backup and restore cron jobs

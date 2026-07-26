@@ -19,7 +19,7 @@
 
 set -euo pipefail
 
-VERSION="3.9.0"
+VERSION="3.12.0"
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR")"
@@ -234,8 +234,8 @@ section_skills() {
   local skills_dst="$HERMES_HOME/skills"
 
   if [[ -n "$PROFILE" ]]; then
-    # Profile-specific: install company-workflow + department-scrum (needed by all profiles)
-    for required_skill in company-workflow department-scrum; do
+    # Profile-specific: shared meta-skills needed on every profile (slash /shogunify)
+    for required_skill in company-workflow shogunify department-scrum; do
       if [[ -d "$skills_src/$required_skill" ]]; then
         install_file "$skills_src/$required_skill" "$skills_dst/$required_skill" "$required_skill skill"
         COUNT_SKILLS=$((COUNT_SKILLS + 1))

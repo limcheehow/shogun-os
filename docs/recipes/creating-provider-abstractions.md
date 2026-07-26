@@ -16,6 +16,12 @@ depends_on: []
 > **How to create a new domain abstraction (CONTRACT + GENERIC_SKILL) and
 > how to wire multiple provider connectors into a single department profile.**
 
+> **Prefer `/shogunify` for day-to-day scaffolding.** See
+> [`shogunify.md`](shogunify.md) for the agent-facing questionnaire
+> (profile-aware install, skill/connector/workflow modes). Use this guide
+> for deep provider-abstraction edge cases (OAuth cache layout, importlib
+> pitfalls, multi-connector profiles).
+
 ## Architecture Recap
 
 Every provider abstraction in Shogun OS follows a three-layer pattern:
