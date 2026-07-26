@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -16,6 +16,7 @@ from auth import get_current_user, require_admin
 from config import DEFAULT_DEPARTMENTS, get_config
 from database import get_db, get_primary_tenant
 from models import Department, OnboardingState, User
+from registry import go_live as registry_go_live
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,21 @@ class TestConnectionPayload(BaseModel):
     config: Dict[str, Any] = Field(default_factory=dict)
 
 
+class UiOnboardingSave(BaseModel):
+    """SPA-friendly onboarding payload (matches ui OnboardingState)."""
+
+    step: Optional[int] = None
+    selected_departments: Optional[List[str]] = None
+    company: Optional[Dict[str, Any]] = None
+    department_configs: Optional[Dict[str, Any]] = None
+    completed: Optional[bool] = None
+
+
+class GoLiveBody(BaseModel):
+    create_tunnel: bool = True
+    force: bool = False
+
+
 def _get_onboarding(db: Session, tenant_id: int) -> OnboardingState:
     state = db.execute(
         select(OnboardingState).where(OnboardingState.tenant_id == tenant_id)
@@ -56,9 +72,154 @@ def _dept_catalog_meta(name: str) -> Dict[str, Any]:
     return {"name": name, "label": name, "profile_name": f"{name}-manager"}
 
 
+def _ui_state(
+    state: OnboardingState,
+    tenant,
+    go_live_info: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    data = dict(state.data or {})
+    company = data.get("company") if isinstance(data.get("company"), dict) else {}
+    cfg = get_config()
+    public_url = None
+    if cfg.public_base_url.startswith("https://") and "localhost" not in cfg.public_base_url:
+        public_url = cfg.public_base_url
+    public_url = data.get("public_url") or public_url
+    return {
+        "step": int(data.get("ui_step", 0) or 0),
+        "selected_departments": list(data.get("selected_departments") or []),
+        "company": {
+            "name": company.get("name") or tenant.company_name,
+            "timezone": company.get("timezone") or tenant.timezone,
+            "logo_url": company.get("logo_url")
+            if company.get("logo_url") is not None
+            else tenant.logo_url,
+        },
+        "department_configs": data.get("department_configs") or {},
+        "completed": state.completed_at is not None,
+        "public_url": public_url,
+        "subdomain": tenant.subdomain,
+        "go_live": data.get("go_live") or go_live_info or {},
+        "current_step": state.current_step,
+        "data": data,
+    }
+
+
 # ---------------------------------------------------------------------------
-# Onboarding
+# SPA-compatible onboarding (dummy-proof path)
 # ---------------------------------------------------------------------------
+
+
+@router.get("/onboarding")
+async def get_onboarding_ui(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    tenant = get_primary_tenant(db)
+    if user.tenant_id != tenant.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tenant mismatch")
+    state = _get_onboarding(db, tenant.id)
+    return _ui_state(state, tenant)
+
+
+@router.put("/onboarding")
+async def put_onboarding_ui(
+    body: UiOnboardingSave,
+    user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    tenant = get_primary_tenant(db)
+    if user.tenant_id != tenant.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tenant mismatch")
+    state = _get_onboarding(db, tenant.id)
+
+    merged = dict(state.data or {})
+    if body.step is not None:
+        merged["ui_step"] = int(body.step)
+        state.current_step = f"step_{int(body.step)}"
+    if body.selected_departments is not None:
+        merged["selected_departments"] = list(body.selected_departments)
+    if body.department_configs is not None:
+        merged["department_configs"] = body.department_configs
+    if body.company:
+        company = dict(merged.get("company") or {})
+        company.update(body.company)
+        if company.get("name"):
+            tenant.company_name = str(company["name"])
+        if company.get("timezone"):
+            tenant.timezone = str(company["timezone"])
+        if "logo_url" in company:
+            tenant.logo_url = str(company.get("logo_url") or "") or None
+        merged["company"] = company
+        db.add(tenant)
+
+    state.data = merged
+    if body.completed:
+        state.completed_at = datetime.now(timezone.utc)
+        state.current_step = "done"
+        user.first_login = False
+        db.add(user)
+
+    db.add(state)
+    db.commit()
+    db.refresh(state)
+    db.refresh(tenant)
+    return _ui_state(state, tenant)
+
+
+@router.post("/onboarding/go-live")
+async def onboarding_go_live(
+    body: GoLiveBody,
+    user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """Claim a public *.shogun-os.ai URL — no token, no Cloudflare account."""
+    tenant = get_primary_tenant(db)
+    if user.tenant_id != tenant.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tenant mismatch")
+
+    result = await registry_go_live(db, create_tunnel=body.create_tunnel, force=body.force)
+    state = _get_onboarding(db, tenant.id)
+    merged = dict(state.data or {})
+    go_live_snap = {
+        "ok": bool(result.get("ok") or result.get("skipped")),
+        "public_url": result.get("public_url"),
+        "subdomain": result.get("subdomain"),
+        "tunnel": result.get("tunnel"),
+        "message": result.get("message") or result.get("reason"),
+        "at": datetime.now(timezone.utc).isoformat(),
+        "skipped": result.get("skipped"),
+    }
+    if result.get("public_url"):
+        merged["public_url"] = result["public_url"]
+    merged["go_live"] = go_live_snap
+    state.data = merged
+    db.add(state)
+    db.commit()
+    db.refresh(state)
+    db.refresh(tenant)
+
+    if not go_live_snap["ok"]:
+        detail = result.get("error") or result.get("response") or "Could not claim public URL"
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=detail if isinstance(detail, str) else str(detail)[:500],
+        )
+
+    return {**go_live_snap, "onboarding": _ui_state(state, tenant, go_live_snap)}
+
+
+@router.get("/onboarding/status")
+async def onboarding_status(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    from registry import registry_status as rs
+
+    tenant = get_primary_tenant(db)
+    if user.tenant_id != tenant.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tenant mismatch")
+    state = _get_onboarding(db, tenant.id)
+    return {"onboarding": _ui_state(state, tenant), "registry": await rs(db)}
 
 
 @router.get("/onboarding/state")
@@ -66,13 +227,13 @@ async def get_onboarding_state(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Return the tenant's onboarding wizard state."""
     tenant = get_primary_tenant(db)
     if user.tenant_id != tenant.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tenant mismatch")
     state = _get_onboarding(db, tenant.id)
     return {
         "state": state.to_dict(),
+        "ui": _ui_state(state, tenant),
         "user": user.to_dict(),
         "tenant": tenant.to_dict(),
     }
@@ -85,7 +246,6 @@ async def save_onboarding_step(
     user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Persist data for a wizard step and advance ``current_step`` when asked."""
     tenant = get_primary_tenant(db)
     if user.tenant_id != tenant.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tenant mismatch")
@@ -101,11 +261,10 @@ async def save_onboarding_step(
     state.current_step = body.next_step or step
     db.add(state)
 
-    # Apply company profile fields when present
     company = step_bucket if step in {"company", "welcome", "profile"} else merged.get("company")
     if isinstance(company, dict):
-        if company.get("company_name"):
-            tenant.company_name = str(company["company_name"])
+        if company.get("company_name") or company.get("name"):
+            tenant.company_name = str(company.get("company_name") or company.get("name"))
         if company.get("timezone"):
             tenant.timezone = str(company["timezone"])
         if company.get("logo_url") is not None:
@@ -114,7 +273,7 @@ async def save_onboarding_step(
 
     db.commit()
     db.refresh(state)
-    return {"ok": True, "state": state.to_dict(), "tenant": tenant.to_dict()}
+    return {"ok": True, "state": state.to_dict(), "tenant": tenant.to_dict(), "ui": _ui_state(state, tenant)}
 
 
 @router.post("/onboarding/complete")
@@ -122,22 +281,46 @@ async def complete_onboarding(
     user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Mark onboarding complete and clear first_login if password already changed."""
+    """Mark onboarding complete; auto go-live if not yet public."""
     tenant = get_primary_tenant(db)
     if user.tenant_id != tenant.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tenant mismatch")
     state = _get_onboarding(db, tenant.id)
+
+    go_live_result: Dict[str, Any] = {}
+    cfg = get_config()
+    needs_live = (
+        not cfg.subdomain
+        or cfg.subdomain in {"local", "pending"}
+        or "localhost" in (cfg.public_base_url or "")
+    )
+    if needs_live:
+        try:
+            go_live_result = await registry_go_live(db, create_tunnel=True, force=False)
+            merged = dict(state.data or {})
+            if go_live_result.get("public_url"):
+                merged["public_url"] = go_live_result["public_url"]
+            merged["go_live"] = {
+                "ok": bool(go_live_result.get("ok") or go_live_result.get("skipped")),
+                "public_url": go_live_result.get("public_url"),
+                "subdomain": go_live_result.get("subdomain"),
+                "tunnel": go_live_result.get("tunnel"),
+                "at": datetime.now(timezone.utc).isoformat(),
+            }
+            state.data = merged
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Auto go-live on complete failed: %s", exc)
+            go_live_result = {"ok": False, "error": str(exc)}
+
     state.completed_at = datetime.now(timezone.utc)
     state.current_step = "done"
+    user.first_login = False
+    db.add(user)
     db.add(state)
     db.commit()
     db.refresh(state)
-    return {"ok": True, "state": state.to_dict()}
-
-
-# ---------------------------------------------------------------------------
-# Departments (list / activate / configure / test) — also under /departments
-# ---------------------------------------------------------------------------
+    db.refresh(tenant)
+    return {"ok": True, "state": _ui_state(state, tenant), "go_live": go_live_result}
 
 
 @router.get("/departments")
@@ -145,7 +328,6 @@ async def list_departments(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    """List all departments for the current tenant."""
     tenant = get_primary_tenant(db)
     depts = list(
         db.execute(select(Department).where(Department.tenant_id == tenant.id)).scalars()
@@ -166,13 +348,11 @@ async def activate_department(
     user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Mark a department active (Hermes profile expected to be provisioned separately)."""
     tenant = get_primary_tenant(db)
     dept = db.execute(
         select(Department).where(Department.tenant_id == tenant.id, Department.name == name)
     ).scalar_one_or_none()
     if dept is None:
-        # Auto-create unknown department from name
         cfg = get_config()
         meta = _dept_catalog_meta(name)
         offset = int(meta.get("port_offset") or (len(DEFAULT_DEPARTMENTS) + 1))
@@ -204,7 +384,6 @@ async def configure_department(
     user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Save provider configuration JSON for a department."""
     tenant = get_primary_tenant(db)
     dept = db.execute(
         select(Department).where(Department.tenant_id == tenant.id, Department.name == name)
@@ -216,7 +395,6 @@ async def configure_department(
     if body.provider:
         current["provider"] = body.provider
     current.update(body.config or {})
-    # Never store blank secrets over existing ones when key present but empty
     for key in list(current.keys()):
         if key.endswith(("_key", "_secret", "_token", "api_key", "password")):
             if current[key] in ("", None) and (dept.provider_config or {}).get(key):
@@ -226,7 +404,6 @@ async def configure_department(
     db.commit()
     db.refresh(dept)
 
-    # Redact secrets in response
     safe = dept.to_dict()
     cfg_out = dict(safe.get("provider_config") or {})
     for key in list(cfg_out.keys()):
@@ -242,11 +419,7 @@ async def _test_openai_compatible(base_url: str, api_key: str, model: Optional[s
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.get(url, headers=headers)
         if resp.status_code >= 400:
-            return {
-                "ok": False,
-                "status_code": resp.status_code,
-                "error": resp.text[:500],
-            }
+            return {"ok": False, "status_code": resp.status_code, "error": resp.text[:500]}
         data = resp.json()
         models = []
         if isinstance(data, dict) and isinstance(data.get("data"), list):
@@ -258,20 +431,14 @@ async def _test_openai_compatible(base_url: str, api_key: str, model: Optional[s
 
 
 async def _test_openrouter(api_key: str, model: Optional[str] = None) -> Dict[str, Any]:
-    return await _test_openai_compatible(
-        "https://openrouter.ai/api/v1", api_key, model=model
-    )
+    return await _test_openai_compatible("https://openrouter.ai/api/v1", api_key, model=model)
 
 
 async def _test_anthropic(api_key: str) -> Dict[str, Any]:
-    headers = {
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
-    }
+    headers = {"x-api-key": api_key, "anthropic-version": "2023-06-01"}
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.get("https://api.anthropic.com/v1/models", headers=headers)
         if resp.status_code >= 400:
-            # Some keys can call messages but not list models — treat 401/403 as fail
             return {"ok": False, "status_code": resp.status_code, "error": resp.text[:500]}
         return {"ok": True, "status_code": resp.status_code}
 
@@ -283,11 +450,7 @@ async def _test_gateway_port(port: Optional[int]) -> Dict[str, Any]:
     try:
         async with httpx.AsyncClient(timeout=3.0) as client:
             resp = await client.get(url)
-            return {
-                "ok": resp.status_code < 500,
-                "status_code": resp.status_code,
-                "url": url,
-            }
+            return {"ok": resp.status_code < 500, "status_code": resp.status_code, "url": url}
     except httpx.HTTPError as exc:
         return {"ok": False, "error": str(exc), "url": url}
 
@@ -299,7 +462,6 @@ async def test_department_connection(
     user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Probe the configured LLM provider and optional local Hermes gateway."""
     tenant = get_primary_tenant(db)
     dept = db.execute(
         select(Department).where(Department.tenant_id == tenant.id, Department.name == name)
@@ -314,13 +476,13 @@ async def test_department_connection(
     model = cfg.get("model")
     base_url = str(cfg.get("base_url") or "")
 
-    provider_result: Dict[str, Any]
     try:
         if provider in {"openrouter"}:
-            if not api_key:
-                provider_result = {"ok": False, "error": "api_key required"}
-            else:
-                provider_result = await _test_openrouter(api_key, model=model)
+            provider_result = (
+                {"ok": False, "error": "api_key required"}
+                if not api_key
+                else await _test_openrouter(api_key, model=model)
+            )
         elif provider in {"openai", "openai-compatible", "custom"}:
             if not base_url:
                 base_url = "https://api.openai.com/v1"
@@ -329,26 +491,24 @@ async def test_department_connection(
             else:
                 provider_result = await _test_openai_compatible(base_url, api_key, model=model)
         elif provider in {"anthropic", "claude"}:
-            if not api_key:
-                provider_result = {"ok": False, "error": "api_key required"}
-            else:
-                provider_result = await _test_anthropic(api_key)
+            provider_result = (
+                {"ok": False, "error": "api_key required"}
+                if not api_key
+                else await _test_anthropic(api_key)
+            )
         elif provider in {"local", "ollama"}:
             base_url = base_url or "http://127.0.0.1:11434/v1"
             provider_result = await _test_openai_compatible(base_url, api_key or "ollama", model=model)
         else:
-            provider_result = {
-                "ok": False,
-                "error": f"Unsupported provider '{provider}'",
-            }
+            provider_result = {"ok": False, "error": f"Unsupported provider '{provider}'"}
     except Exception as exc:
         logger.exception("Provider test failed for %s", name)
         provider_result = {"ok": False, "error": str(exc)}
 
     gateway_result = await _test_gateway_port(dept.gateway_port)
-
     return {
         "ok": bool(provider_result.get("ok")),
+        "message": "ok" if provider_result.get("ok") else str(provider_result.get("error") or "failed"),
         "provider": provider,
         "provider_result": provider_result,
         "gateway_result": gateway_result,
@@ -362,7 +522,6 @@ async def deactivate_department(
     user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Set department status to inactive."""
     tenant = get_primary_tenant(db)
     dept = db.execute(
         select(Department).where(Department.tenant_id == tenant.id, Department.name == name)

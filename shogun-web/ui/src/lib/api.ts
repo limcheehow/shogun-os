@@ -122,8 +122,51 @@ export const onboardingApi = {
       method: 'PUT',
       body: JSON.stringify(state),
     }),
-  complete: () =>
-    apiFetch<OnboardingState>('/api/onboarding/complete', { method: 'POST' }),
+  complete: async () => {
+    const res = await apiFetch<{
+      ok?: boolean;
+      state?: OnboardingState;
+      go_live?: GoLiveResult;
+    } & Partial<OnboardingState>>('/api/onboarding/complete', { method: 'POST' });
+    // Backend returns { ok, state, go_live }; normalize for SPA
+    if (res && typeof res === 'object' && res.state) {
+      return { ...res.state, go_live: res.go_live };
+    }
+    return res as OnboardingState & { go_live?: GoLiveResult };
+  },
+  goLive: (opts?: { create_tunnel?: boolean; force?: boolean }) =>
+    apiFetch<GoLiveResult>('/api/onboarding/go-live', {
+      method: 'POST',
+      body: JSON.stringify({
+        create_tunnel: opts?.create_tunnel ?? true,
+        force: opts?.force ?? false,
+      }),
+    }),
+  status: () => apiFetch<{ onboarding: OnboardingState; registry: RegistryStatus }>('/api/onboarding/status'),
+};
+
+export type GoLiveResult = {
+  ok: boolean;
+  public_url?: string | null;
+  subdomain?: string | null;
+  message?: string | null;
+  skipped?: boolean;
+  tunnel?: {
+    token_saved?: boolean;
+    token_path?: string;
+    connector?: { started?: boolean; reason?: string; hint?: string };
+  };
+  onboarding?: OnboardingState;
+};
+
+export type RegistryStatus = {
+  live: boolean;
+  subdomain?: string;
+  public_url?: string | null;
+  company_name?: string;
+  registry_url?: string;
+  tunnel_token_present?: boolean;
+  local_url?: string;
 };
 
 export const companyApi = {
@@ -140,7 +183,14 @@ export const companyApi = {
 };
 
 export const departmentsApi = {
-  list: () => apiFetch<Department[]>('/api/departments'),
+  list: async () => {
+    const res = await apiFetch<Department[] | { departments: Department[] }>('/api/departments');
+    if (Array.isArray(res)) return res;
+    if (res && typeof res === 'object' && Array.isArray((res as { departments?: Department[] }).departments)) {
+      return (res as { departments: Department[] }).departments;
+    }
+    return [];
+  },
   get: (name: string) => apiFetch<Department>(`/api/departments/${name}`),
   activate: (name: string, config?: ProviderConfig) =>
     apiFetch<Department>(`/api/departments/${name}/activate`, {

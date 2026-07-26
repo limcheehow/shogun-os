@@ -106,12 +106,12 @@ def create_app() -> FastAPI:
         https_only=cfg.public_base_url.startswith("https://"),
     )
 
-    # API routers
-    app.include_router(auth.router)
-    app.include_router(onboarding.router)
-    app.include_router(departments.router)
-    app.include_router(gateway.router)
-    app.include_router(registry.router)
+    # API routers (SPA expects /api/*)
+    app.include_router(auth.router, prefix="/api")
+    app.include_router(onboarding.router, prefix="/api")
+    app.include_router(departments.router, prefix="/api")
+    app.include_router(gateway.router, prefix="/api")
+    app.include_router(registry.router, prefix="/api")
 
     @app.get("/api/health")
     async def api_health() -> dict:
@@ -135,6 +135,10 @@ def create_app() -> FastAPI:
             "google_oauth_enabled": bool(c.google_oauth.client_id),
             "microsoft_oauth_enabled": bool(c.microsoft_oauth.client_id),
             "public_base_url": c.public_base_url,
+            "registry_url": c.registry_url or "https://registry.shogun-os.ai",
+            "is_public": bool(
+                c.public_base_url.startswith("https://") and "localhost" not in c.public_base_url
+            ),
         }
 
     # Static SPA (React build)
