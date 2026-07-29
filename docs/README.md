@@ -1,8 +1,21 @@
-# Shogun OS — Docs
+# Shogun OS — Technical Documentation Index
 
-This directory documents the phased development of Shogun OS, a Hermes Agent companion repository that standardizes skills, templates, profiles, and scripts for new-user onboarding.
+Welcome to the technical documentation for **Shogun OS**.
 
-## Phase Index
+---
+
+## Core Technical Documentation (`tapway-repo-docs` Standard)
+
+| Document | Purpose | Description |
+|---|---|---|
+| 🏗️ **[ARCHITECTURE.md](ARCHITECTURE.md)** | System Design | 3-layer architecture, Mermaid system diagram, component breakdown, data flow, key design decisions, and external dependencies. |
+| 🗄️ **[DB_SCHEMA.md](DB_SCHEMA.md)** | Data Architecture | PostgreSQL + `pgvector` schema for GBrain sources, `budget.json` baseline format, `scrum.yaml` state, and retention policies. |
+| 🔄 **[WORKFLOWS.md](WORKFLOWS.md)** | Sequence Diagrams | Mermaid sequence diagrams for Weekly Pulse Report, Monthly Board Report & BvA Variance Analysis, 3-Tier Scrum, and Provisioning. |
+| 🚀 **[DEPLOYMENT.md](DEPLOYMENT.md)** | Operations Playbook | Prerequisites, environment variables, profile generation (`generate-profile.py`), cron wiring (`wire-crons.py`), WSL/Linux gateway deployment, and health checks. |
+
+---
+
+## Development Phase Index
 
 | Phase | Title | Status |
 |-------|-------|--------|
@@ -15,17 +28,15 @@ This directory documents the phased development of Shogun OS, a Hermes Agent com
 | 7 | Doc Overhaul | ✅ [Docs](phase-07-doc-overhaul.md) |
 | 8 | Hub Publishing | ✅ [Docs](phase-08-hub-publishing.md) |
 
+---
+
 ## Quick Reference
 
-- **Skills:** [`../skills/`](../skills/) — `shogunify`, `department-scrum`, `brain-ingest-pipeline`, `company-workflow`, …
+- **Skills:** [`../skills/`](../skills/) — 22 Finance skills (`skills/finance/`), `shogunify`, `department-scrum`, `brain-ingest-pipeline`, `company-workflow`, …
 - **Scripts:** [`../scripts/`](../scripts/) — `install.sh`, `generate-profile.py`, `install-web.sh`, `wire-crons.py`, `verify-install.sh`
 - **Templates:** [`../templates/`](../templates/) — profile configs
-- **Examples:** [`../examples/`](../examples/) — scrum configs, gmail batch configs
-- **Recipes:** [`../recipes/`](../recipes/) — integration guides
+- **Examples:** [`../examples/`](../examples/) — `finance-budget.json`, scrum configs, gmail batch configs
+- **Recipes:** [`../recipes/`](../recipes/) — `recipes/accounting/` (`acct_*` contract), integration guides
 - **Schema:** [`../schema/`](../schema/) — config schemas
-- **Web portal design:** [`architecture/WEB_PORTAL.md`](architecture/WEB_PORTAL.md) — one dashboard, random URL, our Cloudflare
-- **Cloudflare (operator):** [`ops/cloudflare-registry-setup.md`](ops/cloudflare-registry-setup.md)
-- **WSL Azure deploy (for Hermes on Windows VM):** [`ops/deploy-registry-wsl-azure.md`](ops/deploy-registry-wsl-azure.md)
+- **Web portal design:** [`architecture/WEB_PORTAL.md`](architecture/WEB_PORTAL.md)
 - **Shogunify (add skill/connector/workflow):** [`recipes/shogunify.md`](recipes/shogunify.md) — slash `/shogunify`
-- **Provider abstractions guide:** [`recipes/creating-provider-abstractions.md`](recipes/creating-provider-abstractions.md)
-- **Microsoft 365 Integration:** [`../skills/devops/microsoft-integration/`](../skills/devops/microsoft-integration/) — Graph API client for mail, calendar, OneDrive, and directory

@@ -36,10 +36,10 @@ Cron templates at `skills/department-scrum/templates/` — copy and fill placeho
 | crm-manager | Deal Activity Sync | Hourly 9-18 weekdays |
 | crm-manager | Sales Pipeline | Mon 9AM |
 | crm-manager | Weekly Summary | Fri 5PM |
-| finance-manager | Daily Burn Rate | Daily 8AM (uses `acct_*` tools) |
-| finance-manager | Invoice Aging | Mon 8AM (uses `acct_*` tools) |
-| finance-manager | Monthly P&L | 1st of month 8AM (uses `acct_*` tools) |
-| finance-manager | Weekly Budget | Mon 8AM |
+| finance-manager | Daily Burn Rate | Daily 8AM (skill: `cash-runway-forecasting`) |
+| finance-manager | Invoice Aging | Mon 8AM (skill: `ar-credit-control`) |
+| finance-manager | Weekly Budget / Pulse | Mon 8AM (skill: `weekly-pulse-report`) |
+| finance-manager | Monthly P&L / Board Report | 1st of month 8AM (skill: `monthly-board-report`) |
 | procurement-manager | Contract Expiry | Mon 9AM |
 | product-manager | Sprint Cycle | Bi-weekly Mon |
 | hr-manager | Time Tracking Attendance | Weekdays 9:30AM |
