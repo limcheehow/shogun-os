@@ -1,0 +1,35 @@
+{
+  "period": "2026",
+  "year": 2026,
+  "currency": "MYR",
+  "lines": [
+    {
+      "account_code": "5100",
+      "account_name": "Payroll & Benefits",
+      "budget_amount": 34000.00,
+      "driver": "headcount x average salary",
+      "notes": "Monthly base payroll"
+    },
+    {
+      "account_code": "5200",
+      "account_name": "SaaS & Cloud Infrastructure",
+      "budget_amount": 8500.00,
+      "driver": "server nodes + API token consumption",
+      "notes": "AWS, OpenAI, cloud hosting"
+    },
+    {
+      "account_code": "5300",
+      "account_name": "Marketing & Customer Acquisition",
+      "budget_amount": 8000.00,
+      "driver": "monthly ad spend + campaign budget",
+      "notes": "Digital ad spend & events"
+    },
+    {
+      "account_code": "5400",
+      "account_name": "Facilities & Admin",
+      "budget_amount": 2600.00,
+      "driver": "office lease + utilities",
+      "notes": "Monthly office rent and utilities"
+    }
+  ]
+}
