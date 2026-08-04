@@ -61,6 +61,25 @@ erDiagram
 
 ---
 
+## Dashboard Registry & GBrain Finance Snapshot Schemas
+
+### `dashboard_meta` Configuration (`shogun-web/server/dashboard.py`)
+| Department | Enabled | Tabs Configured | Aggregation Function |
+|---|---|---|---|
+| `crm` | `True` | Revenue, Pipeline, Partner, Managers, Deals | `_run_ceo_aggregation()` |
+| `finance` | `True` | Executive Pulse, Cash & Runway, AR & AP Ops, Budget vs Actuals, Close & Tax | `_run_finance_aggregation()` |
+
+### GBrain Finance Snapshot Slugs (`finance/` Source)
+- `snapshots/cash` — Contains `total_liquid_cash`, `net_monthly_burn`, `cash_runway_months`, `bank_accounts`, `fx_positions`, `forecast_13w`.
+- `snapshots/pl` — Contains `revenue_mtd`, `revenue_ytd`, `gross_margin_pct`, `ebitda_margin_pct`, `revenue_opex_trend`.
+- `snapshots/ar` — Contains `total_ar`, `ar_overdue_30`, `dso`, `bucket_0_30`, `bucket_31_60`, `bucket_61_90`, `bucket_90_plus`, `dunning_queue`.
+- `snapshots/ap` — Contains `total_ap`, `ap_overdue`, `dpo`, `bills`.
+- `snapshots/bva` — Contains `departments`, `unit_economics`.
+- `snapshots/concentration` — Contains `clients` revenue percentage breakdown.
+- `snapshots/compliance` — Contains `close_checklist`, `statutory_schedule`, `sst_readiness`, `cp58_register`, `wht_queue`, `expense_claim_audit`.
+
+---
+
 ## Table & Schema Definitions
 
 ### 1. GBrain Knowledge Database (`PostgreSQL`)

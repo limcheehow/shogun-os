@@ -144,3 +144,54 @@ sequenceDiagram
     Wire->>Hermes: Register 4 scrum crons + 4 domain crons into Hermes DB
     Wire-->>Admin: 8 cron jobs applied successfully
 ```
+
+---
+
+## Workflow 5: Executive & Operations Web Portal Finance Dashboard
+
+**Trigger:** User clicks on the **Finance Department Dashboard** in the Shogun OS Web Portal (`http://localhost:5173`).  
+**Actor:** Web Portal User / Executive / Finance Staff.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User / Executive
+    participant UI as FinanceDashboard.tsx (React UI)
+    participant API as departmentsApi (api.ts)
+    participant Server as FastAPI Server (:8000)
+    participant GBrain as GBrain Store (finance/)
+    participant Mock as examples/finance-budget.json
+
+    User->>UI: Select Finance Department -> Dashboard Tab
+    UI->>API: dashboardFinanceStats("finance")
+    API->>Server: GET /api/departments/finance/dashboard/finance-stats
+    
+    Server->>GBrain: gbrain_fetch_pages("finance", limit=300)
+    
+    alt GBrain Snapshots Found
+        GBrain-->>Server: Return snapshot pages (cash, PL, AR, AP, BvA, compliance)
+        Server->>Server: Run _run_finance_aggregation() on live snapshots
+    else GBrain Snapshots Empty / New Tenant
+        Server->>Mock: Read fallback mock dataset from examples/finance-budget.json
+        Mock-->>Server: Return Malaysian entities + English terms dataset
+    end
+
+    Server-->>API: Return FinanceDashboardStats JSON (All 5 Tabs)
+    API-->>UI: Update React Query state (refetchInterval: 120s)
+
+    alt Active Tab == "pulse"
+        UI->>UI: Render ExecutivePulseTab (KPI Cards, Risk Alert Banners, ComboChart)
+    else Active Tab == "runway"
+        UI->>UI: Render CashRunwayTab (Runway Dial, Bank Accounts, 13-Wk Forecast, FX)
+    else Active Tab == "ops"
+        UI->>UI: Render WorkingCapitalOpsTab (AR Aging, Dunning Queue, AP 3-Way Match)
+    else Active Tab == "bva"
+        UI->>UI: Render BvaUnitEconomicsTab (Dept BvA Chart, Variance Table, Unit Econ)
+    else Active Tab == "compliance"
+        UI->>UI: Render CloseTaxComplianceTab (Checklist, MY Statutory, SST-02, CP58, WHT)
+    end
+```
+
+### Edge Cases & Failure Modes
+- **GBrain Service Offline:** If the GBrain daemon or PostgreSQL connection fails, `_run_finance_aggregation()` catches the connection error and seamlessly falls back to reading `examples/finance-budget.json` so the UI remains fully functional.
+- **New Tenant Zero-State:** For fresh tenants with no transaction history, `examples/finance-budget.json` provides populated Malaysian demo data for immediate executive evaluation.

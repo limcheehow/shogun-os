@@ -99,6 +99,22 @@ hermes serve --profile finance-manager --port 8006
 
 ---
 
+### Step 5: Run Shogun Web Portal Backend & UI
+Start the FastAPI backend server and Vite React frontend application:
+
+```powershell
+# 1. Start Backend API Server (Port 8000)
+.\run-server.ps1
+
+# 2. Start Web UI Dev Server (Port 5173)
+.\run-web.ps1
+```
+
+**Verification:**
+Navigate to `http://localhost:5173`, log in, select the **Finance** department, and open the **Dashboard** tab to view the 5-tab Finance Dashboard (`Executive Pulse`, `Cash & Runway`, `AR & AP Ops`, `Budget vs Actuals`, `Close & Tax Compliance`).
+
+---
+
 ## Health Check & Verification
 
 ### 1. Offline Script Verification (Dry-Run Mode)

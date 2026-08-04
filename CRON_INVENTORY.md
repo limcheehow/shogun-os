@@ -40,7 +40,8 @@ Cron templates at `skills/department-scrum/templates/` — copy and fill placeho
 | finance-manager | Invoice Aging | Mon 8AM (skill: `ar-credit-control`) |
 | finance-manager | Weekly Budget / Pulse | Mon 8AM (skill: `weekly-pulse-report`) |
 | finance-manager | Monthly P&L / Board Report | 1st of month 8AM (skill: `monthly-board-report`) |
-| procurement-manager | Contract Expiry | Mon 9AM |
+| procurement-manager | Reorder Watchdog | Mon–Fri 8AM (skill: `reorder-alert-watchdog`) |
+| procurement-manager | Inventory Valuation | Fri 5PM (skill: `weekly-inventory-valuation`) |
 | product-manager | Sprint Cycle | Bi-weekly Mon |
 | hr-manager | Time Tracking Attendance | Weekdays 9:30AM |
 | hr-manager | Time Tracking Timesheet | Weekly Mon 10AM |
@@ -97,13 +98,13 @@ These scripts are shared across profiles and run via the default profile's cron 
 | hr-manager | **2** (1 scrum + 1 extra) | **5** (3 scrum + 2 extra) | **7** |
 | finance-manager | **1** (1 scrum) | **6** (3 scrum + 3 extra) | **7** |
 | project-manager | **1** (1 scrum) | **3** (3 scrum) | **4** |
-| procurement-manager | **1** (1 scrum) | **4** (3 scrum + 1 extra) | **5** |
+| procurement-manager | **1** (1 scrum) | **5** (3 scrum + 2 extra) | **6** |
 | product-manager | **1** (1 scrum) | **4** (3 scrum + 1 extra) | **5** |
 | crm-manager | **1** (1 scrum) | **6** (3 scrum + 3 extra) | **7** |
 | marketing-manager | **1** (1 scrum) | **3** (3 scrum) | **4** |
 | compliance-manager | **1** (1 scrum) | **3** (3 scrum) | **4** |
 | customer-support | **1** (1 scrum) | **3** (3 scrum) | **4** |
-| **Total** | **15** | **39** | **54** |
+| **Total** | **15** | **40** | **55** |
 
 > **Note:** 3-tier scrum = 9am (no_agent) + 11am (agent) + 5pm (agent). Holiday gate optional via midnight cron.
 >

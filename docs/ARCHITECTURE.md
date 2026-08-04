@@ -1,20 +1,30 @@
 # Architecture — Shogun OS
 
 ## Overview
-Shogun OS is an open reference architecture and provisioning toolkit for deploying multi-department AI agent operations. It deploys 10 independent Hermes Agent profiles (such as `finance-manager`, `hr-manager`, and `coding-agent`), each connected to its own isolated GBrain knowledge source and dedicated Slack/Telegram bot. The system provides an end-to-end multi-tenant Web Portal, domain provider abstractions (such as the `acct_*` accounting contract), and a 4-pillar department skill ecosystem.
+Shogun OS is an open reference architecture and provisioning toolkit for deploying multi-department AI agent operations. It deploys 10 independent Hermes Agent profiles (such as `finance-manager`, `hr-manager`, and `coding-agent`), each connected to its own isolated GBrain knowledge source and dedicated Slack/Telegram bot. The system provides an end-to-end multi-tenant Web Portal with an executive 5-tab Finance Dashboard, domain provider abstractions (such as the `acct_*` accounting contract), and a 4-pillar department skill ecosystem.
 
 ## System Diagram
 
 ```mermaid
 graph TD
-    User["Portal User / Slack / Telegram"] --> PortalGateway["Shogun Web Portal Gateway (FastAPI :8787)"]
+    User["Portal User / Slack / Telegram"] --> WebPortalUI["Shogun Web UI (React + Vite :5173)"]
     User --> DirectBot["Slack / Telegram Bot (Per Profile)"]
 
-    PortalGateway --> ProfileFinance["Hermes Profile: finance-manager (Koku :9102/8006)"]
-    PortalGateway --> ProfileHR["Hermes Profile: hr-manager (Jinzai :9101)"]
-    PortalGateway --> ProfileCRM["Hermes Profile: crm-manager (Kizuna :9104)"]
-    PortalGateway --> ProfileOther["Hermes Profiles: Procurement, Marketing, Coding, etc."]
+    WebPortalUI --> PortalBackend["FastAPI Server (:8000)"]
+    PortalBackend --> FinanceAggregator["_run_finance_aggregation() (dashboard.py)"]
+
+    PortalBackend --> ProfileFinance["Hermes Profile: finance-manager (Koku :9102/8006)"]
+    PortalBackend --> ProfileHR["Hermes Profile: hr-manager (Jinzai :9101)"]
+    PortalBackend --> ProfileCRM["Hermes Profile: crm-manager (Kizuna :9104)"]
     DirectBot --> ProfileFinance
+
+    subgraph DashboardLayer ["Finance Dashboard (5 Tabs)"]
+        FinanceAggregator --> Tab1["Tab 1: Executive Pulse (ComboChart)"]
+        FinanceAggregator --> Tab2["Tab 2: Cash & Runway (13-Wk Forecast)"]
+        FinanceAggregator --> Tab3["Tab 3: AR & AP Ops (Dunning Queue)"]
+        FinanceAggregator --> Tab4["Tab 4: BvA & Unit Economics"]
+        FinanceAggregator --> Tab5["Tab 5: Close & Tax Compliance"]
+    end
 
     subgraph SkillsLayer ["Finance Skill & Execution Layer (skills/finance/)"]
         ProfileFinance --> SkillPulse["weekly-pulse-report (weekly_pulse.py)"]
@@ -24,8 +34,9 @@ graph TD
         ProfileFinance --> SkillGov["Pillar 4 Risk/Gov (MFRS 15, SST, ISA 530, FX)"]
     end
 
-    subgraph KnowledgeLayer ["Knowledge Layer (GBrain MCP)"]
-        ProfileFinance --> GBrainFinance[("GBrain Source: finance/ (PostgreSQL + pgvector)")]
+    subgraph KnowledgeLayer ["Knowledge Layer (GBrain MCP & Fallback)"]
+        FinanceAggregator --> GBrainFinance[("GBrain Source: finance/ (PostgreSQL + pgvector)")]
+        FinanceAggregator -. "Fallback Seed" .-> MockFile["examples/finance-budget.json"]
         ProfileFinance -. "Federated Read" .-> GBrainShared[("GBrain Source: shared/")]
     end
 
@@ -42,16 +53,21 @@ graph TD
 
 ## Component Breakdown
 
-### 1. Profiles Layer (Hermes Agent)
+### 1. Web Portal & Executive Finance Dashboard (`shogun-web/`)
+Provides a centralized multi-tenant web application for managing all 10 departments:
+- **Backend Aggregator (`shogun-web/server/dashboard.py`):** Exposes `GET /api/departments/finance/dashboard/finance-stats`, querying live GBrain finance snapshot pages with automatic fallback to `examples/finance-budget.json`.
+- **React UI (`shogun-web/ui/src/components/dashboards/finance/`):** Renders the 5-tab Finance Dashboard (`ExecutivePulseTab`, `CashRunwayTab`, `WorkingCapitalOpsTab`, `BvaUnitEconomicsTab`, `CloseTaxComplianceTab`) with `ComboChart.tsx` (Recharts `ComposedChart`) and interactive dunning/claim modals.
+
+### 2. Profiles Layer (Hermes Agent)
 Contains 10 independent department profiles (`~/.hermes/profiles/<name>`). Each profile has physical, knowledge, and communication isolation with its own `config.yaml`, `SOUL.md`, `.env`, gateway port, and linked `skills/`.
 
-### 2. Knowledge Layer (GBrain MCP)
+### 3. Knowledge Layer (GBrain MCP)
 Hybrid search engine powered by PostgreSQL 16 + `pgvector` and local Ollama embeddings (768d). Segmented into isolated sources (`finance/`, `hr/`, `crm/`, `engineering/`) with federated read-only access to `shared/`.
 
-### 3. Provider Abstraction Layer (`recipes/accounting/`)
+### 4. Provider Abstraction Layer (`recipes/accounting/`)
 Decouples agent logic from vendor APIs through standard tool contracts (`acct_*`). Implements dynamic plugin loading (`acct-bridge.py`) for accounting software backends (QuickBooks Online, Bukku, Xero).
 
-### 4. Finance Skill & Report Generator Layer (`skills/finance/`)
+### 5. Finance Skill & Report Generator Layer (`skills/finance/`)
 Houses 22 production skills across 4 corporate finance pillars:
 - **Pillar 1 (Operations):** `ar-credit-control`, `ap-vendor-management`, `malaysia-contractor-cp58-wht`, `payroll-statutory-accounting`, `expense-claim-audit`.
 - **Pillar 2 (Accounting & Close):** `general-ledger-journal-prep`, `bank-payment-reconciliation`, `period-end-close-checklist`, `financial-statement-prep`.
@@ -59,7 +75,7 @@ Houses 22 production skills across 4 corporate finance pillars:
 - **Pillar 4 (Treasury/Tax/Governance):** `mfrs15-revenue-recognition`, `tax-sst-compliance`, `internal-control-governance`, `isa530-audit-pbc-support`, `treasury-fx-facility-mgmt`.
 - **Report Generators:** `weekly-pulse-report` (`weekly_pulse.py`), `monthly-board-report` (`monthly_board.py`).
 
-### 5. Execution & Automation Layer (`scripts/`)
+### 6. Execution & Automation Layer (`scripts/`)
 Provisioning and automation scripts:
 - `generate-profile.py` — Profile generator with skill mapping, `scrum.yaml` copying, and `budget.json` baseline seeding.
 - `wire-crons.py` — Profile-scoped cron wirer for 3-tier scrum and department domain crons.

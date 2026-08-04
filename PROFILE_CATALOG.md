@@ -320,11 +320,11 @@ These profiles handle stores, merchandising, e-commerce, CRM/loyalty, supply cha
 | Gateway port | **9103** |
 | Web UI | Department **Procurement** |
 | gbrain source | `procurement/` |
-| Skills | `procurement-provider` |
+| Skills | `company-workflow`, `procurement-provider`, `department-scrum`, `inventory-item-management`, `stock-movement-audit`, `location-binning`, `reorder-alert-watchdog`, `dead-slow-stock-detector`, `weekly-inventory-valuation`, `inventory-valuation-report`, `reorder-alert-report`, `accounting-bridge-sync` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Provider recipe | `recipes/procurement/` (`proc_*`) |
 | Scrum | ✅ 3-tier — `scrum.yaml` needed |
-| Extra Crons | Contract expiry (Mon 9AM) |
+| Extra Crons | Reorder Watchdog (Mon–Fri 8AM), Inventory Valuation (Fri 5PM) |
 | Task IDs | `PO-\\d+` |
 
 ### 4. CRM — Kizuna (絆 — "Bond")
