@@ -304,7 +304,7 @@ These profiles handle stores, merchandising, e-commerce, CRM/loyalty, supply cha
 | Gateway port | **9102** |
 | Web UI | Department **Finance** |
 | gbrain source | `finance/` |
-| Skills | `accounting-provider` |
+| Skills | `accounting-provider`, `ar-credit-control`, `ap-vendor-management`, `malaysia-contractor-cp58-wht`, `payroll-statutory-accounting`, `expense-claim-audit`, `bank-payment-reconciliation`, `general-ledger-journal-prep`, `period-end-close-checklist`, `financial-statement-prep`, `budget-financial-modeling`, `bva-variance-analysis`, `cash-runway-forecasting`, `unit-economics-margin-analysis`, `revenue-concentration-audit`, `cfo-executive-reporting`, `mfrs15-revenue-recognition`, `tax-sst-compliance`, `internal-control-governance`, `isa530-audit-pbc-support`, `treasury-fx-facility-mgmt`, `weekly-pulse-report`, `monthly-board-report` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Provider recipe | `recipes/accounting/` (`acct_*`; Bukku / QuickBooks / Xero bridge) |
 | Scrum | ✅ 3-tier — `scrum.yaml` needed |
@@ -320,11 +320,11 @@ These profiles handle stores, merchandising, e-commerce, CRM/loyalty, supply cha
 | Gateway port | **9103** |
 | Web UI | Department **Procurement** |
 | gbrain source | `procurement/` |
-| Skills | `procurement-provider` |
+| Skills | `company-workflow`, `procurement-provider`, `department-scrum`, `inventory-item-management`, `stock-movement-audit`, `location-binning`, `reorder-alert-watchdog`, `dead-slow-stock-detector`, `weekly-inventory-valuation`, `inventory-valuation-report`, `reorder-alert-report`, `accounting-bridge-sync` |
 | Shared | `department-scrum`, `slack-formatting`, `staff-lookup`, `task-management`, `brain-compliance`, `profile-enrichment` |
 | Provider recipe | `recipes/procurement/` (`proc_*`) |
 | Scrum | ✅ 3-tier — `scrum.yaml` needed |
-| Extra Crons | Contract expiry (Mon 9AM) |
+| Extra Crons | Reorder Watchdog (Mon–Fri 8AM), Inventory Valuation (Fri 5PM) |
 | Task IDs | `PO-\\d+` |
 
 ### 4. CRM — Kizuna (絆 — "Bond")

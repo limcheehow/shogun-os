@@ -289,7 +289,7 @@ Generic MCP contract for time-tracking providers (Jibble, Kami, etc.). Universal
 | Providers | Bukku, QuickBooks, Xero |
 | Bridge | `acct-bridge.py` + shared `oauth-helper.py` |
 
-Unified bridge loads provider plugins dynamically. Covers sales invoices, purchase bills, contacts, products, P&L, balance sheet, and aging reports.
+Unified bridge loads provider plugins dynamically. Covers sales invoices, purchase bills, contacts, products, P&L, balance sheet, and aging reports. Consumed by all 22 higher-level finance skills under `skills/finance/` (AR credit control, AP vendor mgmt, budget financial modeling, BvA variance, cash runway, tax/SST, MFRS 15, weekly pulse, monthly board report).
 
 ### 18. `procurement` — Procurement Provider Abstraction
 

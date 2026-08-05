@@ -6,6 +6,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  Legend,
 } from 'recharts';
 import { chartColors } from '../../../lib/palette';
 
@@ -19,10 +20,11 @@ interface LineChartProps {
   unit?: string;
   height?: number;
   dataKeys?: string[];
+  labels?: Record<string, string>;
 }
 
 export function LineChart({
-  data, xKey, yKey, color = '#6366f1', colors, unit = '', height = 250, dataKeys,
+  data, xKey, yKey, color = '#6366f1', colors, unit = '', height = 250, dataKeys, labels,
 }: LineChartProps) {
   if (!data || data.length === 0) {
     return (
@@ -49,16 +51,25 @@ export function LineChart({
           background: '#fff', border: '1px solid #e2e8f0',
           borderRadius: '8px', fontSize: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         }} />
+        {dataKeys && dataKeys.length > 0 && (
+          <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
+        )}
         {dataKeys && dataKeys.length > 0
           ? dataKeys.map((k, i) => (
               <Line
-                key={k} type="monotone" dataKey={k} stroke={palette[i % palette.length]}
-                strokeWidth={2} dot={{ r: 3 }} connectNulls
+                key={k}
+                type="monotone"
+                dataKey={k}
+                name={labels?.[k] || k}
+                stroke={palette[i % palette.length]}
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                connectNulls
               />
             ))
-          : <Line type="monotone" dataKey={yKey} stroke={palette[0]} strokeWidth={2} dot={{ r: 3 }} />
+          : <Line type="monotone" dataKey={yKey} name={labels?.[yKey] || yKey} stroke={palette[0]} strokeWidth={2} dot={{ r: 3 }} />
         }
       </RechartsLineChart>
     </ResponsiveContainer>
   );
-}
+}

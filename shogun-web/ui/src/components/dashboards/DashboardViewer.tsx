@@ -3,9 +3,13 @@ import { BarChart3 } from 'lucide-react';
 import { departmentsApi } from '../../lib/api';
 import type { DashboardConfig } from '../../lib/types';
 import { CrmDashboard } from './crm/CrmDashboard';
+import { FinanceDashboard } from './finance/FinanceDashboard';
+import { ProcurementDashboard } from './procurement/ProcurementDashboard';
 
 const DASHBOARD_COMPONENTS: Record<string, React.ComponentType<{ department: string; color: string }>> = {
   crm: CrmDashboard,
+  finance: FinanceDashboard,
+  procurement: ProcurementDashboard,
 };
 
 interface DashboardViewerProps {

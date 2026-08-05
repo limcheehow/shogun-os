@@ -21,8 +21,10 @@ import type {
   Department,
   DepartmentKey,
   DocumentArtifact,
+  FinanceDashboardStats,
   LoginPayload,
   OnboardingState,
+  ProcurementDashboardStats,
   ProviderConfig,
   StaffMember,
   User,
@@ -262,12 +264,19 @@ export const departmentsApi = {
     apiFetch<DashboardConfig>(`/api/departments/${name}/dashboard`),
   dashboardCeoStats: (dept: string) =>
     apiFetch<CeoDashboardStats>(`/api/departments/${dept}/dashboard/ceo-stats`),
+  dashboardFinanceStats: (dept: string) =>
+    apiFetch<FinanceDashboardStats>(`/api/departments/${dept}/dashboard/finance-stats`),
+  dashboardProcurementStats: (dept: string) =>
+    apiFetch<ProcurementDashboardStats>(`/api/departments/${dept}/dashboard/procurement-stats`),
 };
 
 export const brainApi = {
-  list: (dept: string, q?: string) => {
+  list: async (dept: string, q?: string) => {
     const qs = q ? `?q=${encodeURIComponent(q)}` : '';
-    return apiFetch<BrainPage[]>(`/api/departments/${dept}/brain${qs}`);
+    const res = await apiFetch<BrainPage[] | { pages?: BrainPage[] }>(`/api/departments/${dept}/brain${qs}`);
+    if (Array.isArray(res)) return res;
+    if (res && typeof res === 'object' && Array.isArray(res.pages)) return res.pages;
+    return [];
   },
   get: (dept: string, slug: string) =>
     apiFetch<BrainPage>(`/api/departments/${dept}/brain/${encodeURIComponent(slug)}`),
@@ -275,15 +284,26 @@ export const brainApi = {
     apiFetch<BrainLink[]>(
       `/api/departments/${dept}/brain/${encodeURIComponent(slug)}/backlinks`,
     ),
-  search: (dept: string, query: string) =>
-    apiFetch<BrainPage[]>(
+  search: async (dept: string, query: string) => {
+    const res = await apiFetch<BrainPage[] | { pages?: BrainPage[] }>(
       `/api/departments/${dept}/brain/search?q=${encodeURIComponent(query)}`,
-    ),
+    );
+    if (Array.isArray(res)) return res;
+    if (res && typeof res === 'object' && Array.isArray(res.pages)) return res.pages;
+    return [];
+  },
 };
 
 export const docsApi = {
-  list: (dept: string) =>
-    apiFetch<DocumentArtifact[]>(`/api/departments/${dept}/docs`),
+  list: async (dept: string) => {
+    const res = await apiFetch<DocumentArtifact[] | { artifacts?: DocumentArtifact[]; docs?: DocumentArtifact[] }>(`/api/departments/${dept}/docs`);
+    if (Array.isArray(res)) return res;
+    if (res && typeof res === 'object') {
+      if (Array.isArray(res.artifacts)) return res.artifacts;
+      if (Array.isArray(res.docs)) return res.docs;
+    }
+    return [];
+  },
   get: (dept: string, id: string) =>
     apiFetch<DocumentArtifact>(`/api/departments/${dept}/docs/${id}`),
   downloadUrl: (dept: string, id: string) =>

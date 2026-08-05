@@ -23,7 +23,7 @@ hermes skills install limcheehow/shogun-os/accounting-provider
 
 ## Skills Available
 
-Approximate inventory: **~40+ installable skill packages** under `skills/` (78 `SKILL.md` files including nested manufacturing/retail/gbrain packs), plus **10 domain provider abstractions** under `recipes/`.
+Approximate inventory: **~60+ installable skill packages** under `skills/` (including 22 finance domain skills under `skills/finance/`, nested manufacturing/retail/gbrain packs), plus **10 domain provider abstractions** under `recipes/`.
 
 | Skill | Description |
 |-------|-------------|

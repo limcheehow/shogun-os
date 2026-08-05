@@ -120,15 +120,48 @@ PROFILE_EXTRA_CRONS = {
     ],
     "finance": [
         {
-            "name": "{profile}-budget-check",
-            "schedule": "0 10 * * 1-5",
+            "name": "{profile}-daily-burn-rate",
+            "schedule": "0 8 * * *",
             "prompt": (
-                "Run the daily budget check for the Finance team. "
-                "Load the finance-budget-tracker skill, check department "
-                "spending against budget, flag any departments approaching "
-                "their limits, and summarise to the finance channel."
+                "Run daily burn rate and cash runway check for the Finance team. "
+                "Load the cash-runway-forecasting skill, compute net monthly burn rate, "
+                "cash runway months, and flag any liquidity risks."
             ),
-            "skills": [],
+            "skills": ["cash-runway-forecasting"],
+            "deliver": "local",
+        },
+        {
+            "name": "{profile}-invoice-aging",
+            "schedule": "0 8 * * 1",
+            "prompt": (
+                "Run weekly Accounts Receivable invoice aging sweep. "
+                "Load the ar-credit-control skill, audit 0-30/31-60/61-90/90+ buckets, "
+                "build the dunning queue, and list priority collections."
+            ),
+            "skills": ["ar-credit-control"],
+            "deliver": "local",
+        },
+        {
+            "name": "{profile}-weekly-budget",
+            "schedule": "0 8 * * 1",
+            "prompt": (
+                "Generate the Weekly Financial Pulse report. "
+                "Load the weekly-pulse-report skill, gather cash balance, AR aging, "
+                "AP commitments due, and MTD revenue & spend pacing, format executive report, "
+                "and save to gbrain."
+            ),
+            "skills": ["weekly-pulse-report"],
+            "deliver": "local",
+        },
+        {
+            "name": "{profile}-monthly-pnl",
+            "schedule": "0 8 1 * *",
+            "prompt": (
+                "Generate the Monthly Financial Performance & Board Report. "
+                "Load the monthly-board-report skill, pull P&L breakdown, balance sheet ratios, "
+                "run Budget vs. Actual (BvA) variance analysis, and customer concentration audit."
+            ),
+            "skills": ["monthly-board-report"],
             "deliver": "local",
         },
     ],
