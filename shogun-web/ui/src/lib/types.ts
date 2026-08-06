@@ -419,3 +419,436 @@ export const TIMEZONES = [
   'America/Chicago',
   'UTC',
 ];
+
+// ─── Finance Dashboard Types ───
+
+export interface FinanceRiskAlert {
+  type: 'concentration' | 'overrun' | 'ar_overdue';
+  level: 'warning' | 'critical';
+  message: string;
+}
+
+export interface FinanceTrendPoint {
+  month: string;
+  revenue?: number;
+  opex?: number;
+  net?: number;
+  cash?: number;
+  netFlow?: number;
+}
+
+export interface BankAccount {
+  name: string;
+  currency: string;
+  balance: number;
+  balance_myr: number;
+  last_reconciled?: string;
+}
+
+export interface FxPosition {
+  currency: string;
+  long: number;
+  short: number;
+  net: number;
+  bnm_fea_compliant: boolean;
+}
+
+export interface Forecast13wScenario {
+  week: string;
+  inflow: number;
+  outflow: number;
+  net: number;
+  cumulative: number;
+}
+
+export interface ArAgingBuckets {
+  bucket_0_30: number;
+  bucket_31_60: number;
+  bucket_61_90: number;
+  bucket_90_plus: number;
+}
+
+export interface DunningItem {
+  invoice_no: string;
+  customer: string;
+  due_date: string;
+  amount: number;
+  aging_days: number;
+  bucket: '0-30' | '31-60' | '61-90' | '90+';
+  dunning_status: string;
+}
+
+export interface ApBillItem {
+  bill_no: string;
+  vendor: string;
+  due_date: string;
+  amount: number;
+  match_status: 'Matched' | 'PO Mismatch' | 'Missing GRN';
+  approval_status: 'Pending' | 'Approved' | 'Paid' | 'On Hold';
+}
+
+export interface BvaDeptItem {
+  department: string;
+  budget_ytd: number;
+  actual_ytd: number;
+  variance: number;
+  variance_pct: number;
+}
+
+export interface UnitEconomics {
+  gross_margin_pct: number;
+  contribution_margin_pct: number;
+  cac: number;
+  ltv: number;
+  ltv_cac_ratio: number;
+}
+
+export interface ClientConcentrationItem {
+  name: string;
+  revenue_ytd: number;
+  revenue_pct: number;
+}
+
+export interface CloseChecklistItem {
+  id: string;
+  label: string;
+  completed: boolean;
+}
+
+export interface StatutoryItem {
+  name: string;
+  due_date: string;
+  status: 'Pending' | 'Submitted' | 'Overdue';
+  amount?: number;
+}
+
+export interface SstReadiness {
+  draft_status: string;
+  taxable_sales: number;
+  sst_liability: number;
+}
+
+export interface Cp58Item {
+  contractor_name: string;
+  ic_or_reg: string;
+  total_paid_ytd: number;
+  threshold_exceeded: boolean;
+}
+
+export interface WhtQueueItem {
+  vendor: string;
+  country: string;
+  payment_amount: number;
+  wht_rate: number;
+  wht_amount: number;
+  section: string;
+}
+
+export interface ExpenseClaimItem {
+  employee: string;
+  claim_date: string;
+  amount: number;
+  category: string;
+  receipt_attached: boolean;
+  sst_compliant: boolean;
+  policy_exceeded: boolean;
+  audit_status: 'Approved' | 'Flagged' | 'Rejected';
+}
+
+export interface FinanceDashboardStats {
+  // Tab 1 — Executive Pulse
+  totalLiquidCash: number;
+  netMonthlyBurn: number;
+  cashRunwayMonths: number;
+  runwayStatus: 'healthy' | 'caution' | 'critical' | 'unknown';
+  revenueMTD: number;
+  revenueYTD: number;
+  grossMargin: number;
+  ebitdaMargin: number;
+  unpaidStatutory: number;
+  riskAlerts: FinanceRiskAlert[];
+  revenueOpexTrend: FinanceTrendPoint[];
+  cashFlowTrend: FinanceTrendPoint[];
+  // Tab 2 — Cash & Runway
+  bankAccounts: BankAccount[];
+  fxPositions: FxPosition[];
+  forecast13w: { conservative: Forecast13wScenario[]; expected: Forecast13wScenario[]; optimistic: Forecast13wScenario[] };
+  fixedOpex: number;
+  variableOpex: number;
+  // Tab 3 — AR & AP
+  totalAR: number;
+  arOverdue30: number;
+  dso: number;
+  totalAP: number;
+  apOverdue: number;
+  dpo: number;
+  arAging: ArAgingBuckets;
+  dunningQueue: DunningItem[];
+  apBills: ApBillItem[];
+  // Tab 4 — BvA & Unit Economics
+  bvaDepartments: BvaDeptItem[];
+  unitEconomics: UnitEconomics;
+  clientConcentration: ClientConcentrationItem[];
+  // Tab 5 — Close & Tax
+  closeChecklist: CloseChecklistItem[];
+  statutorySchedule: StatutoryItem[];
+  sstReadiness: SstReadiness;
+  cp58Register: Cp58Item[];
+  whtQueue: WhtQueueItem[];
+  expenseClaimAudit: ExpenseClaimItem[];
+}
+
+// ─── Procurement Dashboard Types ───
+
+export type ProcurementRiskAlertType = 'safety_breach' | 'dead_stock' | 'lead_time_delay';
+
+export interface ProcurementRiskAlert {
+  type: ProcurementRiskAlertType;
+  level: 'warning' | 'critical';
+  message: string;
+}
+
+export interface InventoryValuationByCategory {
+  category: string;
+  value: number;
+}
+
+export interface ProcurementSpendTrendPoint {
+  month: string;
+  spend?: number;
+  budget?: number;
+}
+
+export interface SkuItem {
+  sku: string;
+  item_name: string;
+  category: string;
+  unit_cost: number;
+  current_qty: number;
+  safety_reorder_point: number;
+  location_bin: string;
+  status: 'In Stock' | 'Low Stock' | 'Out of Stock' | 'Overstocked';
+}
+
+export interface AbcParetoClass {
+  class_label: 'A' | 'B' | 'C';
+  sku_count: number;
+  sku_pct: number;
+  capital_value: number;
+  value_pct: number;
+}
+
+export interface ExecutiveApprovalRow {
+  po_number: string;
+  vendor: string;
+  order_date: string;
+  total_amount: number;
+  requester_dept: string;
+  threshold_myr: number;
+  approval_status: 'Pending Executive Approval' | 'Approved' | 'Rejected' | 'Clarification Requested';
+}
+
+export interface DeadSlowStockItem {
+  sku: string;
+  item_name: string;
+  category: string;
+  current_qty: number;
+  days_since_last_movement: number;
+  months_of_cover: number;
+  total_tied_value: number;
+  action_recommendation: '25% Promo Discount' | 'Vendor Clearance Return' | 'Bundle Promo with Top SKU' | 'Scrap / Write-off';
+}
+
+export interface WarehouseBinCapacity {
+  location: string;
+  used: number;
+  capacity: number;
+  utilisation_pct: number;
+}
+
+export interface StockMovementEntry {
+  timestamp: string;
+  sku: string;
+  item_name: string;
+  movement_type: '+ Receive' | '- Issue' | '~ Adjustment' | '! Damage' | '↺ Return';
+  quantity: number;
+  reference_id: string;
+  location_id: string;
+  actor: string;
+}
+
+export interface MovementTypeDistribution {
+  movement_type: string;
+  count: number;
+  quantity: number;
+}
+
+export interface PoPipelineStage {
+  stage: string;
+  count: number;
+  value: number;
+}
+
+export interface PurchaseOrderRow {
+  po_number: string;
+  vendor: string;
+  order_date: string;
+  expected_delivery: string;
+  total_amount: number;
+  fulfillment_status: 'Draft' | 'Pending Approval' | 'Issued to Vendor' | 'Partially Received' | 'Fully Received & Billed';
+  approval_status: 'Draft' | 'Pending Approval' | 'Approved' | 'Issued' | 'Cancelled';
+}
+
+export interface VendorScorecardRow {
+  vendor: string;
+  preferred_category: string;
+  ytd_spend: number;
+  on_time_delivery_rate: number;
+  quality_acceptance_rate: number;
+  sla_status: 'Top Tier' | 'Satisfactory' | 'Under Review';
+}
+
+export interface VendorSpendShare {
+  vendor: string;
+  spend: number;
+  spend_pct: number;
+}
+
+export interface AccountingBridgeStatus {
+  enabled: boolean;
+  provider: 'Bukku' | 'QBO' | 'Xero' | 'None';
+  connected: boolean;
+  last_sync?: string;
+}
+
+export interface PoBillConversionRow {
+  po_number: string;
+  vendor: string;
+  date_received: string;
+  total_amount: number;
+  sync_status: 'Ready to Sync' | 'Synced to Bukku' | 'Sync Error';
+}
+
+export interface GlValuationReconciliationRow {
+  account_code: string;
+  physical_stock_value: number;
+  gl_book_value: number;
+  variance: number;
+  variance_pct: number;
+  reconciliation_status: 'Reconciled' | 'Variance Flagged';
+}
+
+// Tab 6 — Purchase Requisitions (PR)
+export interface PurchaseRequisition {
+  pr_number: string;
+  requester: string;
+  department: string;
+  item_description: string;
+  category: string;
+  estimated_amount: number;
+  priority: 'Low' | 'Medium' | 'High' | 'Urgent';
+  status: 'Draft' | 'Pending Approval' | 'Approved' | 'Converted to RFQ/PO' | 'Rejected';
+  created_at: string;
+  justification?: string;
+}
+
+// Tab 7 — RFQ & Vendor Sourcing
+export interface RfqVendorQuote {
+  vendor: string;
+  unit_price: number;
+  total_amount: number;
+  lead_time_days: number;
+  payment_terms: string;
+  sla_status: string;
+  selected?: boolean;
+}
+
+export interface RfqComparison {
+  rfq_id: string;
+  pr_number: string;
+  item_description: string;
+  category: string;
+  target_qty: number;
+  budget_myr: number;
+  status: 'Open Sourcing' | 'Vendor Selected' | 'PO Issued';
+  quotes: RfqVendorQuote[];
+}
+
+// Tab 8 — Barcode Tagging & Scan Counter
+export interface BarcodeStockUnit {
+  barcode_id: string;
+  sku: string;
+  item_name: string;
+  serial_no: string;
+  location_bin: string;
+  status: 'In Store' | 'Issued' | 'Returned' | 'Quarantine';
+  assigned_to?: string;
+  last_scan_timestamp: string;
+}
+
+export interface BarcodeBatchLog {
+  batch_id: string;
+  action_type: 'GRN Receipt Tagging' | 'Stock Issuance (Scan OUT)' | 'Stock Return (Scan IN)';
+  reference_id: string;
+  actor: string;
+  timestamp: string;
+  total_items: number;
+  units: BarcodeStockUnit[];
+}
+
+// Tab 9 — 3-Way Match Verification
+export interface ThreeWayMatchItem {
+  match_id: string;
+  po_number: string;
+  grn_number: string;
+  invoice_number: string;
+  vendor: string;
+  po_amount: number;
+  grn_received_amount: number;
+  invoice_amount: number;
+  variance_amount: number;
+  variance_pct: number;
+  match_status: '100% Match' | 'Within Tolerance' | 'Variance Exceeded';
+  ap_approval_status: 'Pending AP Review' | 'Approved for Payment' | 'Flagged to Procurement';
+}
+
+export interface ProcurementDashboardStats {
+  // Tab 1 — Executive Procurement & Reorder Pulse
+  totalInventoryValuation: number;
+  totalActiveSkus: number;
+  lowStockAlerts: number;
+  deadSlowStockCapital: number;
+  openPoCount: number;
+  openPoValue: number;
+  procurementSpendMtd: number;
+  procurementSpendBudgetMtd: number;
+  riskAlerts: ProcurementRiskAlert[];
+  valuationByCategory: InventoryValuationByCategory[];
+  spendVsBudgetTrend: ProcurementSpendTrendPoint[];
+  // Tab 2 — Inventory Catalog & Dead/Slow Stock
+  skuCatalog: SkuItem[];
+  deadSlowStock: DeadSlowStockItem[];
+  warehouseBinCapacity: WarehouseBinCapacity[];
+  // Tab 3 — Stock Movement Audit Log
+  stockMovements: StockMovementEntry[];
+  movementTypeDistribution: MovementTypeDistribution[];
+  shrinkageFlagItems: string[];
+  // Tab 4 — Purchase Orders & Vendor Scorecard
+  poPipeline: PoPipelineStage[];
+  activePurchaseOrders: PurchaseOrderRow[];
+  executiveApprovalQueue: ExecutiveApprovalRow[];
+  vendorScorecard: VendorScorecardRow[];
+  vendorSpendConcentration: VendorSpendShare[];
+  // Tab 5 — Accounting Bridge & Valuation Reconciliation
+  accountingBridge: AccountingBridgeStatus;
+  poBillConversionQueue: PoBillConversionRow[];
+  glValuationReconciliation: GlValuationReconciliationRow[];
+  // Tab 6 — Purchase Requisitions (PR)
+  purchaseRequisitions?: PurchaseRequisition[];
+  // Tab 7 — RFQ & Vendor Sourcing
+  rfqComparisons?: RfqComparison[];
+  // Tab 8 — Barcode Tagging & Scan Counter
+  barcodeBatches?: BarcodeBatchLog[];
+  // Tab 9 — 3-Way Match Verification
+  threeWayMatches?: ThreeWayMatchItem[];
+}

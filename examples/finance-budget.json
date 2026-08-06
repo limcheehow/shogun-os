@@ -1,0 +1,235 @@
+{
+  "period": "2026",
+  "year": 2026,
+  "currency": "MYR",
+  "budget_baseline": {
+    "payroll_benefits": 34000.0,
+    "saas_cloud_infrastructure": 8500.0,
+    "marketing_customer_acquisition": 8000.0,
+    "facilities_admin": 2600.0
+  },
+  "lines": [
+    {
+      "account_code": "5100",
+      "account_name": "Payroll & Benefits",
+      "budget_amount": 34000.0,
+      "driver": "headcount x average salary",
+      "notes": "Monthly base payroll"
+    },
+    {
+      "account_code": "5200",
+      "account_name": "SaaS & Cloud Infrastructure",
+      "budget_amount": 8500.0,
+      "driver": "server nodes + API token consumption",
+      "notes": "AWS, OpenAI, cloud hosting"
+    },
+    {
+      "account_code": "5300",
+      "account_name": "Marketing & Customer Acquisition",
+      "budget_amount": 8000.0,
+      "driver": "monthly ad spend + campaign budget",
+      "notes": "Digital ad spend & events"
+    },
+    {
+      "account_code": "5400",
+      "account_name": "Facilities & Admin",
+      "budget_amount": 2600.0,
+      "driver": "office lease + utilities",
+      "notes": "Monthly office rent and utilities"
+    }
+  ],
+  "dashboard_mock": {
+    "totalLiquidCash": 1450000.0,
+    "netMonthlyBurn": 120000.0,
+    "cashRunwayMonths": 12.1,
+    "runwayStatus": "healthy",
+    "revenueMTD": 340000.0,
+    "revenueYTD": 3850000.0,
+    "grossMargin": 64.2,
+    "ebitdaMargin": 22.1,
+    "unpaidStatutory": 42500.0,
+    "riskAlerts": [
+      {
+        "type": "concentration",
+        "level": "warning",
+        "message": "Syarikat Tenaga Digital Sdn Bhd represents 24.5% of YTD revenue (Concentration Risk)"
+      },
+      {
+        "type": "overrun",
+        "level": "warning",
+        "message": "Marketing department is 14.2% over OPEX budget"
+      },
+      {
+        "type": "ar_overdue",
+        "level": "critical",
+        "message": "RM 65,000 in Accounts Receivable (AR) overdue >90 days"
+      }
+    ],
+    "revenueOpexTrend": [
+      {"month": "Aug", "revenue": 280000, "opex": 190000, "net": 90000},
+      {"month": "Sep", "revenue": 295000, "opex": 200000, "net": 95000},
+      {"month": "Oct", "revenue": 310000, "opex": 190000, "net": 120000},
+      {"month": "Nov", "revenue": 325000, "opex": 210000, "net": 115000},
+      {"month": "Dec", "revenue": 340000, "opex": 190000, "net": 150000},
+      {"month": "Jan", "revenue": 355000, "opex": 200000, "net": 155000},
+      {"month": "Feb", "revenue": 370000, "opex": 190000, "net": 180000},
+      {"month": "Mar", "revenue": 385000, "opex": 210000, "net": 175000},
+      {"month": "Apr", "revenue": 400000, "opex": 190000, "net": 210000},
+      {"month": "May", "revenue": 415000, "opex": 200000, "net": 215000},
+      {"month": "Jun", "revenue": 430000, "opex": 190000, "net": 240000},
+      {"month": "Jul", "revenue": 445000, "opex": 210000, "net": 235000}
+    ],
+    "cashFlowTrend": [
+      {"month": "Aug", "cash": 1100000, "netFlow": 25000},
+      {"month": "Sep", "cash": 1130000, "netFlow": 40000},
+      {"month": "Oct", "cash": 1160000, "netFlow": 25000},
+      {"month": "Nov", "cash": 1190000, "netFlow": 40000},
+      {"month": "Dec", "cash": 1220000, "netFlow": 25000},
+      {"month": "Jan", "cash": 1250000, "netFlow": 40000},
+      {"month": "Feb", "cash": 1280000, "netFlow": 25000},
+      {"month": "Mar", "cash": 1310000, "netFlow": 40000},
+      {"month": "Apr", "cash": 1340000, "netFlow": 25000},
+      {"month": "May", "cash": 1370000, "netFlow": 40000},
+      {"month": "Jun", "cash": 1400000, "netFlow": 25000},
+      {"month": "Jul", "cash": 1450000, "netFlow": 40000}
+    ],
+    "bankAccounts": [
+      {"name": "Maybank Islamic Berhad (Operating Account)", "currency": "MYR", "balance": 950000, "balance_myr": 950000, "last_reconciled": "2026-07-28"},
+      {"name": "CIMB Bank Berhad (Payroll Reserve)", "currency": "MYR", "balance": 320000, "balance_myr": 320000, "last_reconciled": "2026-07-28"},
+      {"name": "RHB Islamic Bank (USD Reserve)", "currency": "USD", "balance": 40000, "balance_myr": 180000, "last_reconciled": "2026-07-25"}
+    ],
+    "fxPositions": [
+      {"currency": "USD", "long": 45000, "short": 10000, "net": 35000, "bnm_fea_compliant": true},
+      {"currency": "SGD", "long": 20000, "short": 5000, "net": 15000, "bnm_fea_compliant": true},
+      {"currency": "EUR", "long": 8000, "short": 12000, "net": -4000, "bnm_fea_compliant": true}
+    ],
+    "fixedOpex": 85000.0,
+    "variableOpex": 35000.0,
+    "forecast13w": {
+      "expected": [
+        {"week": "Week 1", "inflow": 80000, "outflow": 60000, "net": 20000, "cumulative": 1470000},
+        {"week": "Week 2", "inflow": 90000, "outflow": 65000, "net": 25000, "cumulative": 1495000},
+        {"week": "Week 3", "inflow": 100000, "outflow": 60000, "net": 40000, "cumulative": 1535000},
+        {"week": "Week 4", "inflow": 80000, "outflow": 65000, "net": 15000, "cumulative": 1550000},
+        {"week": "Week 5", "inflow": 90000, "outflow": 60000, "net": 30000, "cumulative": 1580000},
+        {"week": "Week 6", "inflow": 100000, "outflow": 65000, "net": 35000, "cumulative": 1615000},
+        {"week": "Week 7", "inflow": 80000, "outflow": 60000, "net": 20000, "cumulative": 1635000},
+        {"week": "Week 8", "inflow": 90000, "outflow": 65000, "net": 25000, "cumulative": 1660000},
+        {"week": "Week 9", "inflow": 100000, "outflow": 60000, "net": 40000, "cumulative": 1700000},
+        {"week": "Week 10", "inflow": 80000, "outflow": 65000, "net": 15000, "cumulative": 1715000},
+        {"week": "Week 11", "inflow": 90000, "outflow": 60000, "net": 30000, "cumulative": 1745000},
+        {"week": "Week 12", "inflow": 100000, "outflow": 65000, "net": 35000, "cumulative": 1780000},
+        {"week": "Week 13", "inflow": 80000, "outflow": 60000, "net": 20000, "cumulative": 1800000}
+      ],
+      "conservative": [
+        {"week": "Week 1", "inflow": 60000, "outflow": 65000, "net": -5000, "cumulative": 1445000},
+        {"week": "Week 2", "inflow": 65000, "outflow": 65000, "net": 0, "cumulative": 1445000},
+        {"week": "Week 3", "inflow": 60000, "outflow": 65000, "net": -5000, "cumulative": 1440000},
+        {"week": "Week 4", "inflow": 65000, "outflow": 65000, "net": 0, "cumulative": 1440000},
+        {"week": "Week 5", "inflow": 60000, "outflow": 65000, "net": -5000, "cumulative": 1435000},
+        {"week": "Week 6", "inflow": 65000, "outflow": 65000, "net": 0, "cumulative": 1435000},
+        {"week": "Week 7", "inflow": 60000, "outflow": 65000, "net": -5000, "cumulative": 1430000},
+        {"week": "Week 8", "inflow": 65000, "outflow": 65000, "net": 0, "cumulative": 1430000},
+        {"week": "Week 9", "inflow": 60000, "outflow": 65000, "net": -5000, "cumulative": 1425000},
+        {"week": "Week 10", "inflow": 65000, "outflow": 65000, "net": 0, "cumulative": 1425000},
+        {"week": "Week 11", "inflow": 60000, "outflow": 65000, "net": -5000, "cumulative": 1420000},
+        {"week": "Week 12", "inflow": 65000, "outflow": 65000, "net": 0, "cumulative": 1420000},
+        {"week": "Week 13", "inflow": 60000, "outflow": 65000, "net": -5000, "cumulative": 1415000}
+      ],
+      "optimistic": [
+        {"week": "Week 1", "inflow": 100000, "outflow": 55000, "net": 45000, "cumulative": 1495000},
+        {"week": "Week 2", "inflow": 102000, "outflow": 55000, "net": 47000, "cumulative": 1542000},
+        {"week": "Week 3", "inflow": 104000, "outflow": 55000, "net": 49000, "cumulative": 1591000},
+        {"week": "Week 4", "inflow": 106000, "outflow": 55000, "net": 51000, "cumulative": 1642000},
+        {"week": "Week 5", "inflow": 108000, "outflow": 55000, "net": 53000, "cumulative": 1695000},
+        {"week": "Week 6", "inflow": 110000, "outflow": 55000, "net": 55000, "cumulative": 1750000},
+        {"week": "Week 7", "inflow": 112000, "outflow": 55000, "net": 57000, "cumulative": 1807000},
+        {"week": "Week 8", "inflow": 114000, "outflow": 55000, "net": 59000, "cumulative": 1866000},
+        {"week": "Week 9", "inflow": 116000, "outflow": 55000, "net": 61000, "cumulative": 1927000},
+        {"week": "Week 10", "inflow": 118000, "outflow": 55000, "net": 63000, "cumulative": 1990000},
+        {"week": "Week 11", "inflow": 120000, "outflow": 55000, "net": 65000, "cumulative": 2055000},
+        {"week": "Week 12", "inflow": 122000, "outflow": 55000, "net": 67000, "cumulative": 2122000},
+        {"week": "Week 13", "inflow": 124000, "outflow": 55000, "net": 69000, "cumulative": 2191000}
+      ]
+    },
+    "totalAR": 485000.0,
+    "arOverdue30": 145000.0,
+    "dso": 38.0,
+    "totalAP": 210000.0,
+    "apOverdue": 32000.0,
+    "dpo": 28.0,
+    "arAging": {
+      "bucket_0_30": 340000.0,
+      "bucket_31_60": 65000.0,
+      "bucket_61_90": 40000.0,
+      "bucket_90_plus": 40000.0
+    },
+    "dunningQueue": [
+      {"invoice_no": "INV-2026-089", "customer": "Syarikat Tenaga Digital Sdn Bhd", "due_date": "2026-06-15", "amount": 65000.0, "aging_days": 46, "bucket": "31-60", "dunning_status": "Reminder 1 Sent"},
+      {"invoice_no": "INV-2026-074", "customer": "Pembekal Logistik Nusantara Sdn Bhd", "due_date": "2026-05-30", "amount": 40000.0, "aging_days": 62, "bucket": "61-90", "dunning_status": "Escalated to Sales"},
+      {"invoice_no": "INV-2026-042", "customer": "Perusahaan Binaan Klang Sdn Bhd", "due_date": "2026-04-10", "amount": 40000.0, "aging_days": 112, "bucket": "90+", "dunning_status": "Legal Notice Required"},
+      {"invoice_no": "INV-2026-102", "customer": "Tekno Utama Holdings Sdn Bhd", "due_date": "2026-07-10", "amount": 25000.0, "aging_days": 21, "bucket": "0-30", "dunning_status": "Pending Initial Review"}
+    ],
+    "apBills": [
+      {"bill_no": "BILL-TM-901", "vendor": "Telekom Malaysia Berhad (Unifi Biz)", "due_date": "2026-08-05", "amount": 3500.0, "match_status": "Matched", "approval_status": "Approved"},
+      {"bill_no": "BILL-TNB-884", "vendor": "Tenaga Nasional Berhad (TNB Utility)", "due_date": "2026-08-01", "amount": 12500.0, "match_status": "Matched", "approval_status": "Approved"},
+      {"bill_no": "BILL-SEWA-872", "vendor": "Perbadanan Bangunan Menara Maybank", "due_date": "2026-07-20", "amount": 45000.0, "match_status": "Matched", "approval_status": "Paid"},
+      {"bill_no": "BILL-KERTAS-860", "vendor": "Percetakan Merdeka Enterprise", "due_date": "2026-07-15", "amount": 8400.0, "match_status": "PO Mismatch", "approval_status": "On Hold"}
+    ],
+    "bvaDepartments": [
+      {"department": "Sales", "budget_ytd": 600000.0, "actual_ytd": 580000.0, "variance": -20000.0, "variance_pct": -3.3},
+      {"department": "Engineering", "budget_ytd": 950000.0, "actual_ytd": 940000.0, "variance": -10000.0, "variance_pct": -1.1},
+      {"department": "Marketing", "budget_ytd": 350000.0, "actual_ytd": 399700.0, "variance": 49700.0, "variance_pct": 14.2},
+      {"department": "HR", "budget_ytd": 200000.0, "actual_ytd": 195000.0, "variance": -5000.0, "variance_pct": -2.5},
+      {"department": "Finance", "budget_ytd": 180000.0, "actual_ytd": 178000.0, "variance": -2000.0, "variance_pct": -1.1},
+      {"department": "Admin", "budget_ytd": 120000.0, "actual_ytd": 122000.0, "variance": 2000.0, "variance_pct": 1.7}
+    ],
+    "unitEconomics": {
+      "gross_margin_pct": 64.2,
+      "contribution_margin_pct": 48.5,
+      "cac": 4200.0,
+      "ltv": 24000.0,
+      "ltv_cac_ratio": 5.7
+    },
+    "clientConcentration": [
+      {"name": "Syarikat Tenaga Digital Sdn Bhd", "revenue_ytd": 943250.0, "revenue_pct": 24.5},
+      {"name": "Perusahaan Tekno Utama Sdn Bhd", "revenue_ytd": 700700.0, "revenue_pct": 18.2},
+      {"name": "Pembekal Logistik Nusantara Sdn Bhd", "revenue_ytd": 539000.0, "revenue_pct": 14.0},
+      {"name": "Konsortium Binaan Klang Sdn Bhd", "revenue_ytd": 442750.0, "revenue_pct": 11.5},
+      {"name": "Kumpulan Runcit Harapan Sdn Bhd", "revenue_ytd": 315700.0, "revenue_pct": 8.2}
+    ],
+    "closeChecklist": [
+      {"id": "bank_rec", "label": "Bank Payment Reconciliation", "completed": true},
+      {"id": "payroll", "label": "Payroll & Statutory Accounting Posted", "completed": true},
+      {"id": "gl_journal", "label": "GL Journal Prep & Accruals Posted", "completed": true},
+      {"id": "expense_audit", "label": "Expense Claim Audit Completed", "completed": false},
+      {"id": "fin_statements", "label": "Financial Statements Drafted", "completed": false}
+    ],
+    "statutorySchedule": [
+      {"name": "EPF (KWSP) Remittance", "due_date": "2026-08-15", "status": "Submitted", "amount": 28400.0},
+      {"name": "SOCSO (PERKESO) Remittance", "due_date": "2026-08-15", "status": "Submitted", "amount": 3200.0},
+      {"name": "EIS (SIP) Remittance", "due_date": "2026-08-15", "status": "Submitted", "amount": 650.0},
+      {"name": "LHDN PCB Tax Deduction", "due_date": "2026-08-15", "status": "Pending", "amount": 10250.0}
+    ],
+    "sstReadiness": {
+      "draft_status": "Draft In Progress",
+      "taxable_sales": 520000.0,
+      "sst_liability": 31200.0
+    },
+    "cp58Register": [
+      {"contractor_name": "Reka Bentuk Merdeka Studio Enterprise", "ic_or_reg": "SSM: 202103988102", "total_paid_ytd": 18500.0, "threshold_exceeded": true},
+      {"contractor_name": "Perunding Awan KL Enterprise", "ic_or_reg": "SSM: 202201992819", "total_paid_ytd": 12000.0, "threshold_exceeded": true},
+      {"contractor_name": "Logistik Pantai Timur Services", "ic_or_reg": "SSM: 202302910283", "total_paid_ytd": 4200.0, "threshold_exceeded": false}
+    ],
+    "whtQueue": [
+      {"vendor": "Cloud Infrastructure International Inc (US)", "country": "United States", "payment_amount": 18000.0, "wht_rate": 10.0, "wht_amount": 1800.0, "section": "Section 109B"},
+      {"vendor": "Tech Consulting Singapore Pte Ltd (SG)", "country": "Singapore", "payment_amount": 11250.0, "wht_rate": 10.0, "wht_amount": 1125.0, "section": "Section 107A"}
+    ],
+    "expenseClaimAudit": [
+      {"employee": "Shahrul Nizam", "claim_date": "2026-07-26", "amount": 850.0, "category": "Travel & Outstation Fuel", "receipt_attached": true, "sst_compliant": true, "policy_exceeded": false, "audit_status": "Approved"},
+      {"employee": "Farhad Faisal", "claim_date": "2026-07-24", "amount": 1420.0, "category": "Client Entertainment", "receipt_attached": true, "sst_compliant": false, "policy_exceeded": true, "audit_status": "Flagged"},
+      {"employee": "Nazrul Shah", "claim_date": "2026-07-20", "amount": 310.0, "category": "Office Supplies", "receipt_attached": true, "sst_compliant": true, "policy_exceeded": false, "audit_status": "Approved"},
+      {"employee": "Muhammad Izzat", "claim_date": "2026-07-18", "amount": 2200.0, "category": "Computer Hardware", "receipt_attached": false, "sst_compliant": false, "policy_exceeded": true, "audit_status": "Rejected"}
+    ]
+  }
+}

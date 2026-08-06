@@ -1,0 +1,667 @@
+{
+  "currency": "MYR",
+  "dashboard_mock": {
+    "totalInventoryValuation": 1850000.0,
+    "totalActiveSkus": 1248,
+    "lowStockAlerts": 7,
+    "deadSlowStockCapital": 285000.0,
+    "openPoCount": 14,
+    "openPoValue": 412000.0,
+    "procurementSpendMtd": 348000.0,
+    "procurementSpendBudgetMtd": 380000.0,
+    "riskAlerts": [
+      {
+        "type": "safety_breach",
+        "level": "critical",
+        "message": "High-velocity SKU IT-LP-15 (Dell Latitude 5540) fell below safety stock (4 vs reorder 12) — draft PO urgently"
+      },
+      {
+        "type": "dead_stock",
+        "level": "warning",
+        "message": "Capital locked in slow-moving stock (RM 285K) is 15.4% of total inventory valuation — exceeds 15% threshold"
+      },
+      {
+        "type": "lead_time_delay",
+        "level": "warning",
+        "message": "PO-2026-0214 (Vortex Supplies) is 5 days past expected delivery — vendor lead time SLA breach"
+      }
+    ],
+    "valuationByCategory": [
+      {
+        "category": "IT Hardware",
+        "value": 780000.0
+      },
+      {
+        "category": "Office Supplies",
+        "value": 215000.0
+      },
+      {
+        "category": "Consumables",
+        "value": 165000.0
+      },
+      {
+        "category": "Spare Parts",
+        "value": 490000.0
+      },
+      {
+        "category": "Furniture",
+        "value": 200000.0
+      }
+    ],
+    "spendVsBudgetTrend": [
+      {
+        "month": "2025-09",
+        "spend": 312000.0,
+        "budget": 340000.0
+      },
+      {
+        "month": "2025-10",
+        "spend": 358000.0,
+        "budget": 360000.0
+      },
+      {
+        "month": "2025-11",
+        "spend": 395000.0,
+        "budget": 360000.0
+      },
+      {
+        "month": "2025-12",
+        "spend": 421000.0,
+        "budget": 400000.0
+      },
+      {
+        "month": "2026-01",
+        "spend": 332000.0,
+        "budget": 360000.0
+      },
+      {
+        "month": "2026-02",
+        "spend": 305000.0,
+        "budget": 340000.0
+      },
+      {
+        "month": "2026-03",
+        "spend": 372000.0,
+        "budget": 380000.0
+      },
+      {
+        "month": "2026-04",
+        "spend": 341000.0,
+        "budget": 380000.0
+      },
+      {
+        "month": "2026-05",
+        "spend": 365000.0,
+        "budget": 380000.0
+      },
+      {
+        "month": "2026-06",
+        "spend": 388000.0,
+        "budget": 380000.0
+      },
+      {
+        "month": "2026-07",
+        "spend": 352000.0,
+        "budget": 380000.0
+      },
+      {
+        "month": "2026-08",
+        "spend": 348000.0,
+        "budget": 380000.0
+      }
+    ],
+    "skuCatalog": [
+      {
+        "sku": "IT-LP-15",
+        "item_name": "Dell Latitude 5540 i7",
+        "category": "IT Hardware",
+        "unit_cost": 4200.0,
+        "current_qty": 4,
+        "safety_reorder_point": 12,
+        "location_bin": "LOC-MAIN-A1",
+        "status": "Low Stock"
+      },
+      {
+        "sku": "IT-MN-22",
+        "item_name": "LG UltraFine 27\" Monitor",
+        "category": "IT Hardware",
+        "unit_cost": 1450.0,
+        "current_qty": 38,
+        "safety_reorder_point": 10,
+        "location_bin": "LOC-MAIN-A2",
+        "status": "In Stock"
+      },
+      {
+        "sku": "OF-PA-08",
+        "item_name": "Papermate FlexGrip Pen (Box)",
+        "category": "Office Supplies",
+        "unit_cost": 42.0,
+        "current_qty": 0,
+        "safety_reorder_point": 25,
+        "location_bin": "LOC-OFF-B1",
+        "status": "Out of Stock"
+      },
+      {
+        "sku": "OF-PR-03",
+        "item_name": "A4 80gsm Ream",
+        "category": "Office Supplies",
+        "unit_cost": 12.5,
+        "current_qty": 640,
+        "safety_reorder_point": 100,
+        "location_bin": "LOC-OFF-B2",
+        "status": "In Stock"
+      },
+      {
+        "sku": "CS-TK-19",
+        "item_name": "Toner HP 134A Black",
+        "category": "Consumables",
+        "unit_cost": 320.0,
+        "current_qty": 8,
+        "safety_reorder_point": 15,
+        "location_bin": "LOC-MAIN-C3",
+        "status": "Low Stock"
+      },
+      {
+        "sku": "SP-HD-44",
+        "item_name": "HDD 4TB WD Red",
+        "category": "Spare Parts",
+        "unit_cost": 680.0,
+        "current_qty": 52,
+        "safety_reorder_point": 8,
+        "location_bin": "LOC-EDGE-D1",
+        "status": "Overstocked"
+      },
+      {
+        "sku": "SP-FN-60",
+        "item_name": "UPS Battery 12V 7Ah",
+        "category": "Spare Parts",
+        "unit_cost": 95.0,
+        "current_qty": 18,
+        "safety_reorder_point": 20,
+        "location_bin": "LOC-MAIN-E2",
+        "status": "Low Stock"
+      },
+      {
+        "sku": "FU-CH-77",
+        "item_name": "Ergonomic Chair Elite",
+        "category": "Furniture",
+        "unit_cost": 890.0,
+        "current_qty": 24,
+        "safety_reorder_point": 6,
+        "location_bin": "LOC-MAIN-F1",
+        "status": "In Stock"
+      },
+      {
+        "sku": "IT-KB-31",
+        "item_name": "Logitech MX Keys S",
+        "category": "IT Hardware",
+        "unit_cost": 380.0,
+        "current_qty": 45,
+        "safety_reorder_point": 12,
+        "location_bin": "LOC-MAIN-A3",
+        "status": "In Stock"
+      },
+      {
+        "sku": "CS-CL-90",
+        "item_name": "Cleaning Wipes 100ct",
+        "category": "Consumables",
+        "unit_cost": 18.0,
+        "current_qty": 0,
+        "safety_reorder_point": 40,
+        "location_bin": "LOC-OFF-B3",
+        "status": "Out of Stock"
+      }
+    ],
+    "deadSlowStock": [
+      {
+        "sku": "SP-HD-44",
+        "item_name": "HDD 4TB WD Red",
+        "category": "Spare Parts",
+        "current_qty": 52,
+        "days_since_last_movement": 214,
+        "months_of_cover": 13.2,
+        "total_tied_value": 35360.0,
+        "action_recommendation": "Bundle Promo with Top SKU"
+      },
+      {
+        "sku": "IT-KB-31",
+        "item_name": "Logitech MX Keys S (Legacy Box)",
+        "category": "IT Hardware",
+        "current_qty": 38,
+        "days_since_last_movement": 198,
+        "months_of_cover": 9.5,
+        "total_tied_value": 14440.0,
+        "action_recommendation": "25% Promo Discount"
+      },
+      {
+        "sku": "FU-CH-77",
+        "item_name": "Ergonomic Chair Elite (Old Stock)",
+        "category": "Furniture",
+        "current_qty": 14,
+        "days_since_last_movement": 245,
+        "months_of_cover": 14.8,
+        "total_tied_value": 12460.0,
+        "action_recommendation": "Vendor Clearance Return"
+      },
+      {
+        "sku": "SP-FN-60",
+        "item_name": "UPS Battery 12V 7Ah (Discontinued)",
+        "category": "Spare Parts",
+        "current_qty": 60,
+        "days_since_last_movement": 312,
+        "months_of_cover": 24.0,
+        "total_tied_value": 5700.0,
+        "action_recommendation": "Scrap / Write-off"
+      },
+      {
+        "sku": "OF-PR-03",
+        "item_name": "A4 80gsm Ream (Surplus)",
+        "category": "Office Supplies",
+        "current_qty": 1500,
+        "days_since_last_movement": 187,
+        "months_of_cover": 8.4,
+        "total_tied_value": 18750.0,
+        "action_recommendation": "25% Promo Discount"
+      }
+    ],
+    "warehouseBinCapacity": [
+      {
+        "location": "Main Warehouse (LOC-MAIN)",
+        "used": 8420,
+        "capacity": 10000,
+        "utilisation_pct": 84.2
+      },
+      {
+        "location": "Office Store Room (LOC-OFF)",
+        "used": 1850,
+        "capacity": 3000,
+        "utilisation_pct": 61.7
+      },
+      {
+        "location": "Edge Deployment Bins (LOC-EDGE)",
+        "used": 980,
+        "capacity": 1200,
+        "utilisation_pct": 81.7
+      },
+      {
+        "location": "Spare Parts Bay (LOC-MAIN-E)",
+        "used": 2150,
+        "capacity": 2500,
+        "utilisation_pct": 86.0
+      }
+    ],
+    "stockMovements": [
+      {
+        "timestamp": "2026-08-03 09:14",
+        "sku": "IT-LP-15",
+        "item_name": "Dell Latitude 5540 i7",
+        "movement_type": "+ Receive",
+        "quantity": 24,
+        "reference_id": "PO-2026-0218",
+        "location_id": "LOC-MAIN-A1",
+        "actor": "Warehouse Clerk (GRN)"
+      },
+      {
+        "timestamp": "2026-08-03 08:42",
+        "sku": "OF-PR-03",
+        "item_name": "A4 80gsm Ream",
+        "movement_type": "- Issue",
+        "quantity": 60,
+        "reference_id": "REQ-2026-0845",
+        "location_id": "LOC-OFF-B2",
+        "actor": "Admin (IT Dept)"
+      },
+      {
+        "timestamp": "2026-08-02 16:30",
+        "sku": "CS-TK-19",
+        "item_name": "Toner HP 134A Black",
+        "movement_type": "~ Adjustment",
+        "quantity": 3,
+        "reference_id": "ADJ-2026-0091",
+        "location_id": "LOC-MAIN-C3",
+        "actor": "Inventory Officer"
+      },
+      {
+        "timestamp": "2026-08-02 14:05",
+        "sku": "SP-FN-60",
+        "item_name": "UPS Battery 12V 7Ah",
+        "movement_type": "! Damage",
+        "quantity": 2,
+        "reference_id": "DMG-2026-0017",
+        "location_id": "LOC-MAIN-E2",
+        "actor": "Warehouse Clerk"
+      },
+      {
+        "timestamp": "2026-08-02 11:20",
+        "sku": "IT-MN-22",
+        "item_name": "LG UltraFine 27\" Monitor",
+        "movement_type": "+ Receive",
+        "quantity": 12,
+        "reference_id": "PO-2026-0214",
+        "location_id": "LOC-MAIN-A2",
+        "actor": "Warehouse Clerk (GRN)"
+      },
+      {
+        "timestamp": "2026-08-01 17:45",
+        "sku": "IT-LP-15",
+        "item_name": "Dell Latitude 5540 i7",
+        "movement_type": "↺ Return",
+        "quantity": 1,
+        "reference_id": "RTV-2026-0008",
+        "location_id": "LOC-MAIN-A1",
+        "actor": "Sales (RMA)"
+      },
+      {
+        "timestamp": "2026-08-01 10:12",
+        "sku": "OF-PA-08",
+        "item_name": "Papermate FlexGrip Pen (Box)",
+        "movement_type": "- Issue",
+        "quantity": 15,
+        "reference_id": "REQ-2026-0839",
+        "location_id": "LOC-OFF-B1",
+        "actor": "Admin (HR Dept)"
+      },
+      {
+        "timestamp": "2026-07-31 15:50",
+        "sku": "CS-CL-90",
+        "item_name": "Cleaning Wipes 100ct",
+        "movement_type": "! Damage",
+        "quantity": 8,
+        "reference_id": "DMG-2026-0016",
+        "location_id": "LOC-OFF-B3",
+        "actor": "Facilities"
+      }
+    ],
+    "movementTypeDistribution": [
+      {
+        "movement_type": "Receive",
+        "count": 42,
+        "quantity": 1280
+      },
+      {
+        "movement_type": "Issue",
+        "count": 118,
+        "quantity": 940
+      },
+      {
+        "movement_type": "Adjustment",
+        "count": 24,
+        "quantity": 86
+      },
+      {
+        "movement_type": "Damage",
+        "count": 11,
+        "quantity": 38
+      },
+      {
+        "movement_type": "Return",
+        "count": 6,
+        "quantity": 14
+      }
+    ],
+    "shrinkageFlagItems": [
+      "SP-FN-60",
+      "CS-CL-90"
+    ],
+    "poPipeline": [
+      {
+        "stage": "Draft",
+        "count": 3,
+        "value": 42000.0
+      },
+      {
+        "stage": "Pending Approval",
+        "count": 2,
+        "value": 28500.0
+      },
+      {
+        "stage": "Issued to Vendor",
+        "count": 5,
+        "value": 184000.0
+      },
+      {
+        "stage": "Partially Received",
+        "count": 3,
+        "value": 112000.0
+      },
+      {
+        "stage": "Fully Received & Billed",
+        "count": 1,
+        "value": 45500.0
+      }
+    ],
+    "activePurchaseOrders": [
+      {
+        "po_number": "PO-2026-0218",
+        "vendor": "NexTech Distribution Sdn Bhd",
+        "order_date": "2026-08-01",
+        "expected_delivery": "2026-08-10",
+        "total_amount": 52400.0,
+        "fulfillment_status": "Partially Received",
+        "approval_status": "Issued"
+      },
+      {
+        "po_number": "PO-2026-0217",
+        "vendor": "Vortex Supplies Sdn Bhd",
+        "order_date": "2026-07-28",
+        "expected_delivery": "2026-08-05",
+        "total_amount": 18750.0,
+        "fulfillment_status": "Issued to Vendor",
+        "approval_status": "Issued"
+      },
+      {
+        "po_number": "PO-2026-0216",
+        "vendor": "OfficePoint Bhd",
+        "order_date": "2026-07-26",
+        "expected_delivery": "2026-08-02",
+        "total_amount": 9800.0,
+        "fulfillment_status": "Fully Received & Billed",
+        "approval_status": "Issued"
+      },
+      {
+        "po_number": "PO-2026-0215",
+        "vendor": "NexTech Distribution Sdn Bhd",
+        "order_date": "2026-07-25",
+        "expected_delivery": "2026-08-12",
+        "total_amount": 142000.0,
+        "fulfillment_status": "Issued to Vendor",
+        "approval_status": "Issued"
+      },
+      {
+        "po_number": "PO-2026-0214",
+        "vendor": "Vortex Supplies Sdn Bhd",
+        "order_date": "2026-07-20",
+        "expected_delivery": "2026-07-30",
+        "total_amount": 38600.0,
+        "fulfillment_status": "Partially Received",
+        "approval_status": "Issued"
+      },
+      {
+        "po_number": "PO-2026-0213",
+        "vendor": "Aurora Furnishings",
+        "order_date": "2026-07-19",
+        "expected_delivery": "2026-08-15",
+        "total_amount": 21400.0,
+        "fulfillment_status": "Pending Approval",
+        "approval_status": "Pending Approval"
+      },
+      {
+        "po_number": "PO-2026-0212",
+        "vendor": "GreenClean Supplies",
+        "order_date": "2026-07-18",
+        "expected_delivery": "2026-08-08",
+        "total_amount": 6450.0,
+        "fulfillment_status": "Draft",
+        "approval_status": "Draft"
+      },
+      {
+        "po_number": "PO-2026-0211",
+        "vendor": "NexTech Distribution Sdn Bhd",
+        "order_date": "2026-07-15",
+        "expected_delivery": "2026-08-18",
+        "total_amount": 89600.0,
+        "fulfillment_status": "Partially Received",
+        "approval_status": "Issued"
+      },
+      {
+        "po_number": "PO-2026-0210",
+        "vendor": "Aurora Furnishings",
+        "order_date": "2026-07-12",
+        "expected_delivery": "2026-08-22",
+        "total_amount": 45500.0,
+        "fulfillment_status": "Draft",
+        "approval_status": "Draft"
+      }
+    ],
+    "executiveApprovalQueue": [
+      { "po_number": "PO-2026-0213", "vendor": "Aurora Furnishings Sdn Bhd", "order_date": "2026-08-04", "total_amount": 21400.0, "requester_dept": "Operations / Facilities", "threshold_myr": 10000, "approval_status": "Pending Executive Approval" },
+      { "po_number": "PO-2026-0218", "vendor": "NexTech Distribution Sdn Bhd", "order_date": "2026-08-03", "total_amount": 38750.0, "requester_dept": "IT / Infrastructure", "threshold_myr": 10000, "approval_status": "Pending Executive Approval" },
+      { "po_number": "PO-2026-0207", "vendor": "Greenway Office Supply", "order_date": "2026-07-29", "total_amount": 16200.0, "requester_dept": "Procurement", "threshold_myr": 10000, "approval_status": "Approved" },
+      { "po_number": "PO-2026-0199", "vendor": "Pacific Hardware Co", "order_date": "2026-07-26", "total_amount": 12480.0, "requester_dept": "Operations / Facilities", "threshold_myr": 10000, "approval_status": "Clarification Requested" }
+    ],
+    "vendorScorecard": [
+      {
+        "vendor": "NexTech Distribution Sdn Bhd",
+        "preferred_category": "IT Hardware",
+        "ytd_spend": 486000.0,
+        "on_time_delivery_rate": 94.0,
+        "quality_acceptance_rate": 98.0,
+        "sla_status": "Top Tier"
+      },
+      {
+        "vendor": "Vortex Supplies Sdn Bhd",
+        "preferred_category": "Spare Parts",
+        "ytd_spend": 215000.0,
+        "on_time_delivery_rate": 78.0,
+        "quality_acceptance_rate": 92.0,
+        "sla_status": "Under Review"
+      },
+      {
+        "vendor": "OfficePoint Bhd",
+        "preferred_category": "Office Supplies",
+        "ytd_spend": 92000.0,
+        "on_time_delivery_rate": 91.0,
+        "quality_acceptance_rate": 96.0,
+        "sla_status": "Satisfactory"
+      },
+      {
+        "vendor": "Aurora Furnishings",
+        "preferred_category": "Furniture",
+        "ytd_spend": 67500.0,
+        "on_time_delivery_rate": 88.0,
+        "quality_acceptance_rate": 95.0,
+        "sla_status": "Satisfactory"
+      },
+      {
+        "vendor": "GreenClean Supplies",
+        "preferred_category": "Consumables",
+        "ytd_spend": 18400.0,
+        "on_time_delivery_rate": 96.0,
+        "quality_acceptance_rate": 99.0,
+        "sla_status": "Top Tier"
+      },
+      {
+        "vendor": "Pacific Hardware Co",
+        "preferred_category": "Hardware & Tools",
+        "ytd_spend": 34200.0,
+        "on_time_delivery_rate": 85.0,
+        "quality_acceptance_rate": 91.0,
+        "sla_status": "Satisfactory"
+      }
+    ],
+    "vendorSpendConcentration": [
+      {
+        "vendor": "NexTech Distribution Sdn Bhd",
+        "spend": 486000.0,
+        "spend_pct": 52.8
+      },
+      {
+        "vendor": "Vortex Supplies Sdn Bhd",
+        "spend": 215000.0,
+        "spend_pct": 23.4
+      },
+      {
+        "vendor": "OfficePoint Bhd",
+        "spend": 92000.0,
+        "spend_pct": 10.0
+      },
+      {
+        "vendor": "Aurora Furnishings",
+        "spend": 67500.0,
+        "spend_pct": 7.3
+      },
+      {
+        "vendor": "GreenClean Supplies",
+        "spend": 18400.0,
+        "spend_pct": 2.0
+      },
+      {
+        "vendor": "Pacific Hardware Co",
+        "spend": 34200.0,
+        "spend_pct": 3.7
+      }
+    ],
+    "accountingBridge": {
+      "enabled": true,
+      "provider": "Bukku",
+      "connected": true,
+      "last_sync": "2026-08-03 06:00"
+    },
+    "poBillConversionQueue": [
+      {
+        "po_number": "PO-2026-0216",
+        "vendor": "OfficePoint Bhd",
+        "date_received": "2026-08-02",
+        "total_amount": 9800.0,
+        "sync_status": "Synced to Bukku"
+      },
+      {
+        "po_number": "PO-2026-0214",
+        "vendor": "Vortex Supplies Sdn Bhd",
+        "date_received": "2026-08-01",
+        "total_amount": 38600.0,
+        "sync_status": "Ready to Sync"
+      },
+      {
+        "po_number": "PO-2026-0211",
+        "vendor": "NexTech Distribution Sdn Bhd",
+        "date_received": "2026-07-29",
+        "total_amount": 89600.0,
+        "sync_status": "Sync Error"
+      },
+      {
+        "po_number": "PO-2026-0209",
+        "vendor": "Aurora Furnishings",
+        "date_received": "2026-07-26",
+        "total_amount": 32200.0,
+        "sync_status": "Ready to Sync"
+      }
+    ],
+    "glValuationReconciliation": [
+      {
+        "account_code": "1400 - Inventory (Raw)",
+        "physical_stock_value": 1850000.0,
+        "gl_book_value": 1848200.0,
+        "variance": 1800.0,
+        "variance_pct": 0.1,
+        "reconciliation_status": "Reconciled"
+      },
+      {
+        "account_code": "1401 - Inventory (WIP)",
+        "physical_stock_value": 0.0,
+        "gl_book_value": 0.0,
+        "variance": 0.0,
+        "variance_pct": 0.0,
+        "reconciliation_status": "Reconciled"
+      },
+      {
+        "account_code": "1402 - Inventory (Finished Goods)",
+        "physical_stock_value": 0.0,
+        "gl_book_value": 0.0,
+        "variance": 0.0,
+        "variance_pct": 0.0,
+        "reconciliation_status": "Reconciled"
+      }
+    ]
+  }
+}

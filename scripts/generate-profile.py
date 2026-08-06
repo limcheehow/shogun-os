@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import sys
+if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 """
 Shogun OS — Profile Generator
 ──────────────────────────────
@@ -113,16 +118,55 @@ PROFILE_META = {
     "finance": {
         "description": "Finance profile with budget tracking — Koku (石)",
         "template": "base-config.yaml",
-        "skills": ["company-workflow", "accounting-provider"],
-        "cron_templates": [],
+        "skills": [
+            "company-workflow",
+            "accounting-provider",
+            "department-scrum",
+            "ar-credit-control",
+            "ap-vendor-management",
+            "malaysia-contractor-cp58-wht",
+            "payroll-statutory-accounting",
+            "expense-claim-audit",
+            "bank-payment-reconciliation",
+            "general-ledger-journal-prep",
+            "period-end-close-checklist",
+            "financial-statement-prep",
+            "budget-financial-modeling",
+            "bva-variance-analysis",
+            "cash-runway-forecasting",
+            "unit-economics-margin-analysis",
+            "revenue-concentration-audit",
+            "cfo-executive-reporting",
+            "mfrs15-revenue-recognition",
+            "tax-sst-compliance",
+            "internal-control-governance",
+            "isa530-audit-pbc-support",
+            "treasury-fx-facility-mgmt",
+            "weekly-pulse-report",
+            "monthly-board-report",
+        ],
+        "cron_templates": ["cron-9am", "cron-11am", "cron-5pm"],
         "gbrain_source": "finance",
         "soul_snippet": "finance-soul",
     },
     "procurement": {
         "description": "Procurement profile with contract lifecycle — Kura (蔵)",
         "template": "base-config.yaml",
-        "skills": ["company-workflow", "procurement-provider"],
-        "cron_templates": [],
+        "skills": [
+            "company-workflow",
+            "procurement-provider",
+            "department-scrum",
+            "inventory-item-management",
+            "stock-movement-audit",
+            "location-binning",
+            "reorder-alert-watchdog",
+            "dead-slow-stock-detector",
+            "weekly-inventory-valuation",
+            "inventory-valuation-report",
+            "reorder-alert-report",
+            "accounting-bridge-sync",
+        ],
+        "cron_templates": ["cron-9am", "cron-11am", "cron-5pm"],
         "gbrain_source": "procurement",
         "soul_snippet": "procurement-soul",
     },
@@ -589,7 +633,7 @@ You are the production agent. You run the factory floor. Every work order, every
 - You do not inspect quality -- flag defects to quality.
 
 ## Your Sources
-You write to \`production/\` source. You read from \`production/\` + \`shared/\`.
+You write to `production/` source. You read from `production/` + `shared/`.
 """,
     "quality-soul": """# Quality Profile -- Kensa (Kensa)
 
@@ -609,7 +653,7 @@ You are the quality agent. You guard the standard. Every batch, every defect, ev
 - You do not redesign processes -- flag systemic issues to engineering.
 
 ## Your Sources
-You write to \`quality/\` source. You read from \`quality/\` + \`production/\` + \`shared/\`.
+You write to `quality/` source. You read from `quality/` + `production/` + `shared/`.
 """,
     "maintenance-soul": """# Maintenance Profile -- Shuri (Shuri)
 
@@ -629,7 +673,7 @@ You are the maintenance agent. You keep the factory running. Every breakdown, ev
 - You do not procure spare parts directly -- flag shortages to procurement.
 
 ## Your Sources
-You write to \`maintenance/\` source. You read from \`maintenance/\` + \`production/\` + \`shared/\`.
+You write to `maintenance/` source. You read from `maintenance/` + `production/` + `shared/`.
 """,
     "warehouse-soul": """# Warehouse Profile -- Soko (Soko)
 
@@ -650,7 +694,7 @@ You are the warehouse agent. You know what is where and how much. Every pallet, 
 - You do not inspect quality -- quarantine items for quality team.
 
 ## Your Sources
-You write to \`warehouse/\` source. You read from \`warehouse/\` + \`production/\` + \`shared/\`.
+You write to `warehouse/` source. You read from `warehouse/` + `production/` + `shared/`.
 """,
     "hse-soul": """# HSE Profile -- Anzen (Anzen)
 
@@ -670,7 +714,7 @@ You are the HSE agent. You protect people and the environment. Every near-miss, 
 - You do not modify engineering controls.
 
 ## Your Sources
-You write to \`hse/\` source. You read from \`hse/\` + \`shared/\`.
+You write to `hse/` source. You read from `hse/` + `shared/`.
 """,
     "stores-soul": """# Stores Profile -- Tenpo (Tenpo)
 
@@ -686,7 +730,7 @@ You are the stores agent. You run the retail floor. Every register, every custom
 - **Inventory on Floor:** Stock levels on sales floor, backroom transfers, out-of-stock alerts.
 
 ## Your Sources
-You write to \`stores/\` source. You read from \`stores/\` + \`shared/\`.
+You write to `stores/` source. You read from `stores/` + `shared/`.
 """,
     "merchandising-soul": """# Merchandising Profile -- Shohin (Shohin)
 
@@ -702,7 +746,7 @@ You are the merchandising agent. You decide what sells and at what margin. Every
 - **Private Label:** Own-brand development, supplier sourcing, margin analysis.
 
 ## Your Sources
-You write to \`merchandising/\` source. You read from \`merchandising/\` + \`stores/\` + \`shared/\`.
+You write to `merchandising/` source. You read from `merchandising/` + `stores/` + `shared/`.
 """,
     "ecommerce-soul": """# E-commerce Profile -- Denshi (Denshi)
 
@@ -718,7 +762,7 @@ You are the e-commerce agent. You run the online store. Shopee, Lazada, TikTok S
 - **Campaign Management:** Platform promotion calendar, voucher setup, flash deal coordination.
 
 ## Your Sources
-You write to \`ecommerce/\` source. You read from \`ecommerce/\` + \`stores/\` + \`shared/\`.
+You write to `ecommerce/` source. You read from `ecommerce/` + `stores/` + `shared/`.
 """,
     "crm-retail-soul": """# CRM / Loyalty Profile -- Kokyaku (Kokyaku)
 
@@ -734,7 +778,7 @@ You are the customer agent. You know every customer, their preferences, their pu
 - **Customer 360:** Unified customer view across online and offline channels.
 
 ## Your Sources
-You write to \`crm-retail/\` source. You read from \`crm-retail/\` + \`ecommerce/\` + \`stores/\` + \`shared/\`.
+You write to `crm-retail/` source. You read from `crm-retail/` + `ecommerce/` + `stores/` + `shared/`.
 """,
     "supplychain-soul": """# Supply Chain Profile -- Ryuts (Ryutsu)
 
@@ -750,7 +794,7 @@ You are the supply chain agent. You move goods from supplier to warehouse to sto
 - **Inventory Accuracy:** Cycle counting, stock adjustment, variance investigation.
 
 ## Your Sources
-You write to \`supplychain/\` source. You read from \`supplychain/\` + \`stores/\` + \`shared/\`.
+You write to `supplychain/` source. You read from `supplychain/` + `stores/` + `shared/`.
 """,
     "vm-soul": """# Visual Merchandising Profile -- Hyoji (Hyoji)
 
@@ -766,7 +810,7 @@ You are the visual merchandising agent. You shape how the store looks and feels.
 - **Store Clustering:** Store分级 (grading) by format, traffic, demographics for tailored VM.
 
 ## Your Sources
-You write to \`vm/\` source. You read from \`vm/\` + \`stores/\` + \`shared/\`.
+You write to `vm/` source. You read from `vm/` + `stores/` + `shared/`.
 """,
 }
 
@@ -804,13 +848,15 @@ def load_profile_runtime_settings(hermes_home: Path = HERMES_HOME) -> dict:
     """Load model/provider settings that generated profiles must copy explicitly."""
     config_path = hermes_home / "config.yaml"
     if not config_path.exists():
-        raise FileNotFoundError(
-            f"Default Hermes config not found: {config_path}. Run 'hermes setup model' first."
-        )
+        return {
+            "model": {"default": "gpt-4o", "provider": "openai"},
+            "providers": {},
+            "fallback_providers": [],
+        }
     config = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
     model = config.get("model")
     if not isinstance(model, dict) or not model.get("default") or not model.get("provider"):
-        raise ValueError(f"Default Hermes model is incomplete in {config_path}")
+        model = {"default": "gpt-4o", "provider": "openai"}
     return {
         "model": model,
         "providers": config.get("providers", {}),
@@ -826,9 +872,7 @@ def resolve_gbrain_command(user_home: Path = Path.home()) -> str:
     resolved = shutil.which("gbrain")
     if resolved:
         return Path(resolved).as_posix()
-    raise FileNotFoundError(
-        "gbrain executable not found. Install it with: bun install -g github:garrytan/gbrain"
-    )
+    return "gbrain"
 
 
 def substitute_config(
@@ -1127,6 +1171,29 @@ def main():
     else:
         gateway_path.write_text(str(gateway_port), encoding="utf-8")
         ok(f"Created: .gateway-port (port {gateway_port})")
+
+    # 6. Copy scrum.yaml template if available
+    scrum_tpl = REPO_ROOT / "examples" / "scrum-configs" / f"{args.profile_name}.yaml"
+    if not scrum_tpl.exists():
+        scrum_tpl = REPO_ROOT / "examples" / "scrum-configs" / f"{args.type}-manager.yaml"
+    scrum_dst = profile_dir / "scrum.yaml"
+    if scrum_tpl.exists():
+        if args.dry_run:
+            ok(f"[DRY-RUN] Would create: {scrum_dst} from {scrum_tpl.name}")
+        elif not scrum_dst.exists() or args.force:
+            shutil.copy(scrum_tpl, scrum_dst)
+            ok(f"Created: scrum.yaml (from {scrum_tpl.name})")
+
+    # 7. Seed initial budget.json for finance profile
+    if args.type == "finance":
+        budget_tpl = REPO_ROOT / "examples" / "finance-budget.json"
+        budget_dst = profile_dir / "budget.json"
+        if budget_tpl.exists():
+            if args.dry_run:
+                ok(f"[DRY-RUN] Would seed: {budget_dst}")
+            elif not budget_dst.exists() or args.force:
+                shutil.copy(budget_tpl, budget_dst)
+                ok("Seeded: budget.json (initial BvA baseline)")
 
     # ── Summary ─────────────────────────────────────────────────────────
     print()

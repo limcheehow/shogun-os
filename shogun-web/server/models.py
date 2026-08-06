@@ -87,7 +87,7 @@ class User(Base):
     employee_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
     manager_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     manager: Mapped[Optional["User"]] = relationship(
-        remote_side="User.id", back_populates="direct_reports"
+        remote_side="User.id", foreign_keys=[manager_id], back_populates="direct_reports"
     )
     avatar_url: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
     source: Mapped[str] = mapped_column(String(32), nullable=False, default="manual")
@@ -104,7 +104,7 @@ class User(Base):
         back_populates="user", cascade="all, delete-orphan"
     )
     direct_reports: Mapped[List["User"]] = relationship(
-        back_populates="manager", cascade="all, delete-orphan"
+        back_populates="manager", foreign_keys=[manager_id]
     )
 
     def to_dict(self, include_sensitive: bool = False) -> Dict[str, Any]:

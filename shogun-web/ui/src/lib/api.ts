@@ -21,8 +21,10 @@ import type {
   Department,
   DepartmentKey,
   DocumentArtifact,
+  FinanceDashboardStats,
   LoginPayload,
   OnboardingState,
+  ProcurementDashboardStats,
   ProviderConfig,
   StaffMember,
   User,
@@ -262,12 +264,19 @@ export const departmentsApi = {
     apiFetch<DashboardConfig>(`/api/departments/${name}/dashboard`),
   dashboardCeoStats: (dept: string) =>
     apiFetch<CeoDashboardStats>(`/api/departments/${dept}/dashboard/ceo-stats`),
+  dashboardFinanceStats: (dept: string) =>
+    apiFetch<FinanceDashboardStats>(`/api/departments/${dept}/dashboard/finance-stats`),
+  dashboardProcurementStats: (dept: string) =>
+    apiFetch<ProcurementDashboardStats>(`/api/departments/${dept}/dashboard/procurement-stats`),
 };
 
 export const brainApi = {
-  list: (dept: string, q?: string) => {
+  list: async (dept: string, q?: string) => {
     const qs = q ? `?q=${encodeURIComponent(q)}` : '';
-    return apiFetch<BrainPage[]>(`/api/departments/${dept}/brain${qs}`);
+    const res = await apiFetch<BrainPage[] | { pages?: BrainPage[] }>(`/api/departments/${dept}/brain${qs}`);
+    if (Array.isArray(res)) return res;
+    if (res && typeof res === 'object' && Array.isArray(res.pages)) return res.pages;
+    return [];
   },
   get: (dept: string, slug: string) =>
     apiFetch<BrainPage>(`/api/departments/${dept}/brain/${encodeURIComponent(slug)}`),
@@ -275,15 +284,26 @@ export const brainApi = {
     apiFetch<BrainLink[]>(
       `/api/departments/${dept}/brain/${encodeURIComponent(slug)}/backlinks`,
     ),
-  search: (dept: string, query: string) =>
-    apiFetch<BrainPage[]>(
+  search: async (dept: string, query: string) => {
+    const res = await apiFetch<BrainPage[] | { pages?: BrainPage[] }>(
       `/api/departments/${dept}/brain/search?q=${encodeURIComponent(query)}`,
-    ),
+    );
+    if (Array.isArray(res)) return res;
+    if (res && typeof res === 'object' && Array.isArray(res.pages)) return res.pages;
+    return [];
+  },
 };
 
 export const docsApi = {
-  list: (dept: string) =>
-    apiFetch<DocumentArtifact[]>(`/api/departments/${dept}/docs`),
+  list: async (dept: string) => {
+    const res = await apiFetch<DocumentArtifact[] | { artifacts?: DocumentArtifact[]; docs?: DocumentArtifact[] }>(`/api/departments/${dept}/docs`);
+    if (Array.isArray(res)) return res;
+    if (res && typeof res === 'object') {
+      if (Array.isArray(res.artifacts)) return res.artifacts;
+      if (Array.isArray(res.docs)) return res.docs;
+    }
+    return [];
+  },
   get: (dept: string, id: string) =>
     apiFetch<DocumentArtifact>(`/api/departments/${dept}/docs/${id}`),
   downloadUrl: (dept: string, id: string) =>
@@ -324,7 +344,7 @@ export function useChatSocket(
     let timer: number | undefined;
 
     const connect = () => {
-      const url = wsUrl(`/ws/chat/${department}`);
+      const url = wsUrl(`/api/gateway/${department}`);
       const ws = new WebSocket(url);
       wsRef.current = ws;
 
@@ -337,8 +357,34 @@ export function useChatSocket(
 
       ws.onmessage = (ev) => {
         try {
-          const data = JSON.parse(ev.data) as ChatSocketEvent;
-          onEventRef.current?.(data);
+          const raw = JSON.parse(ev.data);
+          // Gateway control frames — surface proxy errors, swallow ready/ping.
+          if (raw?.type === 'shogun.proxy.ready') return;
+          if (raw?.type === 'shogun.proxy.error') {
+            setError(raw?.error || 'Gateway unavailable');
+            setConnected(false);
+            return;
+          }
+          // Pass through frames that already match the UI event shape.
+          const known = ['message', 'delta', 'tool_call', 'done', 'error', 'ping'];
+          if (raw && typeof raw.type === 'string' && known.includes(raw.type)) {
+            onEventRef.current?.(raw as ChatSocketEvent);
+            return;
+          }
+          // Hermes-side translation: map common Hermes ws frame shapes to the
+          // UI event the Chat component renders. Hermes emits assistant content
+          // as incremental text; surface as a delta if we can identify an id.
+          const id = raw?.id || raw?.message_id || `hermes-${Date.now()}`;
+          const content =
+            typeof raw?.content === 'string' ? raw.content
+            : typeof raw?.text === 'string' ? raw.text
+            : typeof raw?.delta === 'string' ? raw.delta
+            : '';
+          if (content) {
+            onEventRef.current?.({ type: 'delta', id, content });
+          } else if (raw?.type === 'end' || raw?.done) {
+            onEventRef.current?.({ type: 'done', id });
+          }
         } catch {
           // ignore malformed
         }
@@ -352,6 +398,10 @@ export function useChatSocket(
         setConnected(false);
         wsRef.current = null;
         if (closed) return;
+        // Don't infinite-reconnect if the gateway itself is down — the
+        // shogun.proxy.error frame already surfaced the reason. Reconnect with
+        // a capped backoff so a transient blip recovers but a dead gateway
+        // doesn't spin.
         const delay = Math.min(1000 * 2 ** retry, 15000);
         retry += 1;
         timer = window.setTimeout(connect, delay);
