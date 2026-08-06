@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   BarChart3, Boxes, Brain, ChevronDown, ChevronLeft, ChevronRight,
   Code2, Handshake, History, Kanban, LayoutDashboard, LifeBuoy, LogOut,
-  Megaphone, Moon, Package, Settings, Shield, Sun, Users, UserCog, Wallet,
+  Megaphone, Moon, Package, Plug, Settings, Shield, Sun, Users, UserCog, Wallet, Wrench,
   type LucideIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -89,6 +89,8 @@ function DepartmentNavItem({
 
   const subItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'connectors', label: 'Connectors', icon: Plug },
+    { id: 'skills', label: 'Skills', icon: Wrench },
     { id: 'chat-history', label: 'Chat History', icon: History },
     { id: 'brain', label: 'Brain', icon: Brain },
     ...(isAdmin ? [{ id: 'settings', label: 'Settings', icon: Settings }] : []),
@@ -205,6 +207,10 @@ export default function Layout() {
         <NavLink to="/dashboard" onClick={() => setMobileOpen(false)} className={({ isActive }) => clsx('sd-nav-item', isActive && 'active')}>
           <span className="sd-nav-icon"><LayoutDashboard className="h-4 w-4" /></span>
           {!collapsed && <span className="sd-nav-label">Dashboard</span>}
+        </NavLink>
+        <NavLink to="/skills" onClick={() => setMobileOpen(false)} className={({ isActive }) => clsx('sd-nav-item', isActive && 'active')}>
+          <span className="sd-nav-icon"><Wrench className="h-4 w-4" /></span>
+          {!collapsed && <span className="sd-nav-label">Skills</span>}
         </NavLink>
         {canManageStaff && (
           <NavLink to="/staff" onClick={() => setMobileOpen(false)} className={({ isActive }) => clsx('sd-nav-item', isActive && 'active')}>

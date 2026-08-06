@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import NoAccess from './pages/NoAccess';
 import Onboarding from './pages/Onboarding';
 import StaffManagement from './pages/StaffManagement';
+import SkillsCatalog from './pages/SkillsCatalog';
 
 function AuthCallback() {
   const [searchParams] = useSearchParams();
@@ -101,6 +102,7 @@ export default function App() {
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/skills" element={<SkillsCatalog />} />
         <Route path="/department/:name" element={<Department />} />
         <Route path="/staff" element={<StaffManagement />} />
         <Route path="/no-access" element={<NoAccess />} />

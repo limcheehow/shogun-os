@@ -192,6 +192,18 @@ def _run_ceo_aggregation(pages: List[dict]) -> dict:
     partner_owner_counts: Dict[str, Dict[str, int]] = {}
     top_deals: List[Dict[str, Any]] = []
 
+    # Omnichannel accumulators (spec §2.3)
+    channel_volume = {"shopee": 0, "lazada": 0, "fbMessenger": 0, "whatsapp": 0}
+    _CHANNEL_MAP = {
+        "Shopee": "shopee", "Lazada": "lazada",
+        "Facebook Messenger": "fbMessenger", "FB Messenger": "fbMessenger",
+        "WhatsApp": "whatsapp",
+    }
+    response_minutes: List[float] = []
+    sla_compliant = 0
+    ai_resolved = 0
+    chat_inbox_rows: List[Dict[str, Any]] = []
+
     for deal in deals:
         slug = str(deal.get("slug", ""))
         title = str(deal.get("title", ""))
@@ -310,6 +322,21 @@ def _run_ceo_aggregation(pages: List[dict]) -> dict:
 
         priority_map[priority] = priority_map.get(priority, 0) + 1
 
+        # Omnichannel: accumulate per-deal channel_origin + sla_response_minutes (spec §3)
+        raw_channel = str(fm.get("channel_origin", "")).strip()
+        chan_key = _CHANNEL_MAP.get(raw_channel)
+        if chan_key:
+            channel_volume[chan_key] = channel_volume.get(chan_key, 0) + 1
+        raw_sla = fm.get("sla_response_minutes")
+        if raw_sla not in (None, ""):
+            try:
+                sla_val = float(raw_sla)
+                response_minutes.append(sla_val)
+                if sla_val <= 15:
+                    sla_compliant += 1
+            except (TypeError, ValueError):
+                pass
+
         is_early = stage in ("Lead", "Prospecting", "Qualified")
         if amount > 0 and active and stage not in ("Unqualified", "On Hold") and (not is_early or amount > 0):
             top_deals.append({
@@ -412,6 +439,71 @@ def _run_ceo_aggregation(pages: List[dict]) -> dict:
     pipeline_coverage = round(totalPipelineValue / salesYTD * 10) / 10 if salesYTD > 0 else 0
     top15 = sorted(top_deals, key=lambda x: -x["amount"])[:15]
 
+    # ── Omnichannel: derive from deals where possible, fall back to examples/crm-mock.json ──
+    # Inbox + weekly trend are net-new data with no deal source (Concern 2); always load from mock.
+    crm_mock: Dict[str, Any] = {}
+    mock_json_path = pathlib.Path(__file__).resolve().parents[2] / "examples" / "crm-mock.json"
+    if mock_json_path.exists():
+        try:
+            with open(mock_json_path, "r", encoding="utf-8") as f:
+                crm_mock = json.load(f).get("dashboard_mock", {})
+        except Exception as e:
+            logger.warning("Failed to load mock data from %s: %s", mock_json_path, e)
+
+    if totalActiveDeals == 0 and not wonDeals:
+        # No real deals at all — return the full CRM mock wholesale (spec §1 Phase 1:
+        # "realistic mock data engine, zero code modification required for preview").
+        # Mirrors the finance/procurement fallback: every field below has a mock value
+        # so all 6 sub-tabs render populated. The aggregated accumulators above are
+        # discarded in this branch.
+        return {
+            "salesMTD": _safe_int(crm_mock.get("salesMTD")),
+            "salesQTD": _safe_int(crm_mock.get("salesQTD")),
+            "salesYTD": _safe_int(crm_mock.get("salesYTD")),
+            "totalPipelineValue": _safe_int(crm_mock.get("totalPipelineValue")),
+            "weightedPipelineValue": _safe_int(crm_mock.get("weightedPipelineValue")),
+            "pipelineCoverage": _safe_float(crm_mock.get("pipelineCoverage")),
+            "winRate": _safe_int(crm_mock.get("winRate")),
+            "avgDealSize": _safe_int(crm_mock.get("avgDealSize")),
+            "salesCycleDays": _safe_int(crm_mock.get("salesCycleDays"), 47),
+            "totalActiveDeals": _safe_int(crm_mock.get("totalActiveDeals")),
+            "hotDeals": _safe_int(crm_mock.get("hotDeals")),
+            "warmDeals": _safe_int(crm_mock.get("warmDeals")),
+            "coldDeals": _safe_int(crm_mock.get("coldDeals")),
+            "wonDeals": _safe_int(crm_mock.get("wonDeals")),
+            "byManager": crm_mock.get("byManager", []),
+            "byPartner": crm_mock.get("byPartner", []),
+            "byStage": crm_mock.get("byStage", []),
+            "byMonth": crm_mock.get("byMonth", []),
+            "byPriority": crm_mock.get("byPriority", []),
+            "wonByMonth": crm_mock.get("wonByMonth", []),
+            "byProduct": crm_mock.get("byProduct", []),
+            "atRiskByManager": crm_mock.get("atRiskByManager", []),
+            "atRiskByPartner": crm_mock.get("atRiskByPartner", []),
+            "byManagerByPartner": crm_mock.get("byManagerByPartner", []),
+            "topDeals": crm_mock.get("topDeals", []),
+            "channelVolume": crm_mock.get("channelVolume", {"shopee": 0, "lazada": 0, "fbMessenger": 0, "whatsapp": 0}),
+            "avgResponseMinutes": _safe_float(crm_mock.get("avgResponseMinutes")),
+            "slaCompliancePct": _safe_float(crm_mock.get("slaCompliancePct")),
+            "aiResolutionPct": _safe_float(crm_mock.get("aiResolutionPct")),
+            "chatToOrderPct": _safe_float(crm_mock.get("chatToOrderPct")),
+            "chatToOrderTrend": crm_mock.get("chatToOrderTrend", []),
+            "chatInbox": crm_mock.get("chatInbox", []),
+        }
+
+    # Real deals exist — derive channel volume + SLA from frontmatter; inbox + trend still mock
+    channel_volume_out = channel_volume
+    if response_minutes:
+        avg_response = round(sum(response_minutes) / len(response_minutes), 1)
+        sla_pct = round(sla_compliant / len(response_minutes) * 100, 1)
+    else:
+        avg_response = _safe_float(crm_mock.get("avgResponseMinutes"))
+        sla_pct = _safe_float(crm_mock.get("slaCompliancePct"))
+    ai_pct = _safe_float(crm_mock.get("aiResolutionPct"))
+    c2o_pct = _safe_float(crm_mock.get("chatToOrderPct"))
+    c2o_trend = crm_mock.get("chatToOrderTrend", [])
+    chat_inbox_out = crm_mock.get("chatInbox", [])
+
     return {
         "salesMTD": salesMTD,
         "salesQTD": salesQTD,
@@ -438,6 +530,13 @@ def _run_ceo_aggregation(pages: List[dict]) -> dict:
         "atRiskByPartner": at_risk_by_partner_result,
         "byManagerByPartner": by_manager_by_partner,
         "topDeals": top15,
+        "channelVolume": channel_volume_out,
+        "avgResponseMinutes": avg_response,
+        "slaCompliancePct": sla_pct,
+        "aiResolutionPct": ai_pct,
+        "chatToOrderPct": c2o_pct,
+        "chatToOrderTrend": c2o_trend,
+        "chatInbox": chat_inbox_out,
     }
 
 
@@ -464,6 +563,7 @@ async def get_dashboard_config(
             "tabs": [
                 {"id": "revenue", "label": "Sales Booking", "icon": "LayoutDashboard"},
                 {"id": "pipeline", "label": "Pipeline & Forecast", "icon": "TrendingUp"},
+                {"id": "omnichannel", "label": "Omnichannel Chat", "icon": "MessageCircle"},
                 {"id": "partner", "label": "Partner Performance", "icon": "Handshake"},
                 {"id": "managers", "label": "Manager Performance", "icon": "Users"},
                 {"id": "deals", "label": "Deals Deep-Dive", "icon": "Target"},
@@ -510,6 +610,13 @@ async def get_crm_ceo_stats(
 def _safe_float(val: Any, default: float = 0.0) -> float:
     try:
         return float(val or 0)
+    except (TypeError, ValueError):
+        return default
+
+
+def _safe_int(val: Any, default: int = 0) -> int:
+    try:
+        return int(float(val or 0))
     except (TypeError, ValueError):
         return default
 

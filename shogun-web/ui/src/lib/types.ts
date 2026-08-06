@@ -98,6 +98,39 @@ export interface DocumentArtifact {
   description?: string;
 }
 
+export interface ChatAttachment {
+  id: string;
+  name: string;
+  url: string;
+  mime_type?: string;
+  size_bytes?: number;
+  is_image?: boolean;
+}
+
+export interface Skill {
+  id: string;
+  name: string;
+  description: string;
+  category: 'Finance' | 'CRM/Sales' | 'Operations' | 'Coding' | 'HR' | 'Procurement' | 'Executive';
+  installed: boolean;
+  installing?: boolean;
+  version?: string;
+  department_keys?: string[];
+  icon?: string;
+  author?: string;
+}
+
+export interface Connector {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  logo_icon: string;
+  status: 'disconnected' | 'connecting' | 'connected';
+  connected_at?: string;
+  config_summary?: string;
+}
+
 export interface ChatToolCall {
   id: string;
   name: string;
@@ -111,6 +144,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant' | 'system' | 'tool';
   content: string;
   created_at?: string;
+  attachments?: ChatAttachment[];
   tool_calls?: ChatToolCall[];
   streaming?: boolean;
   session_id?: string;
@@ -386,6 +420,22 @@ export interface DealRow {
   hot: boolean;
 }
 
+export interface ChatInboxRow {
+  customer: string;
+  platform: 'Shopee' | 'Lazada' | 'FB Messenger' | 'WhatsApp';
+  lastMessage: string;
+  responseMinutes: number;
+  status: 'AI Handling' | 'Escalated to Human' | 'Resolved';
+}
+
+export interface ChatToOrderTrendEntry {
+  week: string;
+  shopee: number;
+  lazada: number;
+  fbMessenger: number;
+  whatsapp: number;
+}
+
 export interface CeoDashboardStats {
   salesMTD: number;
   salesQTD: number;
@@ -412,6 +462,14 @@ export interface CeoDashboardStats {
   atRiskByPartner: PartnerRiskEntry[];
   byManagerByPartner: { owner: string; partner: string; deals: number }[];
   topDeals: DealRow[];
+  // Omnichannel Chat & Response SLA (spec §2.3)
+  channelVolume: { shopee: number; lazada: number; fbMessenger: number; whatsapp: number };
+  avgResponseMinutes: number;
+  slaCompliancePct: number;
+  aiResolutionPct: number;
+  chatToOrderPct: number;
+  chatToOrderTrend: ChatToOrderTrendEntry[];
+  chatInbox: ChatInboxRow[];
 }
 
 export const TIMEZONES = [

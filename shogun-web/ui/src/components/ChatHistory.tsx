@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   ArrowLeft,
   Bot,
@@ -13,17 +13,18 @@ import {
   Sparkles,
   User,
   Wrench,
-} from 'lucide-react';
-import toast from 'react-hot-toast';
-import { chatApi } from '../lib/api';
-import type { ChatMessage, ChatSession, ChatToolCall } from '../lib/types';
+} from "lucide-react";
+import toast from "react-hot-toast";
+import { chatApi } from "../lib/api";
+import type { ChatMessage, ChatSession, ChatToolCall } from "../lib/types";
+import { AttachmentPreview } from "./Chat";
 
 interface ChatHistoryProps {
   department: string;
 }
 
-const IMPORTED_ID = 'imported';
-const IMPORTED_TITLE = 'Imported history';
+const IMPORTED_ID = "imported";
+const IMPORTED_TITLE = "Imported history";
 
 function ToolDetailCard({ tool }: { tool: ChatToolCall }) {
   const [showDetails, setShowDetails] = useState(false);
@@ -36,14 +37,16 @@ function ToolDetailCard({ tool }: { tool: ChatToolCall }) {
       >
         <div className="flex items-center gap-2">
           <Wrench className="h-3.5 w-3.5 text-brand" />
-          <span className="text-xs font-mono font-semibold text-slate-800">{tool.name}</span>
+          <span className="text-xs font-mono font-semibold text-slate-800">
+            {tool.name}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 uppercase">
-            {tool.status || 'Executed'}
+            {tool.status || "Executed"}
           </span>
           <span className="text-[10px] text-slate-400">
-            {showDetails ? 'Hide details ▲' : 'View details ▼'}
+            {showDetails ? "Hide details ▲" : "View details ▼"}
           </span>
         </div>
       </div>
@@ -56,7 +59,7 @@ function ToolDetailCard({ tool }: { tool: ChatToolCall }) {
                 Inputs / Arguments:
               </div>
               <pre className="overflow-x-auto text-[11px] text-slate-200 bg-black/40 p-2 rounded-lg">
-                {typeof tool.arguments === 'string'
+                {typeof tool.arguments === "string"
                   ? tool.arguments
                   : JSON.stringify(tool.arguments, null, 2)}
               </pre>
@@ -68,7 +71,7 @@ function ToolDetailCard({ tool }: { tool: ChatToolCall }) {
                 Execution Result:
               </div>
               <pre className="max-h-48 overflow-auto text-[11px] text-slate-200 bg-black/40 p-2 rounded-lg">
-                {typeof tool.result === 'string'
+                {typeof tool.result === "string"
                   ? tool.result
                   : JSON.stringify(tool.result, null, 2)}
               </pre>
@@ -81,10 +84,12 @@ function ToolDetailCard({ tool }: { tool: ChatToolCall }) {
 }
 
 function deriveTitle(messages: ChatMessage[]): string {
-  const firstUser = messages.find((m) => m.role === 'user' && m.content.trim().length > 0);
-  if (!firstUser) return 'New session';
+  const firstUser = messages.find(
+    (m) => m.role === "user" && m.content.trim().length > 0,
+  );
+  if (!firstUser) return "New session";
   const content = firstUser.content.trim();
-  return content.length > 80 ? content.slice(0, 80) + '…' : content;
+  return content.length > 80 ? content.slice(0, 80) + "…" : content;
 }
 
 function buildSessions(all: ChatMessage[]): ChatSession[] {
@@ -98,11 +103,14 @@ function buildSessions(all: ChatMessage[]): ChatSession[] {
   for (const [id, msgs] of byId) {
     const sorted = [...msgs].sort(
       (a, b) =>
-        (a.created_at ? Date.parse(a.created_at) : 0) - (b.created_at ? Date.parse(b.created_at) : 0),
+        (a.created_at ? Date.parse(a.created_at) : 0) -
+        (b.created_at ? Date.parse(b.created_at) : 0),
     );
     const created = sorted[0]?.created_at || new Date().toISOString();
     const updated = sorted[sorted.length - 1]?.created_at || created;
-    const hasTools = sorted.some((m) => m.tool_calls && m.tool_calls.length > 0);
+    const hasTools = sorted.some(
+      (m) => m.tool_calls && m.tool_calls.length > 0,
+    );
     sessions.push({
       id,
       title: id === IMPORTED_ID ? IMPORTED_TITLE : deriveTitle(sorted),
@@ -117,18 +125,23 @@ function buildSessions(all: ChatMessage[]): ChatSession[] {
   sessions.sort((a, b) => {
     if (a.id === IMPORTED_ID && b.id !== IMPORTED_ID) return 1;
     if (b.id === IMPORTED_ID && a.id !== IMPORTED_ID) return -1;
-    return Date.parse(b.updated_at || b.created_at) - Date.parse(a.updated_at || a.created_at);
+    return (
+      Date.parse(b.updated_at || b.created_at) -
+      Date.parse(a.updated_at || a.created_at)
+    );
   });
   return sessions;
 }
 
 export default function ChatHistory({ department }: ChatHistoryProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
-  const [filterType, setFilterType] = useState<'all' | 'tools'>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null,
+  );
+  const [filterType, setFilterType] = useState<"all" | "tools">("all");
 
   const historyQuery = useQuery({
-    queryKey: ['chat-history', department],
+    queryKey: ["chat-history", department],
     queryFn: () => chatApi.history(department),
   });
 
@@ -139,7 +152,7 @@ export default function ChatHistory({ department }: ChatHistoryProps) {
 
   const filteredSessions = useMemo(() => {
     return sessions.filter((s) => {
-      if (filterType === 'tools' && !s.has_tools) return false;
+      if (filterType === "tools" && !s.has_tools) return false;
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase();
       return (
@@ -156,20 +169,20 @@ export default function ChatHistory({ department }: ChatHistoryProps) {
 
   const copyPromptText = (text: string) => {
     void navigator.clipboard.writeText(text).then(
-      () => toast.success('Copied to clipboard'),
-      () => toast.error('Copy failed'),
+      () => toast.success("Copied to clipboard"),
+      () => toast.error("Copy failed"),
     );
   };
 
   return (
-    <div className="flex h-full min-h-[34rem] flex-col overflow-hidden rounded-2xl border border-surface-border bg-white shadow-sm">
-      {/* Top Header bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-surface-border p-4 bg-slate-50/50">
+    <div className="flex h-full min-h-[36rem] flex-col text-white space-y-4">
+      {/* Top Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-700/60 pb-4 text-white">
         <div className="flex items-center gap-2">
           {selectedSessionId && (
             <button
               type="button"
-              className="btn-ghost !px-2 mr-1"
+              className="btn-ghost !px-2 mr-1 text-slate-300 hover:text-white"
               onClick={() => setSelectedSessionId(null)}
             >
               <ArrowLeft className="h-4 w-4" />
@@ -177,12 +190,13 @@ export default function ChatHistory({ department }: ChatHistoryProps) {
             </button>
           )}
           <div>
-            <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-brand" />
-              Department Chat History
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-brand" />
+              Chat History
             </h2>
-            <p className="text-xs text-slate-500">
-              {sessions.length} chat {sessions.length === 1 ? 'session' : 'sessions'} logged
+            <p className="text-xs text-slate-300 mt-1">
+              {sessions.length} chat{" "}
+              {sessions.length === 1 ? "session" : "sessions"} logged
             </p>
           </div>
         </div>
@@ -191,22 +205,22 @@ export default function ChatHistory({ department }: ChatHistoryProps) {
           <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
             <button
               type="button"
-              onClick={() => setFilterType('all')}
+              onClick={() => setFilterType("all")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
-                filterType === 'all'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-100'
+                filterType === "all"
+                  ? "bg-slate-900 text-white"
+                  : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               All Sessions
             </button>
             <button
               type="button"
-              onClick={() => setFilterType('tools')}
+              onClick={() => setFilterType("tools")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
-                filterType === 'tools'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-100'
+                filterType === "tools"
+                  ? "bg-slate-900 text-white"
+                  : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               With Tools
@@ -226,8 +240,8 @@ export default function ChatHistory({ department }: ChatHistoryProps) {
       </div>
 
       <div className="grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[360px_1fr]">
-        {/* Left pane: Session list */}
-        <div className="border-r border-surface-border overflow-y-auto p-3 bg-slate-50/30">
+        {/* Left pane: Session list (No background) */}
+        <div className="border-r border-slate-200 dark:border-slate-800 overflow-y-auto p-3 bg-transparent text-slate-900 dark:text-white">
           {historyQuery.isLoading && (
             <div className="flex justify-center py-16 text-slate-400">
               <Loader2 className="h-6 w-6 animate-spin" />
@@ -235,8 +249,10 @@ export default function ChatHistory({ department }: ChatHistoryProps) {
           )}
 
           {!historyQuery.isLoading && filteredSessions.length === 0 && (
-            <div className="py-16 px-4 text-center text-xs text-slate-400">
-              {searchQuery ? `No sessions matching “${searchQuery}”` : 'No chat history logged yet.'}
+            <div className="py-16 px-4 text-center text-xs text-slate-500 dark:text-slate-400">
+              {searchQuery
+                ? `No sessions matching “${searchQuery}”`
+                : "No chat history logged yet."}
             </div>
           )}
 
@@ -246,7 +262,7 @@ export default function ChatHistory({ department }: ChatHistoryProps) {
                 const isSelected = selectedSessionId === session.id;
                 const dateLabel = session.updated_at
                   ? new Date(session.updated_at).toLocaleString()
-                  : '';
+                  : "";
                 return (
                   <button
                     key={session.id}
@@ -254,27 +270,28 @@ export default function ChatHistory({ department }: ChatHistoryProps) {
                     onClick={() => setSelectedSessionId(session.id)}
                     className={`flex w-full flex-col gap-1.5 rounded-xl p-3.5 text-left transition border ${
                       isSelected
-                        ? 'border-brand/40 bg-brand/5 shadow-xs ring-1 ring-brand/20'
-                        : 'border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-xs'
+                        ? "border-brand/60 bg-brand/10 dark:bg-brand/20 text-slate-900 dark:text-white shadow-xs ring-1 ring-brand/30"
+                        : "border-slate-200/80 dark:border-slate-800 bg-transparent hover:bg-slate-100/60 dark:hover:bg-slate-800/60 text-slate-800 dark:text-slate-200"
                     }`}
                   >
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="flex items-center gap-1 font-semibold text-slate-500">
+                      <span className="flex items-center gap-1 font-semibold text-slate-500 dark:text-slate-400">
                         <MessageSquare className="h-3.5 w-3.5 text-brand" />
                         Session
                       </span>
-                      <span className="flex items-center gap-1 text-slate-400 font-mono text-[10px]">
+                      <span className="flex items-center gap-1 text-slate-400 dark:text-slate-500 font-mono text-[10px]">
                         <Clock className="h-3 w-3" />
                         {dateLabel}
                       </span>
                     </div>
 
-                    <div className="text-xs font-semibold text-slate-900 line-clamp-2">
+                    <div className="text-xs font-semibold text-slate-900 dark:text-white line-clamp-2">
                       {session.title}
                     </div>
 
-                    <div className="text-[11px] text-slate-500">
-                      {session.message_count} message{session.message_count === 1 ? '' : 's'}
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {session.message_count} message
+                      {session.message_count === 1 ? "" : "s"}
                     </div>
 
                     {session.has_tools && (
@@ -290,54 +307,66 @@ export default function ChatHistory({ department }: ChatHistoryProps) {
           )}
         </div>
 
-        {/* Right pane: Full session transcript */}
-        <div className="overflow-y-auto p-6 bg-white">
+        {/* Right pane: Full session transcript (Dark mode dark bg/white text, Light mode light bg/dark text) */}
+        <div className="overflow-y-auto p-6 bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
           {!selectedSession && (
             <div className="flex h-full flex-col items-center justify-center text-center text-slate-400 py-16">
-              <MessageSquare className="h-12 w-12 stroke-[1.5] text-slate-300 mb-3" />
-              <p className="text-sm font-medium text-slate-600">Select a session to inspect</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                Click any chat session on the left to view the full transcript — prompts, assistant
-                responses, and executed tool calls.
+              <MessageSquare className="h-12 w-12 stroke-[1.5] text-slate-300 dark:text-slate-600 mb-3" />
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Select a session to inspect
+              </p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-xs">
+                Click any chat session on the left to view the full transcript —
+                prompts, assistant responses, and executed tool calls.
               </p>
             </div>
           )}
 
           {selectedSession && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-surface-border pb-3">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">{selectedSession.title}</h3>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    {selectedSession.message_count} message{selectedSession.message_count === 1 ? '' : 's'}
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                    {selectedSession.title}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    {selectedSession.message_count} message
+                    {selectedSession.message_count === 1 ? "" : "s"}
                     {selectedSession.updated_at && (
-                      <> · last {new Date(selectedSession.updated_at).toLocaleString()}</>
+                      <>
+                        {" "}
+                        · last{" "}
+                        {new Date(selectedSession.updated_at).toLocaleString()}
+                      </>
                     )}
                   </p>
                 </div>
                 {selectedSession.id === IMPORTED_ID && (
-                  <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 uppercase">
+                  <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:text-slate-300 uppercase">
                     Legacy
                   </span>
                 )}
               </div>
 
               {selectedSession.messages.map((m) =>
-                m.role === 'user' ? (
-                  <div key={m.id} className="rounded-2xl border border-brand/20 bg-brand/5 p-4 shadow-xs">
-                    <div className="flex items-center justify-between mb-2 pb-2 border-b border-brand/10">
+                m.role === "user" ? (
+                  <div
+                    key={m.id}
+                    className="rounded-2xl border border-brand/30 bg-brand/10 dark:bg-brand/20 p-4 shadow-xs"
+                  >
+                    <div className="flex items-center justify-between mb-2 pb-2 border-b border-brand/20">
                       <span className="flex items-center gap-1.5 text-xs font-semibold text-brand">
                         <User className="h-3.5 w-3.5" /> User
                       </span>
                       <div className="flex items-center gap-2">
                         {m.created_at && (
-                          <span className="text-[11px] text-slate-400 font-mono">
+                          <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
                             {new Date(m.created_at).toLocaleString()}
                           </span>
                         )}
                         <button
                           type="button"
-                          className="btn-ghost !px-1.5 !py-0.5 text-[11px] text-slate-600"
+                          className="btn-ghost !px-1.5 !py-0.5 text-[11px] text-slate-600 dark:text-slate-300"
                           onClick={() => copyPromptText(m.content)}
                           title="Copy text"
                         >
@@ -345,26 +374,38 @@ export default function ChatHistory({ department }: ChatHistoryProps) {
                         </button>
                       </div>
                     </div>
-                    <div className="text-sm font-medium text-slate-900 whitespace-pre-wrap leading-relaxed">
+                    {m.attachments && m.attachments.length > 0 && (
+                      <AttachmentPreview attachments={m.attachments} />
+                    )}
+                    <div className="text-sm font-medium text-slate-900 dark:text-white whitespace-pre-wrap leading-relaxed mt-1">
                       {m.content}
                     </div>
                   </div>
-                ) : m.role === 'assistant' ? (
-                  <div key={m.id} className="rounded-2xl border border-surface-border bg-slate-50/50 p-5 shadow-xs">
-                    <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-surface-border">
-                      <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
-                        <Bot className="h-4 w-4 text-emerald-600" /> Assistant
+                ) : m.role === "assistant" ? (
+                  <div
+                    key={m.id}
+                    className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 p-5 shadow-xs"
+                  >
+                    <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-200 dark:border-slate-700">
+                      <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        <Bot className="h-4 w-4 text-emerald-500" /> Assistant
                       </span>
                       {m.created_at && (
-                        <span className="text-[11px] text-slate-400 font-mono">
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
                           {new Date(m.created_at).toLocaleString()}
                         </span>
                       )}
                     </div>
 
+                    {m.attachments && m.attachments.length > 0 && (
+                      <AttachmentPreview attachments={m.attachments} />
+                    )}
+
                     {m.content && (
-                      <article className="prose-chat text-sm leading-relaxed text-slate-800">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                      <article className="prose-chat text-sm leading-relaxed text-slate-900 dark:text-slate-100 mt-1">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {m.content}
+                        </ReactMarkdown>
                       </article>
                     )}
 

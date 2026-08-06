@@ -20,23 +20,34 @@ export function DealsDeepDiveTab({ stats, color }: Props) {
     value: p.count,
   }));
 
-  const productData = stats.byProduct.map((p) => ({
-    name: p.product,
+  const PRODUCT_SORT_ORDER = ['Apparel & Fashion', 'Consumer Electronics', 'Corporate Wholesale', 'Lifestyle & Home'];
+
+  const sortedProducts = [...stats.byProduct].sort((a, b) => {
+    const idxA = PRODUCT_SORT_ORDER.indexOf(a.product);
+    const idxB = PRODUCT_SORT_ORDER.indexOf(b.product);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return b.count - a.count;
+  });
+
+  const productData = sortedProducts.map((p) => ({
+    name: `${p.product} (${p.count})`,
     value: p.count,
   }));
 
   return (
     <div className="sd-stack">
       <div className="sd-row">
-        <div className="sd-chart-card">
-          <h3 className="sd-chart-title">Deal Priority</h3>
-          <p className="sd-chart-sub">Open deals grouped by priority</p>
-          <PieChart data={priorityData} color={color} unit="" height={220} innerRadius={45} />
+        <div className="sd-chart-card !p-4">
+          <h3 className="sd-chart-title !text-xs !font-bold">Deal Priority</h3>
+          <p className="sd-chart-sub !text-[11px]">Open deals grouped by priority</p>
+          <PieChart data={priorityData} color={color} unit="" height={170} innerRadius={30} outerRadius={52} legendFontSize="11px" />
         </div>
-        <div className="sd-chart-card">
-          <h3 className="sd-chart-title">Product Breakdown</h3>
-          <p className="sd-chart-sub">Open deals grouped by product</p>
-          <PieChart data={productData} color={color} unit="" height={220} innerRadius={45} />
+        <div className="sd-chart-card !p-4">
+          <h3 className="sd-chart-title !text-xs !font-bold">Product Breakdown</h3>
+          <p className="sd-chart-sub !text-[11px]">Open deals grouped by product category</p>
+          <PieChart data={productData} color={color} unit="" height={170} innerRadius={30} outerRadius={52} legendFontSize="11px" />
         </div>
       </div>
 
@@ -44,7 +55,7 @@ export function DealsDeepDiveTab({ stats, color }: Props) {
         <h3 className="sd-chart-title">Product Pipeline Value</h3>
         <p className="sd-chart-sub">Pipeline value by product</p>
         <BarChart
-          data={stats.byProduct}
+          data={sortedProducts}
           xKey="product"
           yKey="value"
           color={color}

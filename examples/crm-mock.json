@@ -1,0 +1,139 @@
+{
+  "currency": "MYR",
+  "dashboard_mock": {
+    "salesMTD": 480000,
+    "salesQTD": 1420000,
+    "salesYTD": 4850000,
+    "totalPipelineValue": 8500000,
+    "weightedPipelineValue": 3850000,
+    "pipelineCoverage": 3.8,
+    "winRate": 74,
+    "avgDealSize": 125000,
+    "salesCycleDays": 28,
+    "totalActiveDeals": 38,
+    "hotDeals": 12,
+    "warmDeals": 18,
+    "coldDeals": 8,
+    "wonDeals": 32,
+    "byManager": [
+      { "owner": "Irene", "salesMTD": 145000, "salesQTD": 410000, "salesYTD": 1450000, "deals": 11, "wonDeals": 9, "pipelineValue": 2800000, "weightedPipeline": 1340000, "closeThisMonth": 240000, "closeThisQ": 680000, "closeNextQ": 520000, "closeThisYear": 1450000, "winRate": 78 },
+      { "owner": "Nazrul", "salesMTD": 120000, "salesQTD": 350000, "salesYTD": 1180000, "deals": 9, "wonDeals": 7, "pipelineValue": 2200000, "weightedPipeline": 1050000, "closeThisMonth": 190000, "closeThisQ": 540000, "closeNextQ": 410000, "closeThisYear": 1280000, "winRate": 72 },
+      { "owner": "Shamini", "salesMTD": 105000, "salesQTD": 310000, "salesYTD": 980000, "deals": 8, "wonDeals": 6, "pipelineValue": 1850000, "weightedPipeline": 880000, "closeThisMonth": 175000, "closeThisQ": 470000, "closeNextQ": 380000, "closeThisYear": 1060000, "winRate": 75 },
+      { "owner": "Syarif", "salesMTD": 65000, "salesQTD": 210000, "salesYTD": 720000, "deals": 6, "wonDeals": 5, "pipelineValue": 1150000, "weightedPipeline": 520000, "closeThisMonth": 130000, "closeThisQ": 410000, "closeNextQ": 340000, "closeThisYear": 920000, "winRate": 67 },
+      { "owner": "Shahrul", "salesMTD": 45000, "salesQTD": 140000, "salesYTD": 520000, "deals": 4, "wonDeals": 3, "pipelineValue": 500000, "weightedPipeline": 240000, "closeThisMonth": 95000, "closeThisQ": 280000, "closeNextQ": 260000, "closeThisYear": 690000, "winRate": 60 }
+    ],
+    "byPartner": [
+      { "partner": "Parkson Departmental Stores", "booking": 1450000, "dealsWon": 9, "pipelineDeals": 5, "pipelineValue": 1850000, "winRate": 78, "avgDealSize": 161000, "primaryOwner": "Irene" },
+      { "partner": "Aeon Retail Outlets", "booking": 1180000, "dealsWon": 7, "pipelineDeals": 4, "pipelineValue": 1450000, "winRate": 72, "avgDealSize": 168000, "primaryOwner": "Nazrul" },
+      { "partner": "Lotus Supermarkets Wholesale", "booking": 920000, "dealsWon": 6, "pipelineDeals": 4, "pipelineValue": 1100000, "winRate": 75, "avgDealSize": 153000, "primaryOwner": "Shamini" },
+      { "partner": "SOGO KL Fashion Mall", "booking": 650000, "dealsWon": 5, "pipelineDeals": 3, "pipelineValue": 780000, "winRate": 67, "avgDealSize": 130000, "primaryOwner": "Syarif" }
+    ],
+    "byStage": [
+      { "stage": "Lead", "count": 10, "value": 1500000 },
+      { "stage": "Prospecting", "count": 8, "value": 2100000 },
+      { "stage": "Qualified", "count": 7, "value": 1850000 },
+      { "stage": "Quote", "count": 6, "value": 1650000 },
+      { "stage": "Tender", "count": 3, "value": 900000 },
+      { "stage": "Confirmed", "count": 4, "value": 500000 },
+      { "stage": "Won", "count": 32, "value": 4850000 }
+    ],
+    "byMonth": [
+      { "month": "2026-01", "value": 3100000 },
+      { "month": "2026-02", "value": 2800000 },
+      { "month": "2026-03", "value": 3400000 },
+      { "month": "2026-04", "value": 3100000 },
+      { "month": "2026-05", "value": 3500000 },
+      { "month": "2026-06", "value": 3800000 },
+      { "month": "2026-07", "value": 4100000 },
+      { "month": "2026-08", "value": 2400000 }
+    ],
+    "wonByMonth": [
+      { "month": "2026-01", "value": 450000 },
+      { "month": "2026-02", "value": 520000 },
+      { "month": "2026-03", "value": 610000 },
+      { "month": "2026-04", "value": 580000 },
+      { "month": "2026-05", "value": 640000 },
+      { "month": "2026-06", "value": 720000 },
+      { "month": "2026-07", "value": 850000 },
+      { "month": "2026-08", "value": 480000 }
+    ],
+    "byPriority": [
+      { "priority": "High", "count": 12 },
+      { "priority": "Medium", "count": 18 },
+      { "priority": "Low", "count": 8 }
+    ],
+    "byProduct": [
+      { "product": "Apparel & Fashion", "value": 2180000, "count": 15 },
+      { "product": "Consumer Electronics", "value": 1450000, "count": 11 },
+      { "product": "Corporate Wholesale", "value": 500000, "count": 4 },
+      { "product": "Lifestyle & Home", "value": 720000, "count": 8 }
+    ],
+    "atRiskByManager": [
+      { "owner": "Irene", "atRiskDeals": 1, "atRiskValue": 320000 },
+      { "owner": "Shahrul", "atRiskDeals": 2, "atRiskValue": 240000 }
+    ],
+    "atRiskByPartner": [
+      { "partner": "Parkson Departmental Stores", "atRiskDeals": 1, "atRiskValue": 320000, "primaryOwner": "Irene" }
+    ],
+    "byManagerByPartner": [
+      { "owner": "Irene", "partner": "Parkson Departmental Stores", "deals": 5 },
+      { "owner": "Nazrul", "partner": "Aeon Retail Outlets", "deals": 4 },
+      { "owner": "Shamini", "partner": "Lotus Supermarkets Wholesale", "deals": 4 },
+      { "owner": "Syarif", "partner": "SOGO KL Fashion Mall", "deals": 3 }
+    ],
+    "topDeals": [
+      { "slug": "deals/apparel-autumn-aeon", "title": "Autumn Fashion Stock Wholesale — Aeon Stores", "customer": "Aeon Co (M) Bhd", "amount": 450000, "stage": "Quote", "priority": "Hot", "owner": "Irene", "partner": "Aeon Retail Outlets", "closeDate": "2026-09-15", "winProbability": 75, "daysInStage": 8, "hot": true },
+      { "slug": "deals/electronics-audio-parkson", "title": "Smart Home Audio Bundle — Parkson Malls", "customer": "Parkson Corporation", "amount": 380000, "stage": "Tender", "priority": "Hot", "owner": "Shamini", "partner": "Parkson Departmental Stores", "closeDate": "2026-09-30", "winProbability": 80, "daysInStage": 14, "hot": true },
+      { "slug": "deals/corporate-uniform-maybank", "title": "Corporate Employee Apparel Supply — Maybank", "customer": "Maybank Malaysia", "amount": 290000, "stage": "Confirmed", "priority": "Hot", "owner": "Nazrul", "partner": "Lotus Supermarkets Wholesale", "closeDate": "2026-08-28", "winProbability": 90, "daysInStage": 5, "hot": true },
+      { "slug": "deals/lifestyle-gift-box-petronas", "title": "Lifestyle Festival Gift Sets — Petronas Retail", "customer": "Petronas Dagangan", "amount": 210000, "stage": "Qualified", "priority": "Warm", "owner": "Syarif", "partner": "SOGO KL Fashion Mall", "closeDate": "2026-10-15", "winProbability": 60, "daysInStage": 10, "hot": false }
+    ],
+    "channelVolume": {
+      "shopee": 4250,
+      "lazada": 3120,
+      "fbMessenger": 1850,
+      "whatsapp": 5410
+    },
+    "avgResponseMinutes": 4.5,
+    "slaCompliancePct": 94.2,
+    "aiResolutionPct": 78.5,
+    "chatToOrderPct": 22.4,
+    "chatToOrderTrend": [
+      { "week": "W23", "shopee": 18.2, "lazada": 15.4, "fbMessenger": 11.1, "whatsapp": 22.8 },
+      { "week": "W24", "shopee": 19.6, "lazada": 16.1, "fbMessenger": 12.4, "whatsapp": 23.2 },
+      { "week": "W25", "shopee": 20.1, "lazada": 17.8, "fbMessenger": 13.9, "whatsapp": 24.6 },
+      { "week": "W26", "shopee": 21.8, "lazada": 18.3, "fbMessenger": 14.2, "whatsapp": 25.1 },
+      { "week": "W27", "shopee": 22.3, "lazada": 19.6, "fbMessenger": 15.4, "whatsapp": 26.3 },
+      { "week": "W28", "shopee": 23.8, "lazada": 20.1, "fbMessenger": 16.9, "whatsapp": 27.2 }
+    ],
+    "chatInbox": [
+      {
+        "customer": "Nurul Aina Binti Razali",
+        "platform": "WhatsApp",
+        "lastMessage": "Boleh hantar catalog & wholesale quotation untuk 200 set Autumn Jacket?",
+        "responseMinutes": 3,
+        "status": "AI Handling"
+      },
+      {
+        "customer": "Lim Wei Jie",
+        "platform": "Shopee",
+        "lastMessage": "Order retail #SH-92831 baju tersalah saiz, nak tukar XL ke L.",
+        "responseMinutes": 5,
+        "status": "Resolved"
+      },
+      {
+        "customer": "Priya Krishnan",
+        "platform": "Lazada",
+        "lastMessage": "Adakah e-invoice LHDN sedia dihantar untuk pembelian korporat ini?",
+        "responseMinutes": 4,
+        "status": "AI Handling"
+      },
+      {
+        "customer": "Ahmad Zulkifli",
+        "platform": "FB Messenger",
+        "lastMessage": "Nak semak stok Smart Home Audio unit di cawangan Mid Valley.",
+        "responseMinutes": 6,
+        "status": "Resolved"
+      }
+    ]
+  }
+}

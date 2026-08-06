@@ -5,6 +5,7 @@ import { DashboardSubNav } from '../DashboardSubNav';
 import type { CeoDashboardStats, DashboardTab } from '../../../lib/types';
 import { SalesPulseTab } from './SalesPulseTab';
 import { PipelineForecastTab } from './PipelineForecastTab';
+import { OmnichannelChatTab } from './OmnichannelChatTab';
 import { PartnerPerformanceTab } from './PartnerPerformanceTab';
 import { ManagerPerformanceTab } from './ManagerPerformanceTab';
 import { DealsDeepDiveTab } from './DealsDeepDiveTab';
@@ -13,6 +14,7 @@ import { ManagerDrillDownModal } from './ManagerDrillDownModal';
 const TABS: DashboardTab[] = [
   { id: 'revenue', label: 'Sales Booking', icon: 'LayoutDashboard' },
   { id: 'pipeline', label: 'Pipeline & Forecast', icon: 'TrendingUp' },
+  { id: 'omnichannel', label: 'Omnichannel Chat', icon: 'MessageCircle' },
   { id: 'partner', label: 'Partner Performance', icon: 'Handshake' },
   { id: 'managers', label: 'Manager Performance', icon: 'Users' },
   { id: 'deals', label: 'Deals Deep-Dive', icon: 'Target' },
@@ -68,6 +70,7 @@ export function CrmDashboard({ department, color }: CrmDashboardProps) {
 
       {activeTab === 'revenue' && <SalesPulseTab stats={stats} color={color} />}
       {activeTab === 'pipeline' && <PipelineForecastTab stats={stats} color={color} />}
+      {activeTab === 'omnichannel' && <OmnichannelChatTab stats={stats} color={color} />}
       {activeTab === 'partner' && <PartnerPerformanceTab stats={stats} color={color} />}
       {activeTab === 'managers' && (
         <ManagerPerformanceTab stats={stats} color={color} onDrillDown={setDrillDownOwner} />

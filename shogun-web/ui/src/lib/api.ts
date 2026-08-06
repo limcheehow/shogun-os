@@ -13,9 +13,11 @@ import type {
   BrainPage,
   CeoDashboardStats,
   ChangePasswordPayload,
+  ChatAttachment,
   ChatMessage,
   Company,
   ConnectionTestResult,
+  Connector,
   CreateStaffPayload,
   DashboardConfig,
   Department,
@@ -26,6 +28,7 @@ import type {
   OnboardingState,
   ProcurementDashboardStats,
   ProviderConfig,
+  Skill,
   StaffMember,
   User,
 } from './types';
@@ -335,6 +338,73 @@ export const chatApi = {
       method: 'POST',
       body: JSON.stringify({ messages }),
     }),
+  uploadFile: async (dept: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const token = getToken();
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`/api/departments/${dept}/chat/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Upload failed' }));
+      throw new Error(err.detail || 'Upload failed');
+    }
+    return res.json() as Promise<{
+      ok: boolean;
+      attachment: {
+        id: string;
+        name: string;
+        url: string;
+        mime_type: string;
+        size_bytes: number;
+        is_image: boolean;
+      };
+    }>;
+  },
+};
+
+export const connectorsApi = {
+  list: (dept: string) =>
+    apiFetch<{ connectors: Connector[] }>(`/api/departments/${dept}/connectors`),
+  toggle: (dept: string, connectorId: string) =>
+    apiFetch<{ ok: boolean; connector: Connector }>(`/api/departments/${dept}/connectors/${connectorId}/toggle`, {
+      method: 'POST',
+    }),
+};
+
+export interface SkillRecommendation {
+  explanation: string;
+  recommendations: Array<{ skill_id: string; match_pct: number; reason: string }>;
+  shogunify_suggestion?: {
+    needed: boolean;
+    mode: string;
+    command: string;
+    description: string;
+  };
+}
+
+export const skillsApi = {
+  listAll: () => apiFetch<{ skills: Skill[] }>('/api/skills'),
+  listDepartment: (dept: string) =>
+    apiFetch<{ skills: Skill[] }>(`/api/departments/${dept}/skills`),
+  install: (skillId: string, dept?: string) =>
+    apiFetch<{ ok: boolean; skill: Skill }>('/api/skills/install', {
+      method: 'POST',
+      body: JSON.stringify({ skill_id: skillId, department: dept }),
+    }),
+  deleteDepartmentSkill: (dept: string, skillId: string) =>
+    apiFetch<{ ok: boolean }>(`/api/departments/${dept}/skills/${skillId}`, {
+      method: 'DELETE',
+    }),
+  recommend: (prompt: string) =>
+    apiFetch<SkillRecommendation>('/api/skills/recommend', {
+      method: 'POST',
+      body: JSON.stringify({ prompt }),
+    }),
 };
 
 export type ChatSocketEvent =
@@ -443,15 +513,18 @@ export function useChatSocket(
     };
   }, [department, opts?.enabled, opts?.resetKey]);
 
-  const send = useCallback((content: string) => {
+  const send = useCallback((content: string, attachments?: ChatAttachment[]) => {
     const ws = wsRef.current;
+    const payload = attachments && attachments.length > 0
+      ? { type: 'message', content, attachments }
+      : { type: 'message', content };
     if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'message', content }));
+      ws.send(JSON.stringify(payload));
     } else if (ws && ws.readyState === WebSocket.CONNECTING) {
       ws.addEventListener(
         'open',
         () => {
-          ws.send(JSON.stringify({ type: 'message', content }));
+          ws.send(JSON.stringify(payload));
         },
         { once: true },
       );
