@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import App from './App';
 import { AuthProvider } from './lib/auth';
 import './index.css';
+import './styles/samurai.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

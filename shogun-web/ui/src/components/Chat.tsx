@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronRight,
   Loader2,
+  Plus,
   Send,
   Wrench,
   Wifi,
@@ -77,6 +78,8 @@ export default function Chat({ department }: ChatProps) {
   const [input, setInput] = useState('');
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [sending, setSending] = useState(false);
+  const [currentSessionId, setCurrentSessionId] = useState<string>('');
+  const [resetKey, setResetKey] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -85,10 +88,29 @@ export default function Chat({ department }: ChatProps) {
     chatApi
       .history(department)
       .then((data) => {
-        if (alive) setMessages(Array.isArray(data) ? data : []);
+        if (!alive) return;
+        const all = Array.isArray(data) ? data : [];
+        // Pick the most recent session_id (by latest message created_at).
+        const withIds = all.filter((m) => m.session_id);
+        let resumeId = '';
+        if (withIds.length > 0) {
+          const latest = withIds.reduce((acc, m) => {
+            const t = m.created_at ? Date.parse(m.created_at) : 0;
+            return t > acc.t ? { id: m.session_id!, t } : acc;
+          }, { id: '', t: 0 });
+          resumeId = latest.id;
+        }
+        if (!resumeId) {
+          resumeId = `sess-${Date.now()}`;
+        }
+        setCurrentSessionId(resumeId);
+        setMessages(all.filter((m) => m.session_id === resumeId));
       })
       .catch(() => {
-        if (alive) setMessages([]);
+        if (alive) {
+          setMessages([]);
+          setCurrentSessionId(`sess-${Date.now()}`);
+        }
       })
       .finally(() => {
         if (alive) setLoadingHistory(false);
@@ -99,16 +121,17 @@ export default function Chat({ department }: ChatProps) {
   }, [department]);
 
   const { connected, send } = useChatSocket(department, {
+    resetKey,
     onEvent: (event) => {
       if (event.type === 'message') {
         setMessages((prev) => {
           const idx = prev.findIndex((m) => m.id === event.message.id);
           if (idx >= 0) {
             const next = [...prev];
-            next[idx] = { ...next[idx], ...event.message, streaming: false };
+            next[idx] = { ...next[idx], ...event.message, session_id: currentSessionId, streaming: false };
             return next;
           }
-          return [...prev, { ...event.message, streaming: false }];
+          return [...prev, { ...event.message, session_id: currentSessionId, streaming: false }];
         });
         setSending(false);
       } else if (event.type === 'delta') {
@@ -130,6 +153,7 @@ export default function Chat({ department }: ChatProps) {
               role: 'assistant',
               content: event.content,
               streaming: true,
+              session_id: currentSessionId,
               created_at: new Date().toISOString(),
             },
           ];
@@ -145,6 +169,7 @@ export default function Chat({ department }: ChatProps) {
                 role: 'assistant',
                 content: '',
                 tool_calls: [event.tool_call],
+                session_id: currentSessionId,
                 streaming: true,
               },
             ];
@@ -175,19 +200,45 @@ export default function Chat({ department }: ChatProps) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, sending]);
 
+  // Auto-save the current session's messages whenever they change.
+  useEffect(() => {
+    if (loadingHistory || messages.length === 0 || !currentSessionId) return;
+    const t = window.setTimeout(() => {
+      const sessionMessages = messages.map((m) => ({ ...m, session_id: currentSessionId }));
+      chatApi.saveMessages(department, sessionMessages).catch(() => {});
+    }, 600);
+    return () => window.clearTimeout(t);
+  }, [messages, department, loadingHistory, currentSessionId]);
+
   const canSend = useMemo(
-    () => input.trim().length > 0 && connected && !sending,
-    [input, connected, sending],
+    () => input.trim().length > 0 && !sending,
+    [input, sending],
   );
+
+  const handleNewSession = () => {
+    // Flush-save current session first.
+    if (messages.length > 0 && currentSessionId) {
+      const sessionMessages = messages.map((m) => ({ ...m, session_id: currentSessionId }));
+      chatApi.saveMessages(department, sessionMessages).catch(() => {});
+    }
+    const newId = `sess-${Date.now()}`;
+    setCurrentSessionId(newId);
+    setMessages([]);
+    setResetKey((k) => k + 1); // reconnect WS → fresh agent context
+  };
 
   const handleSend = () => {
     const content = input.trim();
     if (!content) return;
     const id = `local-${Date.now()}`;
-    setMessages((prev) => [
-      ...prev,
-      { id, role: 'user', content, created_at: new Date().toISOString() },
-    ]);
+    const newMsg: ChatMessage = {
+      id,
+      role: 'user',
+      content,
+      created_at: new Date().toISOString(),
+      session_id: currentSessionId,
+    };
+    setMessages((prev) => [...prev, newMsg]);
     setInput('');
     setSending(true);
     try {
@@ -202,16 +253,27 @@ export default function Chat({ department }: ChatProps) {
     <div className="flex h-full min-h-[28rem] flex-col overflow-hidden rounded-xl border border-surface-border bg-white">
       <div className="flex items-center justify-between border-b border-surface-border px-4 py-2.5">
         <div className="text-sm font-medium text-slate-800">Chat</div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-500">
-          {connected ? (
-            <>
-              <Wifi className="h-3.5 w-3.5 text-emerald-500" /> Connected
-            </>
-          ) : (
-            <>
-              <WifiOff className="h-3.5 w-3.5 text-rose-500" /> Reconnecting
-            </>
-          )}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleNewSession}
+            title="Start a new session"
+            className="flex items-center gap-1.5 rounded-lg border border-surface-border bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-surface-muted"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            New
+          </button>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+            {connected ? (
+              <>
+                <Wifi className="h-3.5 w-3.5 text-emerald-500" /> Connected
+              </>
+            ) : (
+              <>
+                <WifiOff className="h-3.5 w-3.5 text-rose-500" /> Reconnecting
+              </>
+            )}
+          </div>
         </div>
       </div>
 

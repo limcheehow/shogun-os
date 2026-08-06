@@ -6,17 +6,27 @@ interface Props { stats: FinanceDashboardStats; color: string }
 const fmtMyr = (n: number) =>
   n >= 1_000_000 ? `RM ${(n / 1_000_000).toFixed(2)}M` : `RM ${(n / 1_000).toFixed(0)}K`;
 
-const STATUS_STYLE: Record<string, string> = {
-  Pending:   'bg-slate-100 text-slate-600',
-  Submitted: 'bg-emerald-100 text-emerald-700',
-  Overdue:   'bg-rose-100 text-rose-700',
+const STATUS_CHIP: Record<string, string> = {
+  Pending:   'muted',
+  Submitted: 'ok',
+  Overdue:   'bad',
 };
 
-const AUDIT_STYLE: Record<string, string> = {
-  Approved:  'bg-emerald-100 text-emerald-700',
-  Flagged:   'bg-amber-100 text-amber-700',
-  Rejected:  'bg-rose-100 text-rose-700',
+const AUDIT_CHIP: Record<string, string> = {
+  Approved:  'ok',
+  Flagged:   'warn',
+  Rejected:  'bad',
 };
+
+const MUTED = 'var(--samurai-muted)';
+const TEXT = 'var(--samurai-text)';
+const SURFACE_2 = 'var(--samurai-surface-2)';
+const BORDER = 'var(--samurai-border)';
+
+const th = { fontSize: '0.72rem', fontWeight: 500, color: MUTED } as const;
+function Th({ children, align }: { children: React.ReactNode; align: 'left' | 'right' | 'center' }) {
+  return <th className="pb-2" style={{ ...th, textAlign: align }}>{children}</th>;
+}
 
 export function CloseTaxComplianceTab({ stats, color }: Props) {
   const completed = stats.closeChecklist.filter((t) => t.completed).length;
@@ -24,26 +34,22 @@ export function CloseTaxComplianceTab({ stats, color }: Props) {
   const progressPct = total > 0 ? (completed / total) * 100 : 0;
 
   return (
-    <div className="space-y-4">
-      {/* Month-End Close Checklist */}
-      <div className="card p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-slate-700">Month-End Period Close Checklist</h3>
-          <span className="text-xs text-slate-500">{completed}/{total} completed</span>
+    <div className="sd-stack">
+      <div className="sd-chart-card">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
+          <h3 className="sd-chart-title" style={{ marginBottom: 0 }}>Month-End Period Close Checklist</h3>
+          <span style={{ fontSize: '0.75rem', color: MUTED }}>{completed}/{total} completed</span>
         </div>
-        <div className="mb-4 h-2 overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-2 rounded-full transition-all"
-            style={{ width: `${progressPct}%`, backgroundColor: color }}
-          />
+        <div style={{ height: '0.5rem', borderRadius: 999, overflow: 'hidden', background: SURFACE_2, marginBottom: '0.75rem' }}>
+          <div style={{ height: '100%', width: `${progressPct}%`, borderRadius: 999, background: color }} />
         </div>
-        <div className="space-y-2">
+        <div className="sd-stack" style={{ gap: '0.3rem' }}>
           {stats.closeChecklist.map((item) => (
-            <div key={item.id} className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-surface-muted/50">
-              <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${item.completed ? 'bg-emerald-500' : 'border-2 border-slate-300'}`}>
-                {item.completed ? <Check className="h-3 w-3 text-white" /> : <Circle className="h-2 w-2 text-slate-300" />}
+            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderRadius: '0.5rem', padding: '0.4rem 0.6rem', background: SURFACE_2 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '1.25rem', height: '1.25rem', borderRadius: 999, background: item.completed ? 'var(--samurai-ok)' : 'transparent', border: item.completed ? 'none' : `2px solid ${BORDER}` }}>
+                {item.completed ? <Check className="h-3 w-3" style={{ color: '#070b14' }} /> : <Circle className="h-2 w-2" style={{ color: MUTED }} />}
               </div>
-              <span className={`text-sm ${item.completed ? 'text-slate-400 line-through' : 'text-slate-700 font-medium'}`}>
+              <span style={{ fontSize: '0.85rem', color: item.completed ? MUTED : TEXT, fontWeight: item.completed ? 400 : 500, textDecoration: item.completed ? 'line-through' : 'none' }}>
                 {item.label}
               </span>
             </div>
@@ -51,65 +57,58 @@ export function CloseTaxComplianceTab({ stats, color }: Props) {
         </div>
       </div>
 
-      {/* Malaysian Statutory Hub */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Statutory Filing Calendar */}
-        <div className="card p-4">
-          <h3 className="mb-3 text-sm font-semibold text-slate-700">Statutory Remittance Calendar</h3>
-          <p className="mb-3 text-xs text-slate-400">EPF (KWSP) · SOCSO (PERKESO) · EIS · LHDN PCB</p>
+      <div className="sd-row">
+        <div className="sd-chart-card">
+          <h3 className="sd-chart-title">Statutory Remittance Calendar</h3>
+          <p className="sd-chart-sub">EPF (KWSP) · SOCSO (PERKESO) · EIS · LHDN PCB</p>
           {stats.statutorySchedule.length === 0 ? (
-            <p className="text-sm text-slate-400">No statutory schedule synced yet. Koku generates this from payroll data.</p>
+            <p style={{ fontSize: '0.85rem', color: MUTED }}>No statutory schedule synced yet. Koku generates this from payroll data.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="sd-stack" style={{ gap: '0.4rem' }}>
               {stats.statutorySchedule.map((item) => (
-                <div key={item.name} className="flex items-center justify-between rounded-lg bg-surface-muted px-3 py-2">
+                <div key={item.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '0.5rem', background: SURFACE_2, padding: '0.5rem 0.75rem' }}>
                   <div>
-                    <div className="text-sm font-medium text-slate-800">{item.name}</div>
-                    <div className="text-xs text-slate-500">Due: {item.due_date}{item.amount ? ` · ${fmtMyr(item.amount)}` : ''}</div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 500, color: TEXT }}>{item.name}</div>
+                    <div style={{ fontSize: '0.72rem', color: MUTED }}>Due: {item.due_date}{item.amount ? ` · ${fmtMyr(item.amount)}` : ''}</div>
                   </div>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLE[item.status] ?? 'bg-slate-100 text-slate-600'}`}>
-                    {item.status}
-                  </span>
+                  <span className={`sd-chip ${STATUS_CHIP[item.status] ?? 'muted'}`}>{item.status}</span>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* SST-02 Readiness */}
-        <div className="card p-4">
-          <h3 className="mb-3 text-sm font-semibold text-slate-700">SST-02 Return Readiness</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between rounded-lg bg-surface-muted px-3 py-2">
-              <span className="text-sm text-slate-600">Draft Status</span>
-              <span className="text-sm font-semibold text-slate-800">{stats.sstReadiness.draft_status}</span>
+        <div className="sd-chart-card">
+          <h3 className="sd-chart-title">SST-02 Return Readiness</h3>
+          <p className="sd-chart-sub">Malaysian SST draft &amp; liability</p>
+          <div className="sd-stack" style={{ gap: '0.4rem', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '0.5rem', background: SURFACE_2, padding: '0.5rem 0.75rem' }}>
+              <span style={{ fontSize: '0.85rem', color: MUTED }}>Draft Status</span>
+              <span style={{ fontSize: '0.85rem', fontWeight: 500, color: TEXT }}>{stats.sstReadiness.draft_status}</span>
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-surface-muted px-3 py-2">
-              <span className="text-sm text-slate-600">Taxable Sales</span>
-              <span className="text-sm font-semibold text-slate-800">{fmtMyr(stats.sstReadiness.taxable_sales)}</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '0.5rem', background: SURFACE_2, padding: '0.5rem 0.75rem' }}>
+              <span style={{ fontSize: '0.85rem', color: MUTED }}>Taxable Sales</span>
+              <span style={{ fontSize: '0.85rem', fontWeight: 500, color: TEXT }}>{fmtMyr(stats.sstReadiness.taxable_sales)}</span>
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-surface-muted px-3 py-2">
-              <span className="text-sm text-slate-600">SST Liability</span>
-              <span className="text-sm font-bold text-rose-600">{fmtMyr(stats.sstReadiness.sst_liability)}</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '0.5rem', background: SURFACE_2, padding: '0.5rem 0.75rem' }}>
+              <span style={{ fontSize: '0.85rem', color: MUTED }}>SST Liability</span>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--samurai-danger)' }}>{fmtMyr(stats.sstReadiness.sst_liability)}</span>
             </div>
           </div>
 
-          {/* CP58 Register */}
           {stats.cp58Register.length > 0 && (
             <>
-              <h3 className="mb-2 mt-4 text-sm font-semibold text-slate-700">CP58 Contractor Register</h3>
-              <div className="space-y-2">
+              <div className="sd-kpi-label" style={{ marginTop: '0.5rem', marginBottom: '0.4rem' }}>CP58 Contractor Register</div>
+              <div className="sd-stack" style={{ gap: '0.4rem' }}>
                 {stats.cp58Register.slice(0, 4).map((c) => (
-                  <div key={c.ic_or_reg} className="flex items-center justify-between rounded-lg bg-surface-muted px-3 py-2">
+                  <div key={c.ic_or_reg} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '0.5rem', background: SURFACE_2, padding: '0.5rem 0.75rem' }}>
                     <div>
-                      <div className="text-xs font-medium text-slate-800">{c.contractor_name}</div>
-                      <div className="text-xs text-slate-500">{c.ic_or_reg}</div>
+                      <div style={{ fontSize: '0.78rem', fontWeight: 500, color: TEXT }}>{c.contractor_name}</div>
+                      <div style={{ fontSize: '0.72rem', color: MUTED }}>{c.ic_or_reg}</div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-xs font-semibold text-slate-800">{fmtMyr(c.total_paid_ytd)}</div>
-                      {c.threshold_exceeded && (
-                        <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">⚠ CP58 Required</span>
-                      )}
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: TEXT }}>{fmtMyr(c.total_paid_ytd)}</div>
+                      {c.threshold_exceeded && <span className="sd-chip warn">⚠ CP58 Required</span>}
                     </div>
                   </div>
                 ))}
@@ -119,31 +118,31 @@ export function CloseTaxComplianceTab({ stats, color }: Props) {
         </div>
       </div>
 
-      {/* WHT Queue */}
       {stats.whtQueue.length > 0 && (
-        <div className="card p-4">
-          <h3 className="mb-3 text-sm font-semibold text-slate-700">Withholding Tax Queue (Sec 107A / 109B)</h3>
+        <div className="sd-chart-card">
+          <h3 className="sd-chart-title">Withholding Tax Queue (Sec 107A / 109B)</h3>
+          <p className="sd-chart-sub">Foreign vendor payments subject to WHT</p>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" style={{ borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="border-b border-surface-border text-xs text-slate-500">
-                  <th className="pb-2 text-left font-medium">Foreign Vendor</th>
-                  <th className="pb-2 text-left font-medium">Country</th>
-                  <th className="pb-2 text-right font-medium">Payment Amt</th>
-                  <th className="pb-2 text-right font-medium">WHT Rate</th>
-                  <th className="pb-2 text-right font-medium">WHT Amount</th>
-                  <th className="pb-2 text-left font-medium">Section</th>
+                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                  <Th align="left">Foreign Vendor</Th>
+                  <Th align="left">Country</Th>
+                  <Th align="right">Payment Amt</Th>
+                  <Th align="right">WHT Rate</Th>
+                  <Th align="right">WHT Amount</Th>
+                  <Th align="left">Section</Th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-border">
+              <tbody>
                 {stats.whtQueue.map((w) => (
-                  <tr key={`${w.vendor}-${w.section}`} className="hover:bg-surface-muted/50">
-                    <td className="py-2 font-medium text-slate-800">{w.vendor}</td>
-                    <td className="py-2 text-slate-600">{w.country}</td>
-                    <td className="py-2 text-right text-slate-700">{fmtMyr(w.payment_amount)}</td>
-                    <td className="py-2 text-right text-slate-700">{w.wht_rate}%</td>
-                    <td className="py-2 text-right font-semibold text-rose-600">{fmtMyr(w.wht_amount)}</td>
-                    <td className="py-2 text-xs text-slate-500">{w.section}</td>
+                  <tr key={`${w.vendor}-${w.section}`} style={{ borderBottom: `1px solid ${BORDER}` }}>
+                    <td className="py-2" style={{ fontWeight: 600, color: TEXT }}>{w.vendor}</td>
+                    <td className="py-2" style={{ color: MUTED }}>{w.country}</td>
+                    <td className="py-2 text-right" style={{ color: TEXT }}>{fmtMyr(w.payment_amount)}</td>
+                    <td className="py-2 text-right" style={{ color: TEXT }}>{w.wht_rate}%</td>
+                    <td className="py-2 text-right" style={{ fontWeight: 600, color: 'var(--samurai-danger)' }}>{fmtMyr(w.wht_amount)}</td>
+                    <td className="py-2" style={{ fontSize: '0.75rem', color: MUTED }}>{w.section}</td>
                   </tr>
                 ))}
               </tbody>
@@ -152,40 +151,38 @@ export function CloseTaxComplianceTab({ stats, color }: Props) {
         </div>
       )}
 
-      {/* Expense Claim AI Audit */}
-      <div className="card p-4">
-        <h3 className="mb-3 text-sm font-semibold text-slate-700">Expense Claim AI Audit Queue</h3>
+      <div className="sd-chart-card">
+        <h3 className="sd-chart-title">Expense Claim AI Audit Queue</h3>
+        <p className="sd-chart-sub">Receipt, SST, and policy checks by Koku</p>
         {stats.expenseClaimAudit.length === 0 ? (
-          <p className="text-sm text-slate-400">No expense claims pending audit.</p>
+          <p style={{ fontSize: '0.85rem', color: MUTED }}>No expense claims pending audit.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" style={{ borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="border-b border-surface-border text-xs text-slate-500">
-                  <th className="pb-2 text-left font-medium">Employee</th>
-                  <th className="pb-2 text-left font-medium">Category</th>
-                  <th className="pb-2 text-left font-medium">Date</th>
-                  <th className="pb-2 text-right font-medium">Amount</th>
-                  <th className="pb-2 text-center font-medium">Receipt</th>
-                  <th className="pb-2 text-center font-medium">SST OK</th>
-                  <th className="pb-2 text-center font-medium">Policy</th>
-                  <th className="pb-2 text-center font-medium">Audit</th>
+                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                  <Th align="left">Employee</Th>
+                  <Th align="left">Category</Th>
+                  <Th align="left">Date</Th>
+                  <Th align="right">Amount</Th>
+                  <Th align="center">Receipt</Th>
+                  <Th align="center">SST OK</Th>
+                  <Th align="center">Policy</Th>
+                  <Th align="center">Audit</Th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-border">
+              <tbody>
                 {stats.expenseClaimAudit.map((claim, i) => (
-                  <tr key={i} className="hover:bg-surface-muted/50">
-                    <td className="py-2 font-medium text-slate-800">{claim.employee}</td>
-                    <td className="py-2 text-slate-600">{claim.category}</td>
-                    <td className="py-2 text-slate-600">{claim.claim_date}</td>
-                    <td className="py-2 text-right font-semibold text-slate-900">{fmtMyr(claim.amount)}</td>
-                    <td className="py-2 text-center">{claim.receipt_attached ? '✓' : <span className="text-rose-500">✗</span>}</td>
-                    <td className="py-2 text-center">{claim.sst_compliant ? '✓' : <span className="text-rose-500">✗</span>}</td>
-                    <td className="py-2 text-center">{claim.policy_exceeded ? <span className="text-rose-500">⚠</span> : '✓'}</td>
+                  <tr key={i} style={{ borderBottom: `1px solid ${BORDER}` }}>
+                    <td className="py-2" style={{ fontWeight: 600, color: TEXT }}>{claim.employee}</td>
+                    <td className="py-2" style={{ color: MUTED }}>{claim.category}</td>
+                    <td className="py-2" style={{ color: MUTED }}>{claim.claim_date}</td>
+                    <td className="py-2 text-right" style={{ fontWeight: 600, color: TEXT }}>{fmtMyr(claim.amount)}</td>
+                    <td className="py-2 text-center" style={{ color: claim.receipt_attached ? TEXT : 'var(--samurai-danger)' }}>{claim.receipt_attached ? '✓' : '✗'}</td>
+                    <td className="py-2 text-center" style={{ color: claim.sst_compliant ? TEXT : 'var(--samurai-danger)' }}>{claim.sst_compliant ? '✓' : '✗'}</td>
+                    <td className="py-2 text-center" style={{ color: claim.policy_exceeded ? 'var(--samurai-danger)' : TEXT }}>{claim.policy_exceeded ? '⚠' : '✓'}</td>
                     <td className="py-2 text-center">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${AUDIT_STYLE[claim.audit_status] ?? 'bg-slate-100 text-slate-600'}`}>
-                        {claim.audit_status}
-                      </span>
+                      <span className={`sd-chip ${AUDIT_CHIP[claim.audit_status] ?? 'muted'}`}>{claim.audit_status}</span>
                     </td>
                   </tr>
                 ))}

@@ -432,6 +432,15 @@
     ],
     "activePurchaseOrders": [
       {
+        "po_number": "PO-2026-0220",
+        "vendor": "MicroStation Office Systems",
+        "order_date": "2026-08-05",
+        "expected_delivery": "2026-08-15",
+        "total_amount": 14200.0,
+        "fulfillment_status": "Draft",
+        "approval_status": "Draft"
+      },
+      {
         "po_number": "PO-2026-0218",
         "vendor": "NexTech Distribution Sdn Bhd",
         "order_date": "2026-08-01",

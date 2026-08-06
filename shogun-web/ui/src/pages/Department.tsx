@@ -2,22 +2,19 @@ import { FormEvent, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft,
   Brain,
-  FileText,
+  History,
   Loader2,
-  MessageSquare,
   BarChart3,
   Settings,
 } from 'lucide-react';
-import clsx from 'clsx';
 import toast from 'react-hot-toast';
 import BrainViewer from '../components/BrainViewer';
-import Chat from '../components/Chat';
-import DocsViewer from '../components/DocsViewer';
+import ChatHistory from '../components/ChatHistory';
+import RightChatDock from '../components/RightChatDock';
 import { DashboardViewer } from '../components/dashboards/DashboardViewer';
 import StatusBadge from '../components/StatusBadge';
-import { authApi, departmentsApi } from '../lib/api';
+import { departmentsApi } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import {
   DEPARTMENT_CATALOG,
@@ -26,10 +23,9 @@ import {
 } from '../lib/types';
 
 const TABS: { id: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'chat', label: 'Chat', icon: MessageSquare },
-  { id: 'brain', label: 'Brain', icon: Brain },
-  { id: 'docs', label: 'Docs', icon: FileText },
   { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+  { id: 'chat-history', label: 'Chat History', icon: History },
+  { id: 'brain', label: 'Brain', icon: Brain },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -39,15 +35,15 @@ export default function Department() {
   const { name = '' } = useParams();
   const key = name.toLowerCase() as DepartmentKey;
   const { user } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = (searchParams.get('tab') || 'chat') as TabId;
+  const [searchParams] = useSearchParams();
+  const tabParam = (searchParams.get('tab') || 'dashboard') as TabId;
 
   const tabs = useMemo(() => {
     if (user?.role === 'admin' || user?.role === 'owner') return TABS;
     return TABS.filter((t) => t.id !== 'settings');
   }, [user?.role]);
 
-  const tab = tabs.some((t) => t.id === tabParam) ? tabParam : tabs[0]?.id || 'chat';
+  const tab = tabs.some((t) => t.id === tabParam) ? tabParam : tabs[0]?.id || 'dashboard';
   const queryClient = useQueryClient();
 
   const meta = DEPARTMENT_CATALOG[key];
@@ -65,14 +61,9 @@ export default function Department() {
   });
 
   const department = deptQuery.data;
-  const displayName = department?.name || meta?.name || key;
+  const displayName = meta?.name || (department?.name ? department.name.charAt(0).toUpperCase() + department.name.slice(1) : key);
   const persona = department?.persona || meta?.persona || '';
   const color = department?.color || meta?.color || '#6366f1';
-  const status =
-    statusQuery.data?.status ||
-    department?.status ||
-    department?.gateway_status ||
-    'unknown';
 
   const [config, setConfig] = useState<ProviderConfig>({});
   const configReady = useMemo(() => {
@@ -107,16 +98,12 @@ export default function Department() {
     onError: (err: Error) => toast.error(err.message || 'Test failed'),
   });
 
-  const setTab = (id: TabId) => {
-    setSearchParams({ tab: id });
-  };
-
   if (!meta && !deptQuery.isLoading) {
     return (
-      <div className="mx-auto max-w-lg rounded-xl border border-surface-border bg-white p-8 text-center">
-        <h1 className="text-lg font-semibold">Department not found</h1>
-        <p className="mt-2 text-sm text-slate-500">“{name}” is not a known department.</p>
-        <Link to="/dashboard" className="btn-primary mt-6 inline-flex">
+      <div className="sd-empty" style={{ marginTop: '2rem' }}>
+        <h2>Department not found</h2>
+        <p style={{ color: 'var(--samurai-muted)' }}>“{name}” is not a known department.</p>
+        <Link to="/dashboard" className="sd-btn sd-btn-primary" style={{ marginTop: '0.75rem' }}>
           Back to dashboard
         </Link>
       </div>
@@ -129,86 +116,23 @@ export default function Department() {
   };
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-4 lg:flex-row">
-      <aside className="w-full shrink-0 lg:w-52">
-        <Link
-          to="/dashboard"
-          className="mb-3 inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Dashboard
-        </Link>
-
-        <div className="card mb-3 p-4 lg:mb-4">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold text-white"
-              style={{ backgroundColor: color }}
-            >
-              {(displayName || '?').charAt(0)}
-            </div>
-            <div className="min-w-0">
-              <div className="truncate font-semibold text-slate-900">{displayName}</div>
-              <div className="truncate text-xs text-slate-500">{persona}</div>
-            </div>
-          </div>
-          <div className="mt-3">
-            <StatusBadge status={status} />
-          </div>
-        </div>
-
-        <nav className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
-          {tabs.map((t) => {
-            const Icon = t.icon;
-            const active = tab === t.id;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTab(t.id)}
-                className={clsx(
-                  'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition whitespace-nowrap',
-                  active
-                    ? 'bg-white text-slate-900 shadow-sm ring-1 ring-surface-border'
-                    : 'text-slate-600 hover:bg-white/70',
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {t.label}
-              </button>
-            );
-          })}
-        </nav>
-      </aside>
-
-      <div className="min-w-0 flex-1">
-        <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-semibold text-slate-900">
-              {displayName}
-              <span className="ml-2 text-base font-normal text-slate-400">{persona}</span>
-            </h1>
-            <p className="text-sm text-slate-500">{meta?.description}</p>
-          </div>
-          <StatusBadge
-            status={statusQuery.data?.gateway_status || department?.gateway_status || status}
-            label={`Gateway: ${statusQuery.data?.gateway_status || department?.gateway_status || status}`}
-            size="md"
-          />
-        </header>
-
+    <div className="flex w-full h-[calc(100vh-3.5rem)] overflow-hidden">
+      {/* Main Content Area */}
+      <div className="flex-1 min-w-0 overflow-y-auto p-4 md:p-6 space-y-4">
         {deptQuery.isLoading && (
-          <div className="flex justify-center py-16 text-slate-400">
-            <Loader2 className="h-7 w-7 animate-spin" />
+          <div className="sd-empty">
+            <div className="h-7 w-7 animate-spin rounded-full" style={{ border: '2px solid var(--samurai-lime)', borderTopColor: 'transparent' }} />
+            <p>Loading department…</p>
           </div>
         )}
 
-        {!deptQuery.isLoading && tab === 'chat' && <Chat department={key} />}
-        {!deptQuery.isLoading && tab === 'brain' && <BrainViewer department={key} />}
-        {!deptQuery.isLoading && tab === 'docs' && <DocsViewer department={key} />}
         {!deptQuery.isLoading && tab === 'dashboard' && (
           <DashboardViewer department={key} color={color} />
         )}
+        {!deptQuery.isLoading && (tab === 'chat-history' || tab === 'chat') && (
+          <ChatHistory department={key} />
+        )}
+        {!deptQuery.isLoading && tab === 'brain' && <BrainViewer department={key} />}
         {!deptQuery.isLoading && tab === 'settings' && (
           <form className="card max-w-2xl space-y-4 p-6" onSubmit={onSave}>
             <div>
@@ -289,6 +213,14 @@ export default function Department() {
           </form>
         )}
       </div>
+
+      {/* Resizable Fixed Right Dock Chat */}
+      <RightChatDock
+        department={key}
+        displayName={displayName}
+        persona={persona}
+        color={color}
+      />
     </div>
   );
 }

@@ -11,15 +11,15 @@ const fmt = (n: number) =>
       ? `RM ${(n / 1_000).toFixed(0)}K`
       : `RM ${n.toFixed(0)}`;
 
-const RUNWAY_BADGE: Record<string, { label: string; cls: string }> = {
-  healthy: { label: 'Healthy', cls: 'bg-emerald-100 text-emerald-700' },
-  caution: { label: 'Caution', cls: 'bg-amber-100 text-amber-700' },
-  critical: { label: 'Critical', cls: 'bg-rose-100 text-rose-700' },
-  unknown:  { label: '—', cls: 'bg-slate-100 text-slate-500' },
+const RUNWAY_CHIP: Record<string, { label: string; cls: string }> = {
+  healthy:  { label: 'Healthy',  cls: 'ok' },
+  caution:  { label: 'Caution',  cls: 'warn' },
+  critical: { label: 'Critical', cls: 'bad' },
+  unknown:   { label: '—',        cls: 'muted' },
 };
 
 export function ExecutivePulseTab({ stats, color }: Props) {
-  const badge = RUNWAY_BADGE[stats.runwayStatus] ?? RUNWAY_BADGE.unknown;
+  const chip = RUNWAY_CHIP[stats.runwayStatus] ?? RUNWAY_CHIP.unknown;
 
   const KPIs = [
     { label: 'Total Liquid Cash', value: fmt(stats.totalLiquidCash) },
@@ -27,7 +27,7 @@ export function ExecutivePulseTab({ stats, color }: Props) {
     {
       label: 'Cash Runway',
       value: stats.cashRunwayMonths > 0 ? `${stats.cashRunwayMonths.toFixed(1)} mo` : '—',
-      badge: badge,
+      chip,
     },
     { label: 'Revenue MTD', value: fmt(stats.revenueMTD) },
     { label: 'Gross Margin', value: `${stats.grossMargin.toFixed(1)}%` },
@@ -36,8 +36,8 @@ export function ExecutivePulseTab({ stats, color }: Props) {
 
   const COMBO_SERIES = [
     { key: 'revenue', label: 'Revenue', type: 'bar' as const, color },
-    { key: 'opex',    label: 'OPEX',    type: 'line' as const, color: '#f59e0b' },
-    { key: 'net',     label: 'Net',     type: 'line' as const, color: '#6366f1' },
+    { key: 'opex',    label: 'OPEX',    type: 'line' as const, color: '#fbbf24' },
+    { key: 'net',     label: 'Net',     type: 'line' as const, color: '#ceef7d' },
   ];
 
   const ALERT_ICON: Record<string, typeof TrendingDown> = {
@@ -47,32 +47,27 @@ export function ExecutivePulseTab({ stats, color }: Props) {
   };
 
   return (
-    <div className="space-y-4">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="sd-stack">
+      <div className="sd-kpi-grid">
         {KPIs.map((kpi) => (
-          <div key={kpi.label} className="card p-4">
-            <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{kpi.label}</div>
-            <div className="mt-1 text-xl font-bold text-slate-900">{kpi.value}</div>
-            {kpi.badge && (
-              <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${kpi.badge.cls}`}>
-                {kpi.badge.label}
-              </span>
+          <div key={kpi.label} className="sd-kpi-card">
+            <div className="sd-kpi-label">{kpi.label}</div>
+            <div className="sd-kpi-value">{kpi.value}</div>
+            {kpi.chip && (
+              <div className="sd-kpi-sub">
+                <span className={`sd-chip ${kpi.chip.cls}`}>{kpi.chip.label}</span>
+              </div>
             )}
           </div>
         ))}
       </div>
 
-      {/* Risk Alert Banner */}
       {stats.riskAlerts.length > 0 && (
-        <div className="space-y-2">
+        <div className="sd-stack" style={{ gap: '0.5rem' }}>
           {stats.riskAlerts.map((alert, i) => {
             const Icon = ALERT_ICON[alert.type] ?? AlertTriangle;
-            const cls = alert.level === 'critical'
-              ? 'border-rose-200 bg-rose-50 text-rose-700'
-              : 'border-amber-200 bg-amber-50 text-amber-700';
             return (
-              <div key={i} className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium ${cls}`}>
+              <div key={i} className={`sd-alert-row ${alert.level === 'critical' ? 'critical' : 'warning'}`}>
                 <Icon className="h-4 w-4 shrink-0" />
                 {alert.message}
               </div>
@@ -81,20 +76,15 @@ export function ExecutivePulseTab({ stats, color }: Props) {
         </div>
       )}
 
-      {/* Charts */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="card p-4">
-          <h3 className="mb-3 text-sm font-semibold text-slate-700">Revenue vs OPEX vs Net Profit (12 Mo)</h3>
-          <ComboChart
-            data={stats.revenueOpexTrend}
-            xKey="month"
-            series={COMBO_SERIES}
-            unit="RM "
-            height={220}
-          />
+      <div className="sd-row">
+        <div className="sd-chart-card">
+          <h3 className="sd-chart-title">Revenue vs OPEX vs Net Profit (12 Mo)</h3>
+          <p className="sd-chart-sub">Monthly revenue, operating expenditure, and net result</p>
+          <ComboChart data={stats.revenueOpexTrend} xKey="month" series={COMBO_SERIES} unit="RM " height={220} />
         </div>
-        <div className="card p-4">
-          <h3 className="mb-3 text-sm font-semibold text-slate-700">Cash Balance & Net Flow Trend</h3>
+        <div className="sd-chart-card">
+          <h3 className="sd-chart-title">Cash Balance & Net Flow Trend</h3>
+          <p className="sd-chart-sub">Liquidity movement across the reporting window</p>
           <LineChart
             data={stats.cashFlowTrend}
             xKey="month"
@@ -103,17 +93,16 @@ export function ExecutivePulseTab({ stats, color }: Props) {
             unit="RM "
             height={220}
             dataKeys={['cash', 'netFlow']}
-            colors={[color, '#94a3b8']}
+            colors={[color, '#ceef7d']}
             labels={{ cash: 'Cash Balance', netFlow: 'Net Cash Flow' }}
           />
         </div>
       </div>
 
-      {/* Statutory Liabilities Footer */}
       {stats.unpaidStatutory > 0 && (
-        <div className="card flex items-center justify-between px-5 py-3">
-          <span className="text-sm font-medium text-slate-600">Unpaid Statutory & Tax Liabilities</span>
-          <span className="text-base font-bold text-rose-600">{fmt(stats.unpaidStatutory)}</span>
+        <div className="sd-chart-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--samurai-muted)' }}>Unpaid Statutory & Tax Liabilities</span>
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 600, color: 'var(--samurai-danger)' }}>{fmt(stats.unpaidStatutory)}</span>
         </div>
       )}
     </div>

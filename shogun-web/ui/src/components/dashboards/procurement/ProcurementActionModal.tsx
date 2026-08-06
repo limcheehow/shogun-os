@@ -172,48 +172,64 @@ export function ProcurementActionModal({ open, onClose, actionType, entity, depa
     }
   };
 
+  const MUTED = 'var(--samurai-muted)';
+  const TEXT = 'var(--samurai-text)';
+  const BORDER = 'var(--samurai-border)';
+  const SURFACE_2 = 'var(--samurai-surface-2)';
+
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-      <div className="flex w-full max-w-2xl flex-col rounded-xl border border-surface-border bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-surface-border px-4 py-3">
+    <button
+      type="button"
+      style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+      onClick={onClose}
+      aria-label="Close"
+    >
+      <div
+        className="sd-card"
+        style={{ position: 'relative', zIndex: 50, width: '100%', maxWidth: '38rem', height: 'fit-content', padding: '1.25rem' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}`, paddingBottom: '0.75rem', marginBottom: '0.75rem' }}>
           <div>
-            <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
-            <p className="text-xs text-slate-500">{entitySummary(entity)}</p>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '0.95rem', fontWeight: 600, color: TEXT, margin: 0 }}>{title}</h3>
+            <p style={{ fontSize: '0.72rem', color: MUTED, margin: 0 }}>{entitySummary(entity)}</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-md p-1 text-slate-400 hover:bg-surface-muted hover:text-slate-600">
+          <button type="button" className="sd-icon-btn" onClick={onClose} aria-label="Close">
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="space-y-3 px-4 py-4">
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+        <div className="sd-stack" style={{ gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.72rem', color: MUTED }}>
             {connected ? (
-              <span className="text-emerald-600">Gateway connected</span>
+              <span className="sd-chip ok">Gateway connected</span>
             ) : (
-              <span className="text-rose-600">Gateway not connected</span>
+              <span className="sd-chip bad">Gateway not connected</span>
             )}
           </div>
 
-          <label className="block text-xs font-medium text-slate-600">Instruction</label>
-          <textarea
-            value={instruction}
-            onChange={(e) => setInstruction(e.target.value)}
-            rows={4}
-            className="w-full rounded-md border border-surface-border bg-white px-3 py-2 text-sm text-slate-700 focus:border-brand focus:outline-none"
-          />
+          <div>
+            <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 500, color: MUTED, marginBottom: '0.375rem' }}>Instruction</label>
+            <textarea
+              value={instruction}
+              onChange={(e) => setInstruction(e.target.value)}
+              rows={4}
+              style={{ width: '100%', borderRadius: '0.5rem', border: `1px solid ${BORDER}`, background: 'var(--samurai-surface)', padding: '0.5rem 0.75rem', fontSize: '0.85rem', color: TEXT, fontFamily: 'var(--font-body)' }}
+            />
+          </div>
 
           {(reply || sending) && (
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">Agent reply</label>
-              <div className="max-h-64 overflow-y-auto rounded-md border border-surface-border bg-surface-muted px-3 py-2 text-sm text-slate-800">
+              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 500, color: MUTED, marginBottom: '0.375rem' }}>Agent reply</label>
+              <div style={{ maxHeight: '16rem', overflowY: 'auto', borderRadius: '0.5rem', border: `1px solid ${BORDER}`, background: SURFACE_2, padding: '0.5rem 0.75rem', fontSize: '0.85rem', color: TEXT }}>
                 {reply ? (
                   <div className="prose-chat">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{reply}</ReactMarkdown>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 text-slate-500">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: MUTED }}>
                     <Loader2 className="h-4 w-4 animate-spin" /> Dispatching to procurement-manager…
                   </div>
                 )}
@@ -223,26 +239,26 @@ export function ProcurementActionModal({ open, onClose, actionType, entity, depa
           )}
 
           {proxyError && (
-            <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">
+            <div className="sd-alert-row critical">
               {proxyError}
             </div>
           )}
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-surface-border px-4 py-3">
-          <button type="button" onClick={onClose} className="rounded-md bg-surface-muted px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-200">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', borderTop: `1px solid ${BORDER}`, paddingTop: '0.75rem', marginTop: '0.75rem' }}>
+          <button type="button" onClick={onClose} className="sd-btn sd-btn-secondary">
             Close
           </button>
           <button
             type="button"
             onClick={handleConfirm}
             disabled={sending || !instruction.trim()}
-            className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+            className="sd-btn sd-btn-primary"
           >
             {sending ? 'Dispatching…' : 'Confirm & Dispatch'}
           </button>
         </div>
       </div>
-    </div>
+    </button>
   );
 }

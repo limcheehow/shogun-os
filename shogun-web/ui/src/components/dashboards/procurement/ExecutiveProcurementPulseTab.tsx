@@ -16,11 +16,14 @@ const fmt = (n: number) =>
       : `RM ${n.toFixed(0)}`;
 
 const LOW_STOCK_BADGE = (n: number) => {
-  if (n === 0)
-    return { label: "Healthy", cls: "bg-emerald-100 text-emerald-700" };
-  if (n <= 3) return { label: "Caution", cls: "bg-amber-100 text-amber-700" };
-  return { label: "Critical", cls: "bg-rose-100 text-rose-700" };
+  if (n === 0) return { label: "Healthy", cls: "ok" };
+  if (n <= 3) return { label: "Caution", cls: "warn" };
+  return { label: "Critical", cls: "bad" };
 };
+
+const MUTED = "var(--samurai-muted)";
+const TEXT = "var(--samurai-text)";
+const DANGER = "var(--samurai-danger)";
 
 export function ExecutiveProcurementPulseTab({
   stats,
@@ -102,32 +105,29 @@ export function ExecutiveProcurementPulseTab({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="sd-stack">
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="sd-kpi-grid">
         {KPIs.map((kpi) => {
           const isClickable = !!kpi.targetTab;
           return (
             <div
               key={kpi.label}
               onClick={() => kpi.targetTab && onNavigateTab?.(kpi.targetTab)}
-              className={`card p-4 transition-all ${isClickable ? "cursor-pointer hover:border-brand/60 hover:shadow-md hover:-translate-y-0.5" : ""}`}
+              className={`sd-kpi-card${isClickable ? " interactive" : ""}`}
+              style={isClickable ? { cursor: "pointer" } : undefined}
             >
-              <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                {kpi.label}
-              </div>
-              <div className="mt-1 text-xl font-bold text-slate-900">
-                {kpi.value}
-              </div>
+              <div className="sd-kpi-label">{kpi.label}</div>
+              <div className="sd-kpi-value">{kpi.value}</div>
               {kpi.badge && (
-                <span
-                  className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${kpi.badge.cls}`}
-                >
+                <span className={`sd-chip ${kpi.badge.cls}`} style={{ marginTop: "0.4rem" }}>
                   {kpi.badge.label}
                 </span>
               )}
               {kpi.sub && (
-                <div className="mt-0.5 text-xs text-slate-500">{kpi.sub}</div>
+                <div className="sd-kpi-sub" style={{ fontSize: "0.72rem", color: MUTED }}>
+                  {kpi.sub}
+                </div>
               )}
             </div>
           );
@@ -136,23 +136,21 @@ export function ExecutiveProcurementPulseTab({
 
       {/* Executive Reorder Watchdog Alert Banner */}
       {stats.riskAlerts.length > 0 && (
-        <div className="space-y-2">
+        <div className="sd-stack" style={{ gap: "0.5rem" }}>
           {stats.riskAlerts.map((alert, i) => {
             const Icon = ALERT_ICON[alert.type] ?? AlertTriangle;
-            const cls =
-              alert.level === "critical"
-                ? "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100/80"
-                : "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100/80";
+            const level = alert.level === "critical" ? "critical" : "warning";
             const targetTab = getAlertTargetTab(alert.type, alert.message);
             return (
               <div
                 key={i}
                 onClick={() => onNavigateTab?.(targetTab)}
-                className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all cursor-pointer hover:shadow-sm ${cls}`}
+                className={`sd-alert-row ${level}`}
+                style={{ cursor: "pointer" }}
               >
                 <Icon className="h-4 w-4 shrink-0" />
                 <span className="flex-1">{alert.message}</span>
-                <span className="text-xs font-bold underline opacity-80">
+                <span style={{ fontSize: "0.72rem", fontWeight: 700, opacity: 0.8 }}>
                   View Tab →
                 </span>
               </div>
@@ -162,11 +160,9 @@ export function ExecutiveProcurementPulseTab({
       )}
 
       {/* Charts */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="card p-4">
-          <h3 className="mb-3 text-sm font-semibold text-slate-700">
-            Inventory Valuation by Category
-          </h3>
+      <div className="sd-row">
+        <div className="sd-chart-card">
+          <h3 className="sd-chart-title">Inventory Valuation by Category</h3>
           <BarChart
             data={stats.valuationByCategory}
             xKey="category"
@@ -178,10 +174,8 @@ export function ExecutiveProcurementPulseTab({
             colors={[color]}
           />
         </div>
-        <div className="card p-4">
-          <h3 className="mb-3 text-sm font-semibold text-slate-700">
-            Procurement Spend vs Budget (12 Mo)
-          </h3>
+        <div className="sd-chart-card">
+          <h3 className="sd-chart-title">Procurement Spend vs Budget (12 Mo)</h3>
           <LineChart
             data={stats.spendVsBudgetTrend}
             xKey="month"
@@ -190,41 +184,33 @@ export function ExecutiveProcurementPulseTab({
             unit="RM "
             height={220}
             dataKeys={["spend", "budget"]}
-            colors={[color, "#94a3b8"]}
+            colors={[color, "var(--samurai-muted)"]}
             labels={{ spend: "Actual Spend", budget: "Budget" }}
           />
         </div>
       </div>
 
       {/* Dead Stock & Spend Footers */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="card flex items-center justify-between px-5 py-3">
+      <div className="sd-row">
+        <div className="sd-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <span className="text-sm font-medium text-slate-600">
-              Dead & Slow Stock Capital
-            </span>
-            <div className="text-xs text-slate-400">
+            <div className="sd-kpi-label">Dead & Slow Stock Capital</div>
+            <div style={{ fontSize: "0.72rem", color: MUTED, marginTop: "0.2rem" }}>
               {deadPct.toFixed(1)}% of total inventory valuation
             </div>
           </div>
-          <span
-            className={`text-base font-bold ${deadPct > 15 ? "text-rose-600" : "text-slate-800"}`}
-          >
+          <span style={{ fontFamily: "var(--font-display)", fontSize: "1.05rem", fontWeight: 600, color: deadPct > 15 ? DANGER : TEXT }}>
             {fmt(stats.deadSlowStockCapital)}
           </span>
         </div>
-        <div className="card flex items-center justify-between px-5 py-3">
+        <div className="sd-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <span className="text-sm font-medium text-slate-600">
-              Procurement Spend MTD
-            </span>
-            <div className="text-xs text-slate-400">
+            <div className="sd-kpi-label">Procurement Spend MTD</div>
+            <div style={{ fontSize: "0.72rem", color: MUTED, marginTop: "0.2rem" }}>
               {spendPct.toFixed(1)}% of monthly budget
             </div>
           </div>
-          <span
-            className={`text-base font-bold ${spendPct > 100 ? "text-rose-600" : "text-slate-800"}`}
-          >
+          <span style={{ fontFamily: "var(--font-display)", fontSize: "1.05rem", fontWeight: 600, color: spendPct > 100 ? DANGER : TEXT }}>
             {fmt(stats.procurementSpendMtd)}
           </span>
         </div>

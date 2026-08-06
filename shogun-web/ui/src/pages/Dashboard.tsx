@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Copy, ExternalLink, Globe2, Loader2, Plus } from 'lucide-react';
+import {
+  Boxes, Code2, Copy, ExternalLink, Globe2, Handshake, Kanban, LayoutDashboard,
+  LifeBuoy, Loader2, Megaphone, MessageSquare, Package, Plus, Shield, Users, Wallet, Brain,
+  type LucideIcon,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
-import DepartmentCard from '../components/DepartmentCard';
 import { authApi, departmentsApi, onboardingApi } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import {
@@ -12,6 +15,10 @@ import {
   type Department,
   type DepartmentKey,
 } from '../lib/types';
+
+const ICONS: Record<string, LucideIcon> = {
+  Users, Wallet, Handshake, Megaphone, Shield, LifeBuoy, Code2, Kanban, Boxes, Package,
+};
 
 function mergeCatalog(remote: Department[] | undefined): Department[] {
   const map = new Map((remote || []).map((d) => [d.key || (d as { name?: string }).name, d]));
@@ -22,7 +29,7 @@ function mergeCatalog(remote: Department[] | undefined): Department[] {
       ...base,
       ...r,
       key,
-      name: r?.name || base.name,
+      name: base?.name || (r?.name ? r.name.charAt(0).toUpperCase() + r.name.slice(1) : key),
       persona: r?.persona || base.persona,
       description: r?.description || base.description,
       color: r?.color || base.color,
@@ -98,25 +105,18 @@ export default function Dashboard() {
   return (
     <div className="mx-auto max-w-6xl">
       {isLive && publicUrl ? (
-        <div className="mb-6 flex flex-col gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <Globe2 className="mt-0.5 h-5 w-5 text-emerald-600" />
-            <div>
-              <div className="text-sm font-semibold text-emerald-900">Public company URL</div>
-              <a
-                href={publicUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="break-all text-sm font-medium text-emerald-700 hover:underline"
-              >
-                {publicUrl}
-              </a>
-            </div>
+        <div className="sd-banner ok">
+          <Globe2 className="h-5 w-5" style={{ color: 'var(--samurai-ok)' }} />
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold">Public company URL</div>
+            <a href={publicUrl} target="_blank" rel="noreferrer" className="break-all text-sm font-medium" style={{ color: 'var(--samurai-lime)' }}>
+              {publicUrl}
+            </a>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2">
             <button
               type="button"
-              className="btn-secondary"
+              className="sd-btn sd-btn-secondary"
               onClick={() => {
                 void navigator.clipboard.writeText(publicUrl).then(
                   () => toast.success('Copied'),
@@ -124,119 +124,124 @@ export default function Dashboard() {
                 );
               }}
             >
-              <Copy className="h-4 w-4" />
-              Copy
+              <Copy className="h-4 w-4" /> Copy
             </button>
-            <a href={publicUrl} target="_blank" rel="noreferrer" className="btn-secondary">
-              <ExternalLink className="h-4 w-4" />
-              Open
+            <a href={publicUrl} target="_blank" rel="noreferrer" className="sd-btn sd-btn-secondary">
+              <ExternalLink className="h-4 w-4" /> Open
             </a>
           </div>
         </div>
       ) : (
-        <div className="mb-6 flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="text-sm font-semibold text-amber-900">Not on the public internet yet</div>
-            <p className="text-sm text-amber-800">
-              Claim a free random *.shogun-os.ai URL - no tokens or Cloudflare needed.
+        <div className="sd-banner warn">
+          <Globe2 className="h-5 w-5" style={{ color: 'var(--samurai-warning)' }} />
+          <div className="flex-1">
+            <div className="text-sm font-semibold">Not on the public internet yet</div>
+            <p className="text-sm" style={{ color: 'var(--samurai-muted)' }}>
+              Claim a free random *.shogun-os.ai URL — no tokens or Cloudflare needed.
             </p>
           </div>
           <button
             type="button"
-            className="btn-primary"
+            className="sd-btn sd-btn-primary"
             disabled={goLiveMutation.isPending}
             onClick={() => goLiveMutation.mutate()}
           >
-            {goLiveMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Globe2 className="h-4 w-4" />
-            )}
+            {goLiveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe2 className="h-4 w-4" />}
             Get public URL
           </button>
         </div>
       )}
 
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="sd-page-head" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Company dashboard
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Welcome back{user?.name ? `, ${user.name}` : ''}. One place for every
-            department agent - activate, chat, and monitor from here.
-          </p>
+          <h1>Company dashboard</h1>
+          <p>Welcome back{user?.name ? `, ${user.name}` : ''}. One place for every department agent — activate, chat, and monitor from here.</p>
         </div>
         {inactive.length > 0 && (
-          <button
-            type="button"
-            className="btn-secondary"
-            onClick={() => setAdding(inactive[0].key)}
-          >
-            <Plus className="h-4 w-4" />
-            Add Department
+          <button type="button" className="sd-btn sd-btn-secondary" onClick={() => setAdding(inactive[0].key)}>
+            <Plus className="h-4 w-4" /> Add Department
           </button>
         )}
       </div>
 
       {active.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 py-16 text-center">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-slate-400" />
-          <p className="mt-4 text-sm text-slate-500">No active departments yet.</p>
-          <p className="text-xs text-slate-400">
-            Activate one from the list below, or finish onboarding.
-          </p>
+        <div className="sd-empty">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <h2>No active departments yet</h2>
+          <p>Activate one from the list below, or finish onboarding.</p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {active.map((dept) => (
-            <DepartmentCard key={dept.key} department={dept} />
-          ))}
+        <div className="sd-grid sd-dept-grid">
+          {active.map((dept) => {
+            const meta = DEPARTMENT_CATALOG[dept.key] || dept;
+            const Icon = ICONS[meta.icon] || Boxes;
+            const color = meta.color || dept.color || '#6366f1';
+            const displayName = DEPARTMENT_CATALOG[dept.key]?.name || dept.name || dept.key;
+            const status = String(dept.status || dept.gateway_status || '');
+            const level = status === 'active' || status === 'online' ? 'ok' : status === 'degraded' ? 'warn' : status === 'offline' || status === 'down' ? 'bad' : 'muted';
+            return (
+              <Link key={dept.key} to={`/department/${dept.key}?tab=dashboard`} className="sd-card interactive" style={{ textDecoration: 'none' }}>
+                <div className="sd-dept-card-head">
+                  <div className="sd-dept-card-id">
+                    <span className="sd-dept-icon-tile" style={{ backgroundColor: color }}><Icon className="h-5 w-5" /></span>
+                    <div>
+                      <div className="sd-dept-card-name">{displayName}</div>
+                      <div className="sd-dept-card-persona">{meta.persona}</div>
+                    </div>
+                  </div>
+                  <span className={`sd-chip ${level}`}>{status || 'offline'}</span>
+                </div>
+                <p className="sd-dept-card-desc">{meta.description}</p>
+                <div className="sd-dept-card-foot">
+                  <span className="sd-chip muted"><LayoutDashboard className="h-3 w-3" /> Dashboard</span>
+                  <span className="sd-chip muted"><MessageSquare className="h-3 w-3" /> Chat</span>
+                  <span className="sd-chip muted"><Brain className="h-3 w-3" /> Brain</span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
 
       {inactive.length > 0 && (
         <div className="mt-10">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">
-            Available departments
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {inactive.map((dept) => (
-              <div
-                key={dept.key}
-                className="card cursor-pointer p-4 transition hover:border-slate-300"
-                onClick={() => {
-                  if (adding === dept.key) {
-                    setAdding(null);
-                  } else {
-                    setAdding(dept.key);
-                  }
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: dept.color }} />
-                  <span className="font-medium text-slate-900">{dept.name}</span>
-                  <span className="text-xs text-slate-400">{dept.persona}</span>
+          <h2 className="sd-sidebar-section" style={{ padding: '0 0 0.75rem' }}>Available departments</h2>
+          <div className="sd-grid sd-dept-grid">
+            {inactive.map((dept) => {
+              const meta = DEPARTMENT_CATALOG[dept.key] || dept;
+              const Icon = ICONS[meta.icon] || Boxes;
+              const color = meta.color || dept.color || '#6366f1';
+              const displayName = DEPARTMENT_CATALOG[dept.key]?.name || dept.name || dept.key;
+              return (
+                <div
+                  key={dept.key}
+                  className="sd-card interactive"
+                  onClick={() => setAdding(adding === dept.key ? null : dept.key)}
+                >
+                  <div className="sd-dept-card-head">
+                    <div className="sd-dept-card-id">
+                      <span className="sd-dept-icon-tile" style={{ backgroundColor: color }}><Icon className="h-5 w-5" /></span>
+                      <div>
+                        <div className="sd-dept-card-name">{displayName}</div>
+                        <div className="sd-dept-card-persona">{meta.persona}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="sd-dept-card-desc">{meta.description}</p>
+                  {adding === dept.key && (
+                    <button
+                      type="button"
+                      className="sd-btn sd-btn-primary w-full"
+                      disabled={activateMutation.isPending}
+                      onClick={(e) => { e.stopPropagation(); activateMutation.mutate(dept.key); }}
+                    >
+                      {activateMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                      Activate {displayName}
+                    </button>
+                  )}
                 </div>
-                <p className="mt-1 text-sm text-slate-600">{dept.description}</p>
-                {adding === dept.key && (
-                  <button
-                    type="button"
-                    className="btn-primary mt-3 w-full"
-                    disabled={activateMutation.isPending}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      activateMutation.mutate(dept.key);
-                    }}
-                  >
-                    {activateMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : null}
-                    Activate {dept.name}
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

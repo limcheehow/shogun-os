@@ -96,8 +96,9 @@ export function ProcurementDashboard({
 
   if (statsQuery.isLoading) {
     return (
-      <div className="flex justify-center py-16 text-slate-400">
-        <div className="h-7 w-7 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+      <div className="sd-empty">
+        <div className="h-7 w-7 animate-spin rounded-full" style={{ border: `2px solid var(--samurai-lime)`, borderTopColor: 'transparent' }} />
+        <p>Loading Procurement dashboard…</p>
       </div>
     );
   }
@@ -106,10 +107,9 @@ export function ProcurementDashboard({
 
   if (!rawStats) {
     return (
-      <div className="flex min-h-[20rem] flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-center">
-        <p className="text-sm text-slate-500">
-          Unable to load Procurement dashboard data.
-        </p>
+      <div className="sd-empty">
+        <h2>Unable to load Procurement dashboard data</h2>
+        <p>The procurement snapshot could not be retrieved. Try refreshing the page.</p>
       </div>
     );
   }
@@ -121,7 +121,7 @@ export function ProcurementDashboard({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="sd-stack">
       <DashboardSubNav tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
       {activeTab === "pulse" && (

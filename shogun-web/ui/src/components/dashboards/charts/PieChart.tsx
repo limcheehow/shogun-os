@@ -7,6 +7,7 @@ import {
   Legend,
 } from 'recharts';
 import { chartColors } from '../../../lib/palette';
+import { ChartEmpty, CHART_TOOLTIP_STYLE } from './empty';
 
 interface PieChartProps {
   data: { name: string; value: number }[];
@@ -23,11 +24,7 @@ export function PieChart({
   innerRadius = 50, showLegend = true,
 }: PieChartProps) {
   if (!data || data.length === 0) {
-    return (
-      <div className="flex h-full min-h-[200px] items-center justify-center rounded-xl border border-dashed border-slate-200 text-sm text-slate-400">
-        No data
-      </div>
-    );
+    return <ChartEmpty />;
   }
 
   const palette = colors || chartColors(color, data.length);
@@ -45,11 +42,17 @@ export function PieChart({
             <Cell key={i} fill={palette[i % palette.length]} />
           ))}
         </Pie>
-        <Tooltip formatter={formatter as never} contentStyle={{
-          background: '#fff', border: '1px solid #e2e8f0',
-          borderRadius: '8px', fontSize: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        }} />
-        {showLegend && <Legend />}
+        <Tooltip formatter={formatter as never} contentStyle={CHART_TOOLTIP_STYLE} />
+        {showLegend && (
+          <Legend
+            formatter={(value: string) => {
+              const item = data.find((d) => d.name === value);
+              if (!item) return value;
+              const formattedVal = unit ? `${unit}${Number(item.value).toLocaleString()}` : Number(item.value).toLocaleString();
+              return `${value} (${formattedVal})`;
+            }}
+          />
+        )}
       </RechartsPieChart>
     </ResponsiveContainer>
   );

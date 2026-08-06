@@ -6,25 +6,38 @@ interface Props { stats: FinanceDashboardStats; color: string }
 
 const fmtMyr = (n: number) => `RM ${n.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-const BUCKET_STYLE: Record<string, string> = {
-  '0-30':  'bg-emerald-100 text-emerald-700',
-  '31-60': 'bg-amber-100 text-amber-700',
-  '61-90': 'bg-orange-100 text-orange-700',
-  '90+':   'bg-rose-100 text-rose-700',
+const BUCKET_CHIP: Record<string, string> = {
+  '0-30':  'ok',
+  '31-60': 'warn',
+  '61-90': 'warn',
+  '90+':   'bad',
 };
 
-const MATCH_STYLE: Record<string, string> = {
-  'Matched':     'bg-emerald-100 text-emerald-700',
-  'PO Mismatch': 'bg-amber-100 text-amber-700',
-  'Missing GRN': 'bg-rose-100 text-rose-700',
+const MATCH_CHIP: Record<string, string> = {
+  'Matched':     'ok',
+  'PO Mismatch': 'warn',
+  'Missing GRN': 'bad',
 };
 
-const APPROVAL_STYLE: Record<string, string> = {
-  'Pending':           'bg-slate-100 text-slate-600',
-  'Approved':          'bg-emerald-100 text-emerald-700',
-  'Paid':              'bg-blue-100 text-blue-700',
-  'On Hold':           'bg-rose-100 text-rose-700',
+const APPROVAL_CHIP: Record<string, string> = {
+  'Pending':  'muted',
+  'Approved': 'ok',
+  'Paid':     'ok',
+  'On Hold':  'bad',
 };
+
+const MUTED = 'var(--samurai-muted)';
+const TEXT = 'var(--samurai-text)';
+const SURFACE_2 = 'var(--samurai-surface-2)';
+const BORDER = 'var(--samurai-border)';
+const HOVER = 'var(--samurai-hover-ui)';
+
+const th = { fontSize: '0.72rem', fontWeight: 500, color: MUTED } as const;
+const tdMuted = { color: MUTED } as const;
+
+function Th({ children, align }: { children: React.ReactNode; align: 'left' | 'right' | 'center' }) {
+  return <th className="pb-2" style={{ ...th, textAlign: align }}>{children}</th>;
+}
 
 export function WorkingCapitalOpsTab({ stats }: Props) {
   const [dunningTarget, setDunningTarget] = useState<DunningItem | null>(null);
@@ -34,89 +47,79 @@ export function WorkingCapitalOpsTab({ stats }: Props) {
   const pct = (n: number) => agTotal > 0 ? (n / agTotal) * 100 : 0;
 
   const WC_METRICS = [
-    { label: 'Total AR', value: fmtMyr(stats.totalAR) },
+    { label: 'Total AR', value: fmtMyr(stats.totalAR), warn: false },
     { label: 'AR Overdue >30d', value: fmtMyr(stats.arOverdue30), warn: stats.arOverdue30 > 0 },
-    { label: 'DSO (days)', value: stats.dso > 0 ? `${stats.dso.toFixed(0)}d` : '—' },
-    { label: 'Total AP', value: fmtMyr(stats.totalAP) },
+    { label: 'DSO (days)', value: stats.dso > 0 ? `${stats.dso.toFixed(0)}d` : '—', warn: false },
+    { label: 'Total AP', value: fmtMyr(stats.totalAP), warn: false },
     { label: 'AP Overdue', value: fmtMyr(stats.apOverdue), warn: stats.apOverdue > 0 },
-    { label: 'DPO (days)', value: stats.dpo > 0 ? `${stats.dpo.toFixed(0)}d` : '—' },
+    { label: 'DPO (days)', value: stats.dpo > 0 ? `${stats.dpo.toFixed(0)}d` : '—', warn: false },
   ];
 
   return (
-    <div className="space-y-4">
-      {/* Working Capital Metric Strip */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="sd-stack">
+      <div className="sd-kpi-grid">
         {WC_METRICS.map((m) => (
-          <div key={m.label} className="card p-4">
-            <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{m.label}</div>
-            <div className={`mt-1 text-lg font-bold ${m.warn ? 'text-rose-600' : 'text-slate-900'}`}>{m.value}</div>
+          <div key={m.label} className="sd-kpi-card">
+            <div className="sd-kpi-label">{m.label}</div>
+            <div className="sd-kpi-value" style={{ color: m.warn ? 'var(--samurai-danger)' : TEXT }}>{m.value}</div>
           </div>
         ))}
       </div>
 
-      {/* AR Aging */}
-      <div className="card p-4">
-        <h3 className="mb-3 text-sm font-semibold text-slate-700">AR Aging Distribution</h3>
-        <div className="mb-4 space-y-2">
+      <div className="sd-chart-card">
+        <h3 className="sd-chart-title">AR Aging Distribution</h3>
+        <p className="sd-chart-sub">Outstanding receivables by aging bucket</p>
+        <div className="sd-stack" style={{ gap: '0.5rem', marginBottom: '1rem' }}>
           {[
-            { label: '0–30 days', val: ag.bucket_0_30, key: '0-30' },
-            { label: '31–60 days', val: ag.bucket_31_60, key: '31-60' },
-            { label: '61–90 days', val: ag.bucket_61_90, key: '61-90' },
-            { label: '90+ days', val: ag.bucket_90_plus, key: '90+' },
+            { label: '0–30 days', val: ag.bucket_0_30, key: '0-30', color: 'var(--samurai-ok)' },
+            { label: '31–60 days', val: ag.bucket_31_60, key: '31-60', color: 'var(--samurai-warning)' },
+            { label: '61–90 days', val: ag.bucket_61_90, key: '61-90', color: '#f59e0b' },
+            { label: '90+ days', val: ag.bucket_90_plus, key: '90+', color: 'var(--samurai-danger)' },
           ].map((b) => (
-            <div key={b.key} className="flex items-center gap-3">
-              <div className="w-20 shrink-0 text-xs text-slate-500">{b.label}</div>
-              <div className="flex-1 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className={`h-2 rounded-full transition-all ${
-                    b.key === '0-30' ? 'bg-emerald-500' :
-                    b.key === '31-60' ? 'bg-amber-400' :
-                    b.key === '61-90' ? 'bg-orange-500' : 'bg-rose-500'
-                  }`}
-                  style={{ width: `${pct(b.val)}%` }}
-                />
+            <div key={b.key} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ width: '5rem', flexShrink: 0, fontSize: '0.75rem', color: MUTED }}>{b.label}</div>
+              <div style={{ flex: 1, height: '0.5rem', borderRadius: 999, overflow: 'hidden', background: SURFACE_2 }}>
+                <div style={{ height: '100%', width: `${pct(b.val)}%`, borderRadius: 999, background: b.color }} />
               </div>
-              <div className="w-24 text-right text-xs font-semibold text-slate-700">{fmtMyr(b.val)}</div>
+              <div style={{ width: '6rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: TEXT }}>{fmtMyr(b.val)}</div>
             </div>
           ))}
         </div>
 
-        {/* Dunning Queue Table */}
-        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Dunning Queue</div>
+        <div className="sd-kpi-label" style={{ marginBottom: '0.5rem' }}>Dunning Queue</div>
         {stats.dunningQueue.length === 0 ? (
-          <p className="text-sm text-slate-400">No overdue invoices requiring action.</p>
+          <p style={{ fontSize: '0.85rem', color: MUTED }}>No overdue invoices requiring action.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" style={{ borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="border-b border-surface-border text-xs text-slate-500">
-                  <th className="pb-2 text-left font-medium">Customer</th>
-                  <th className="pb-2 text-left font-medium">Invoice #</th>
-                  <th className="pb-2 text-left font-medium">Due Date</th>
-                  <th className="pb-2 text-right font-medium">Amount</th>
-                  <th className="pb-2 text-center font-medium">Bucket</th>
-                  <th className="pb-2 text-left font-medium">Status</th>
-                  <th className="pb-2 text-center font-medium">Action</th>
+                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                  <Th align="left">Customer</Th>
+                  <Th align="left">Invoice #</Th>
+                  <Th align="left">Due Date</Th>
+                  <Th align="right">Amount</Th>
+                  <Th align="center">Bucket</Th>
+                  <Th align="left">Status</Th>
+                  <Th align="center">Action</Th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-border">
+              <tbody>
                 {stats.dunningQueue.map((item) => (
-                  <tr key={item.invoice_no} className="hover:bg-surface-muted/50">
-                    <td className="py-2 font-medium text-slate-800">{item.customer}</td>
-                    <td className="py-2 text-slate-600">{item.invoice_no}</td>
-                    <td className="py-2 text-slate-600">{item.due_date}</td>
-                    <td className="py-2 text-right font-semibold text-slate-900">{fmtMyr(item.amount)}</td>
+                  <tr key={item.invoice_no} style={{ borderBottom: `1px solid ${BORDER}` }}>
+                    <td className="py-2" style={{ fontWeight: 600, color: TEXT }}>{item.customer}</td>
+                    <td className="py-2" style={tdMuted}>{item.invoice_no}</td>
+                    <td className="py-2" style={tdMuted}>{item.due_date}</td>
+                    <td className="py-2 text-right" style={{ fontWeight: 600, color: TEXT }}>{fmtMyr(item.amount)}</td>
                     <td className="py-2 text-center">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${BUCKET_STYLE[item.bucket] ?? 'bg-slate-100 text-slate-600'}`}>
-                        {item.bucket}d
-                      </span>
+                      <span className={`sd-chip ${BUCKET_CHIP[item.bucket] ?? 'muted'}`}>{item.bucket}d</span>
                     </td>
-                    <td className="py-2 text-xs text-slate-600">{item.dunning_status}</td>
+                    <td className="py-2" style={{ fontSize: '0.75rem', color: MUTED }}>{item.dunning_status}</td>
                     <td className="py-2 text-center">
                       <button
                         type="button"
                         onClick={() => setDunningTarget(item)}
-                        className="rounded-md bg-brand px-2.5 py-1 text-xs font-medium text-white hover:opacity-90 transition-opacity"
+                        className="sd-btn sd-btn-secondary"
+                        style={{ padding: '0.3rem 0.6rem', fontSize: '0.72rem' }}
                       >
                         Action
                       </button>
@@ -129,40 +132,36 @@ export function WorkingCapitalOpsTab({ stats }: Props) {
         )}
       </div>
 
-      {/* AP 3-Way Match & Payment Queue */}
-      <div className="card p-4">
-        <h3 className="mb-3 text-sm font-semibold text-slate-700">AP 3-Way Match & Payment Run Queue</h3>
+      <div className="sd-chart-card">
+        <h3 className="sd-chart-title">AP 3-Way Match &amp; Payment Run Queue</h3>
+        <p className="sd-chart-sub">Vendor bills pending match and approval</p>
         {stats.apBills.length === 0 ? (
-          <p className="text-sm text-slate-400">No AP bills pending.</p>
+          <p style={{ fontSize: '0.85rem', color: MUTED }}>No AP bills pending.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" style={{ borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="border-b border-surface-border text-xs text-slate-500">
-                  <th className="pb-2 text-left font-medium">Vendor</th>
-                  <th className="pb-2 text-left font-medium">Bill #</th>
-                  <th className="pb-2 text-left font-medium">Due Date</th>
-                  <th className="pb-2 text-right font-medium">Amount</th>
-                  <th className="pb-2 text-center font-medium">3-Way Match</th>
-                  <th className="pb-2 text-center font-medium">Approval</th>
+                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                  <Th align="left">Vendor</Th>
+                  <Th align="left">Bill #</Th>
+                  <Th align="left">Due Date</Th>
+                  <Th align="right">Amount</Th>
+                  <Th align="center">3-Way Match</Th>
+                  <Th align="center">Approval</Th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-border">
+              <tbody>
                 {stats.apBills.map((bill) => (
-                  <tr key={bill.bill_no} className="hover:bg-surface-muted/50">
-                    <td className="py-2 font-medium text-slate-800">{bill.vendor}</td>
-                    <td className="py-2 text-slate-600">{bill.bill_no}</td>
-                    <td className="py-2 text-slate-600">{bill.due_date}</td>
-                    <td className="py-2 text-right font-semibold text-slate-900">{fmtMyr(bill.amount)}</td>
+                  <tr key={bill.bill_no} style={{ borderBottom: `1px solid ${BORDER}` }}>
+                    <td className="py-2" style={{ fontWeight: 600, color: TEXT }}>{bill.vendor}</td>
+                    <td className="py-2" style={tdMuted}>{bill.bill_no}</td>
+                    <td className="py-2" style={tdMuted}>{bill.due_date}</td>
+                    <td className="py-2 text-right" style={{ fontWeight: 600, color: TEXT }}>{fmtMyr(bill.amount)}</td>
                     <td className="py-2 text-center">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${MATCH_STYLE[bill.match_status] ?? 'bg-slate-100 text-slate-600'}`}>
-                        {bill.match_status}
-                      </span>
+                      <span className={`sd-chip ${MATCH_CHIP[bill.match_status] ?? 'muted'}`}>{bill.match_status}</span>
                     </td>
                     <td className="py-2 text-center">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${APPROVAL_STYLE[bill.approval_status] ?? 'bg-slate-100 text-slate-600'}`}>
-                        {bill.approval_status}
-                      </span>
+                      <span className={`sd-chip ${APPROVAL_CHIP[bill.approval_status] ?? 'muted'}`}>{bill.approval_status}</span>
                     </td>
                   </tr>
                 ))}
@@ -172,40 +171,40 @@ export function WorkingCapitalOpsTab({ stats }: Props) {
         )}
       </div>
 
-      {/* Dunning Action Modal */}
       {dunningTarget && (
         <>
-          <button type="button" className="fixed inset-0 z-40 cursor-default bg-black/30" onClick={() => setDunningTarget(null)} aria-label="Close" />
-          <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16" onClick={() => setDunningTarget(null)}>
-            <div className="card relative z-50 w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between border-b border-surface-border px-5 py-4">
+          <button type="button" style={{ position: 'fixed', inset: 0, zIndex: 40, background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'default' }} onClick={() => setDunningTarget(null)} aria-label="Close" />
+          <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', justifyContent: 'center', padding: '1rem', paddingTop: '4rem' }} onClick={() => setDunningTarget(null)}>
+            <div className="sd-card" style={{ position: 'relative', zIndex: 50, width: '100%', maxWidth: '28rem' }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}`, paddingBottom: '0.75rem', marginBottom: '0.75rem' }}>
                 <div>
-                  <h2 className="text-base font-semibold text-slate-900">Dunning Action</h2>
-                  <p className="text-xs text-slate-500">{dunningTarget.customer} · {dunningTarget.invoice_no}</p>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 600, color: TEXT, margin: 0 }}>Dunning Action</h2>
+                  <p style={{ fontSize: '0.72rem', color: MUTED, margin: 0 }}>{dunningTarget.customer} · {dunningTarget.invoice_no}</p>
                 </div>
-                <button type="button" onClick={() => setDunningTarget(null)} className="btn-ghost !px-2 !py-1" aria-label="Close">
+                <button type="button" className="sd-icon-btn" onClick={() => setDunningTarget(null)} aria-label="Close">
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <div className="grid grid-cols-2 gap-2 px-5 py-4">
-                <div className="rounded-lg bg-surface-muted p-3 text-center">
-                  <div className="text-xs font-medium text-slate-500">Amount Due</div>
-                  <div className="text-base font-bold text-slate-900">{fmtMyr(dunningTarget.amount)}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <div style={{ borderRadius: '0.5rem', background: SURFACE_2, padding: '0.6rem', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.72rem', color: MUTED }}>Amount Due</div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: TEXT }}>{fmtMyr(dunningTarget.amount)}</div>
                 </div>
-                <div className="rounded-lg bg-surface-muted p-3 text-center">
-                  <div className="text-xs font-medium text-slate-500">Overdue Days</div>
-                  <div className="text-base font-bold text-rose-600">{dunningTarget.aging_days}d</div>
+                <div style={{ borderRadius: '0.5rem', background: SURFACE_2, padding: '0.6rem', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.72rem', color: MUTED }}>Overdue Days</div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'var(--samurai-danger)' }}>{dunningTarget.aging_days}d</div>
                 </div>
               </div>
-              <div className="border-t border-surface-border px-5 py-4">
-                <p className="mb-3 text-xs text-slate-500">Select action to send to Koku (Finance Agent):</p>
-                <div className="space-y-2">
+              <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: '0.75rem' }}>
+                <p style={{ fontSize: '0.72rem', color: MUTED, marginBottom: '0.6rem' }}>Select action to send to Koku (Finance Agent):</p>
+                <div className="sd-stack" style={{ gap: '0.4rem' }}>
                   {['Send Reminder Email', 'Escalate to Sales', 'Flag for Legal Notice', 'Log Call Note'].map((action) => (
                     <button
                       key={action}
                       type="button"
                       onClick={() => setDunningTarget(null)}
-                      className="w-full rounded-lg border border-surface-border bg-white px-4 py-2.5 text-left text-sm font-medium text-slate-700 hover:border-brand hover:text-brand transition-colors"
+                      className="sd-btn sd-btn-secondary"
+                      style={{ justifyContent: 'flex-start', fontWeight: 500 }}
                     >
                       {action}
                     </button>

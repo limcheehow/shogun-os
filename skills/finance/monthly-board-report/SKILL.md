@@ -1,7 +1,7 @@
 ---
 name: monthly-board-report
 description: "Use when generating the Monthly Financial Performance & Board Report — P&L breakdown, balance sheet ratios, BvA variance analysis, and customer concentration risk. Produces a formatted board report delivered to Slack/Telegram and saved to gbrain."
-version: 1.0.0
+version: 1.1.0
 author: Shogun OS
 license: MIT
 metadata:
@@ -31,7 +31,8 @@ Don't use for: the weekly pulse report — see [weekly-pulse-report](../weekly-p
 - MCP / tools: `acct_get_profit_loss`, `acct_get_balance_sheet`, `acct_list_contacts`, `acct_list_sales_invoices` (existing `acct_*` contract tools)
 - gbrain `finance` source: `finance/budget.json` (for BvA, optional — degrades gracefully if absent), report archive at `finance/reports/monthly/`
 - Comm layer: `skills/department-scrum/scripts/comm/` for Slack / Telegram delivery
-- Script: `skills/finance/monthly-board-report/scripts/monthly_board.py` (calls `skills/finance/bva-variance-analysis/scripts/variance.py` for the BvA section)
+- Script: `scripts/monthly_board.py` (calls `skills/finance/bva-variance-analysis/scripts/variance.py` for the BvA section)
+  - **Implementation status**: As of July 2026, the script is not yet deployed. When the script is unavailable, generate the report manually by executing the 5-step data-gathering sequence below using direct `acct_*` tool calls and formatting the output per the template.
 
 ## Data-Gathering Sequence
 
@@ -86,6 +87,26 @@ Prepared by: Koku (Finance Manager) | Source: QuickBooks Online & gbrain
 3. Save the report to `finance/reports/monthly/<YYYY-MM>.md` in the gbrain finance source — done when: the archive file is written.
 4. Deliver via the `department-scrum` comm layer — done when: the message is confirmed sent to the target channel.
 
+### Manual Generation (When Script Unavailable)
+
+When `monthly_board.py` is not deployed, execute the following manually:
+
+1. Call `acct_get_profit_loss` for the target month (or current month MTD if mid-month)
+2. Call `acct_get_balance_sheet` as of the report date
+3. Call `acct_get_profit_loss` for the prior month (for MoM comparison)
+4. Load `finance/budget.json` if it exists; otherwise skip BvA section
+5. Call `acct_list_sales_invoices` for the target month to compute customer concentration
+6. Compute derived metrics:
+   - MoM growth: `((current_revenue - prior_revenue) / prior_revenue) * 100`
+   - Gross margin: `(gross_profit / revenue) * 100`
+   - Net margin: `(net_profit / revenue) * 100`
+   - Current ratio: `current_assets / current_liabilities`
+   - Quick ratio: `(current_assets - inventory) / current_liabilities` (assume inventory if unknown)
+   - DSO: `(AR / monthly_revenue) * days_in_month`
+   - DPO: `(AP / COGS) * days_in_month`
+   - Top customer concentration: sum invoices by customer, find max, compute % of total revenue
+7. Format per the template above
+
 ## Common Pitfalls
 
 1. **BvA graceful degradation** — if `finance/budget.json` is missing, the script must continue and insert a "BvA section unavailable" message rather than crash or raise an unhandled exception.
@@ -93,6 +114,8 @@ Prepared by: Koku (Finance Manager) | Source: QuickBooks Online & gbrain
 3. **YoY growth requires prior-year data** — if the system is newly deployed, prior-year actuals may not be in QuickBooks; produce YoY as "N/A — prior year data unavailable" rather than fabricating a comparison.
 4. **DSO and DPO calculation** — DSO = `(AR / monthly_revenue) × days_in_month`; DPO = `(AP / monthly_cogs) × days_in_month`; confirm the denominator used is consistent with industry convention.
 5. **Comm layer message splitting** — the board report is longer than the weekly pulse; proactively split into multiple Slack messages or attach as a file if the content exceeds the character limit.
+6. **Mid-month reports** — when generating a report before month-end, use MTD dates (month_start to today) instead of last_month_start to last_month_end. Label the report clearly as "MTD as of <date>".
+7. **Script availability** — if `monthly_board.py` is not found in the skill's scripts/ directory, fall back to manual generation using the workflow above. Do not fail the report generation.
 
 ## Verification Checklist
 

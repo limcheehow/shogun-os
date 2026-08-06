@@ -113,6 +113,17 @@ export interface ChatMessage {
   created_at?: string;
   tool_calls?: ChatToolCall[];
   streaming?: boolean;
+  session_id?: string;
+}
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at?: string;
+  message_count: number;
+  has_tools?: boolean;
+  messages: ChatMessage[];
 }
 
 export interface AuthResponse {
@@ -124,6 +135,7 @@ export interface AuthResponse {
 export interface LoginPayload {
   email: string;
   password: string;
+  keepSignedIn?: boolean;
 }
 
 export interface ChangePasswordPayload {

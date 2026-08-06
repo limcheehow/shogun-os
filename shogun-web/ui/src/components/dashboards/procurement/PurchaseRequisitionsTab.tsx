@@ -58,19 +58,31 @@ const DEFAULT_PRS: PurchaseRequisition[] = [
 ];
 
 const PRIORITY_STYLE: Record<string, string> = {
-  Low: 'bg-slate-100 text-slate-600',
-  Medium: 'bg-blue-100 text-blue-700',
-  High: 'bg-amber-100 text-amber-700',
-  Urgent: 'bg-rose-100 text-rose-700 font-bold',
+  Low: 'muted',
+  Medium: 'muted',
+  High: 'warn',
+  Urgent: 'bad',
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  Draft: 'bg-slate-100 text-slate-600',
-  'Pending Approval': 'bg-amber-100 text-amber-800',
-  Approved: 'bg-emerald-100 text-emerald-800',
-  'Converted to RFQ/PO': 'bg-indigo-100 text-indigo-800',
-  Rejected: 'bg-rose-100 text-rose-800',
+  Draft: 'muted',
+  'Pending Approval': 'warn',
+  Approved: 'ok',
+  'Converted to RFQ/PO': 'muted',
+  Rejected: 'bad',
 };
+
+const MUTED = 'var(--samurai-muted)';
+const TEXT = 'var(--samurai-text)';
+const BORDER = 'var(--samurai-border)';
+const SURFACE_2 = 'var(--samurai-surface-2)';
+
+const th = { fontSize: '0.72rem', fontWeight: 500, color: MUTED } as const;
+function Th({ children, align }: { children: React.ReactNode; align: 'left' | 'right' | 'center' }) {
+  return <th className="px-3 py-2.5" style={{ ...th, textAlign: align }}>{children}</th>;
+}
+
+const FILTERS = ['All', 'Pending Approval', 'Approved', 'Converted to RFQ/PO'] as const;
 
 export function PurchaseRequisitionsTab({ stats, onAction }: Props) {
   const prList = stats.purchaseRequisitions && stats.purchaseRequisitions.length > 0 ? stats.purchaseRequisitions : DEFAULT_PRS;
@@ -79,87 +91,68 @@ export function PurchaseRequisitionsTab({ stats, onAction }: Props) {
   const filteredPrs = prList.filter((pr) => (filter === 'All' ? true : pr.status === filter));
 
   return (
-    <div className="space-y-4">
+    <div className="sd-stack">
       {/* Normal Header Card */}
-      <div className="card p-4">
-        <h3 className="text-base font-semibold text-slate-800">Purchase Requisitions (PR)</h3>
-        <p className="text-xs text-slate-500">
+      <div className="sd-chart-card">
+        <h3 className="sd-chart-title">Purchase Requisitions (PR)</h3>
+        <p className="sd-chart-sub">
           Requisition status log tracking internal demand from request through approval to RFQ conversion.
         </p>
 
         {/* Status Filter Pills */}
-        <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
-          <button
-            type="button"
-            onClick={() => setFilter('All')}
-            className={`rounded-md px-3 py-1 font-medium transition-colors ${filter === 'All' ? 'bg-slate-800 text-white font-semibold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          >
-            All ({prList.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilter('Pending Approval')}
-            className={`rounded-md px-3 py-1 font-medium transition-colors ${filter === 'Pending Approval' ? 'bg-amber-100 text-amber-800 font-semibold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          >
-            Pending Approval ({prList.filter((p) => p.status === 'Pending Approval').length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilter('Approved')}
-            className={`rounded-md px-3 py-1 font-medium transition-colors ${filter === 'Approved' ? 'bg-emerald-100 text-emerald-800 font-semibold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          >
-            Approved ({prList.filter((p) => p.status === 'Approved').length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilter('Converted to RFQ/PO')}
-            className={`rounded-md px-3 py-1 font-medium transition-colors ${filter === 'Converted to RFQ/PO' ? 'bg-indigo-100 text-indigo-800 font-semibold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          >
-            Converted to RFQ/PO ({prList.filter((p) => p.status === 'Converted to RFQ/PO').length})
-          </button>
+        <div className="sd-theme-seg" style={{ marginTop: '0.5rem', padding: '0.25rem', flexWrap: 'wrap', gap: '0.35rem' }}>
+          {FILTERS.map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setFilter(f)}
+              className={filter === f ? 'active' : ''}
+              style={{ fontSize: '0.72rem', padding: '0.35rem 0.7rem', borderRadius: '0.4rem', whiteSpace: 'nowrap', width: 'auto' }}
+            >
+              {f} ({f === 'All' ? prList.length : prList.filter((p) => p.status === f).length})
+            </button>
+          ))}
         </div>
       </div>
 
       {/* PR List Table */}
-      <div className="card p-4">
+      <div className="sd-chart-card">
         {filteredPrs.length === 0 ? (
-          <p className="py-4 text-center text-sm text-slate-400">No purchase requisitions matching filter "{filter}".</p>
+          <p style={{ padding: '1rem 0', textAlign: 'center', fontSize: '0.85rem', color: MUTED }}>
+            No purchase requisitions matching filter &ldquo;{filter}&rdquo;.
+          </p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-surface-border bg-white shadow-sm">
-            <table className="w-full min-w-[850px] text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[850px] text-sm" style={{ borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="border-b border-surface-border bg-slate-50/80 text-xs font-semibold text-slate-500">
-                  <th className="px-3 py-2.5 text-left font-medium">PR ID</th>
-                  <th className="px-3 py-2.5 text-left font-medium">Requester & Dept</th>
-                  <th className="px-3 py-2.5 text-left font-medium">Item Description</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Est. Total</th>
-                  <th className="px-3 py-2.5 text-center font-medium">Priority</th>
-                  <th className="px-3 py-2.5 text-center font-medium">Status</th>
-                  <th className="px-3 py-2.5 text-center font-medium">Actions</th>
+                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                  <Th align="left">PR ID</Th>
+                  <Th align="left">Requester & Dept</Th>
+                  <Th align="left">Item Description</Th>
+                  <Th align="right">Est. Total</Th>
+                  <Th align="center">Priority</Th>
+                  <Th align="center">Status</Th>
+                  <Th align="center">Actions</Th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-border">
+              <tbody>
                 {filteredPrs.map((pr) => (
-                  <tr key={pr.pr_number} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="px-3 py-2.5 font-mono text-xs font-semibold text-slate-800">{pr.pr_number}</td>
+                  <tr key={pr.pr_number} style={{ borderBottom: `1px solid ${BORDER}` }}>
+                    <td className="px-3 py-2.5" style={{ fontFamily: 'var(--font-display)', fontSize: '0.75rem', fontWeight: 600, color: TEXT }}>{pr.pr_number}</td>
                     <td className="px-3 py-2.5">
-                      <div className="font-medium text-slate-800">{pr.requester}</div>
-                      <div className="text-xs text-slate-500">{pr.department}</div>
+                      <div style={{ fontWeight: 500, color: TEXT }}>{pr.requester}</div>
+                      <div style={{ fontSize: '0.72rem', color: MUTED }}>{pr.department}</div>
                     </td>
                     <td className="px-3 py-2.5">
-                      <div className="font-medium text-slate-800">{pr.item_description}</div>
-                      {pr.justification && <div className="text-xs text-slate-400 italic">"{pr.justification}"</div>}
+                      <div style={{ fontWeight: 500, color: TEXT }}>{pr.item_description}</div>
+                      {pr.justification && <div style={{ fontSize: '0.72rem', color: MUTED, fontStyle: 'italic' }}>&ldquo;{pr.justification}&rdquo;</div>}
                     </td>
-                    <td className="px-3 py-2.5 text-right font-semibold text-slate-900">RM {pr.estimated_amount.toLocaleString()}</td>
+                    <td className="px-3 py-2.5 text-right" style={{ fontWeight: 600, color: TEXT }}>RM {pr.estimated_amount.toLocaleString()}</td>
                     <td className="px-3 py-2.5 text-center">
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${PRIORITY_STYLE[pr.priority]}`}>
-                        {pr.priority}
-                      </span>
+                      <span className={`sd-chip ${PRIORITY_STYLE[pr.priority] ?? 'muted'}`}>{pr.priority}</span>
                     </td>
                     <td className="px-3 py-2.5 text-center">
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLE[pr.status]}`}>
-                        {pr.status}
-                      </span>
+                      <span className={`sd-chip ${STATUS_STYLE[pr.status] ?? 'muted'}`}>{pr.status}</span>
                     </td>
                     <td className="px-3 py-2.5 text-center">
                       <div className="flex justify-center gap-1.5">
@@ -168,14 +161,16 @@ export function PurchaseRequisitionsTab({ stats, onAction }: Props) {
                             <button
                               type="button"
                               onClick={() => onAction?.('approve_pr', pr)}
-                              className="rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700 transition-colors"
+                              className="sd-btn sd-btn-primary"
+                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.72rem' }}
                             >
                               Approve
                             </button>
                             <button
                               type="button"
                               onClick={() => onAction?.('reject_pr', pr)}
-                              className="rounded-md bg-rose-100 px-2 py-1 text-xs font-medium text-rose-700 hover:bg-rose-200 transition-colors"
+                              className="sd-btn sd-btn-secondary"
+                              style={{ padding: '0.3rem 0.6rem', fontSize: '0.72rem', color: 'var(--samurai-danger)' }}
                             >
                               Reject
                             </button>
@@ -185,13 +180,14 @@ export function PurchaseRequisitionsTab({ stats, onAction }: Props) {
                           <button
                             type="button"
                             onClick={() => onAction?.('convert_to_rfq', pr)}
-                            className="rounded-md bg-brand px-2.5 py-1 text-xs font-medium text-white hover:opacity-90 transition-opacity"
+                            className="sd-btn sd-btn-primary"
+                            style={{ padding: '0.3rem 0.6rem', fontSize: '0.72rem' }}
                           >
                             Send to RFQ
                           </button>
                         )}
                         {pr.status === 'Converted to RFQ/PO' && (
-                          <span className="text-xs text-slate-400 italic">Converted</span>
+                          <span style={{ fontSize: '0.72rem', color: MUTED, fontStyle: 'italic' }}>Converted</span>
                         )}
                       </div>
                     </td>

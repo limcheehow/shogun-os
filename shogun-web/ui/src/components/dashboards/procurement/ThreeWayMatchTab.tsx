@@ -56,10 +56,27 @@ const DEFAULT_MATCHES: ThreeWayMatchItem[] = [
 ];
 
 const MATCH_BADGE: Record<string, string> = {
-  "100% Match": "bg-emerald-100 text-emerald-800 border-emerald-300",
-  "Within Tolerance": "bg-amber-100 text-amber-800 border-amber-300",
-  "Variance Exceeded": "bg-rose-100 text-rose-800 border-rose-300",
+  "100% Match": "ok",
+  "Within Tolerance": "warn",
+  "Variance Exceeded": "bad",
 };
+
+const AP_APPROVAL_BADGE: Record<string, string> = {
+  "Pending AP Review": "warn",
+  "Approved for Payment": "ok",
+  "Flagged to Procurement": "bad",
+};
+
+const MUTED = "var(--samurai-muted)";
+const TEXT = "var(--samurai-text)";
+const BORDER = "var(--samurai-border)";
+const SURFACE_2 = "var(--samurai-surface-2)";
+
+const th = { fontSize: "0.72rem", fontWeight: 500, color: MUTED } as const;
+
+function Th({ children, align }: { children: React.ReactNode; align: "left" | "right" | "center" }) {
+  return <th className="px-3 py-2.5" style={{ ...th, textAlign: align }}>{children}</th>;
+}
 
 export function ThreeWayMatchTab({ stats, onAction }: Props) {
   const matchList =
@@ -74,26 +91,24 @@ export function ThreeWayMatchTab({ stats, onAction }: Props) {
     matchList.find((m) => m.match_id === selectedMatchId) || matchList[0];
 
   return (
-    <div className="space-y-4">
+    <div className="sd-stack">
       {/* Normal Header Card */}
-      <div className="card p-4">
-        <h3 className="text-base font-semibold text-slate-800">
-          Invoice Matching
-        </h3>
-        <p className="text-xs text-slate-500">
+      <div className="sd-chart-card">
+        <h3 className="sd-chart-title">Invoice Matching</h3>
+        <p className="sd-chart-sub">
           Reconciliation log comparing PO benchmark, store receipt (GRN), and
           vendor invoice totals.
         </p>
 
         {/* Match Queue Dropdown Selector */}
-        <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-2 text-xs">
-          <label className="font-semibold text-slate-700 shrink-0">
+        <div style={{ marginTop: "0.75rem", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.5rem", fontSize: "0.72rem" }}>
+          <label style={{ fontWeight: 600, color: TEXT, flexShrink: 0 }}>
             Select Verification Record:
           </label>
           <select
             value={selectedMatchId}
             onChange={(e) => setSelectedMatchId(e.target.value)}
-            className="w-full sm:w-auto rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-mono text-xs font-semibold text-slate-800 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 shadow-sm"
+            style={{ borderRadius: "0.5rem", border: `1px solid ${BORDER}`, background: "var(--samurai-surface)", color: TEXT, padding: "0.375rem 0.5rem", fontFamily: "var(--font-display)", fontSize: "0.72rem", fontWeight: 600 }}
           >
             {matchList.map((m) => (
               <option key={m.match_id} value={m.match_id}>
@@ -105,26 +120,24 @@ export function ThreeWayMatchTab({ stats, onAction }: Props) {
       </div>
 
       {activeMatch && (
-        <div className="card p-5 space-y-4">
+        <div className="sd-chart-card sd-stack" style={{ gap: "1rem" }}>
           {/* Status Verdict Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-surface-border pb-3">
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${BORDER}`, paddingBottom: "0.75rem", gap: "0.5rem" }}>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-bold text-slate-800">
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{ fontFamily: "var(--font-display)", fontSize: "0.85rem", fontWeight: 700, color: TEXT }}>
                   {activeMatch.match_id}
                 </span>
-                <span className="text-xs font-medium text-slate-500">
+                <span style={{ fontSize: "0.72rem", color: MUTED }}>
                   {activeMatch.vendor}
                 </span>
               </div>
-              <div className="mt-1 flex items-center gap-2">
-                <span
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-0.5 text-xs font-bold ${MATCH_BADGE[activeMatch.match_status]}`}
-                >
+              <div style={{ marginTop: "0.25rem", display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                <span className={`sd-chip ${MATCH_BADGE[activeMatch.match_status] ?? "muted"}`}>
                   {activeMatch.match_status === "100% Match" ? (
-                    <ShieldCheck className="h-4 w-4" />
+                    <ShieldCheck className="h-3.5 w-3.5" />
                   ) : (
-                    <AlertCircle className="h-4 w-4" />
+                    <AlertCircle className="h-3.5 w-3.5" />
                   )}
                   {activeMatch.match_status} (
                   {activeMatch.variance_pct > 0
@@ -132,59 +145,55 @@ export function ThreeWayMatchTab({ stats, onAction }: Props) {
                     : "0% Variance"}
                   )
                 </span>
-                <span
-                  className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${activeMatch.ap_approval_status === "Approved for Payment" ? "bg-emerald-100 text-emerald-800" : activeMatch.ap_approval_status === "Flagged to Procurement" ? "bg-rose-100 text-rose-800" : "bg-amber-100 text-amber-800"}`}
-                >
+                <span className={`sd-chip ${AP_APPROVAL_BADGE[activeMatch.ap_approval_status] ?? "muted"}`}>
                   {activeMatch.ap_approval_status}
                 </span>
               </div>
             </div>
 
-            <div className="mt-3 sm:mt-0">
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold ${activeMatch.ap_approval_status === "Approved for Payment" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-700"}`}
-              >
-                <CheckCircle2 className="h-4 w-4" />{" "}
+            <div>
+              <span className={`sd-chip ${activeMatch.ap_approval_status === "Approved for Payment" ? "ok" : "muted"}`}>
+                <CheckCircle2 className="h-3.5 w-3.5" />{" "}
                 {activeMatch.ap_approval_status}
               </span>
             </div>
           </div>
 
           {/* 3-Way Match Side-by-Side Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(16rem, 1fr))", gap: "1rem" }}>
             {/* Card 1: Purchase Order */}
-            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-2">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <div className="sd-card sd-stack" style={{ gap: "0.5rem" }}>
+              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 1. Purchase Order (PO)
               </div>
-              <div className="font-mono text-sm font-bold text-slate-900">
+              <div style={{ fontFamily: "var(--font-display)", fontSize: "0.85rem", fontWeight: 700, color: TEXT }}>
                 {activeMatch.po_number}
               </div>
-              <div className="text-xs text-slate-600">
+              <div style={{ fontSize: "0.72rem", color: MUTED }}>
                 Agreed Unit Prices & Quantities
               </div>
-              <div className="border-t border-slate-200 pt-2 flex justify-between items-center text-xs">
-                <span className="text-slate-500">Agreed Amount:</span>
-                <span className="font-bold text-slate-900">
+              <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "0.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.72rem" }}>
+                <span style={{ color: MUTED }}>Agreed Amount:</span>
+                <span style={{ fontWeight: 700, color: TEXT }}>
                   RM {activeMatch.po_amount.toLocaleString()}
                 </span>
               </div>
             </div>
 
             {/* Card 2: Goods Receipt (GRN) */}
-            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-2">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <div className="sd-card sd-stack" style={{ gap: "0.5rem" }}>
+              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 2. Goods Receipt (GRN)
               </div>
-              <div className="font-mono text-sm font-bold text-slate-900">
+              <div style={{ fontFamily: "var(--font-display)", fontSize: "0.85rem", fontWeight: 700, color: TEXT }}>
                 {activeMatch.grn_number}
               </div>
-              <div className="text-xs text-slate-600">
+              <div style={{ fontSize: "0.72rem", color: MUTED }}>
                 Storekeeper Verified Receipt
               </div>
-              <div className="border-t border-slate-200 pt-2 flex justify-between items-center text-xs">
-                <span className="text-slate-500">Received Value:</span>
-                <span className="font-bold text-slate-900">
+              <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "0.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.72rem" }}>
+                <span style={{ color: MUTED }}>Received Value:</span>
+                <span style={{ fontWeight: 700, color: TEXT }}>
                   RM {activeMatch.grn_received_amount.toLocaleString()}
                 </span>
               </div>
@@ -192,20 +201,19 @@ export function ThreeWayMatchTab({ stats, onAction }: Props) {
 
             {/* Card 3: Vendor Invoice */}
             <div
-              className={`rounded-xl border p-4 space-y-2 ${activeMatch.variance_amount > 0 ? "border-amber-300 bg-amber-50/40" : "border-slate-200 bg-slate-50/70"}`}
+              className="sd-card sd-stack"
+              style={{ gap: "0.5rem", borderColor: activeMatch.variance_amount > 0 ? "color-mix(in srgb, var(--samurai-warning) 45%, transparent)" : undefined, background: activeMatch.variance_amount > 0 ? "color-mix(in srgb, var(--samurai-warning) 8%, var(--samurai-surface))" : undefined }}
             >
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 3. Vendor Invoice
               </div>
-              <div className="font-mono text-sm font-bold text-slate-900">
+              <div style={{ fontFamily: "var(--font-display)", fontSize: "0.85rem", fontWeight: 700, color: TEXT }}>
                 {activeMatch.invoice_number}
               </div>
-              <div className="text-xs text-slate-600">Billed Invoice Total</div>
-              <div className="border-t border-slate-200 pt-2 flex justify-between items-center text-xs">
-                <span className="text-slate-500">Invoiced Amount:</span>
-                <span
-                  className={`font-bold ${activeMatch.variance_amount > 0 ? "text-amber-800 font-extrabold" : "text-slate-900"}`}
-                >
+              <div style={{ fontSize: "0.72rem", color: MUTED }}>Billed Invoice Total</div>
+              <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "0.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.72rem" }}>
+                <span style={{ color: MUTED }}>Invoiced Amount:</span>
+                <span style={{ fontWeight: 700, color: activeMatch.variance_amount > 0 ? "var(--samurai-warning)" : TEXT }}>
                   RM {activeMatch.invoice_amount.toLocaleString()}
                 </span>
               </div>
@@ -213,36 +221,32 @@ export function ThreeWayMatchTab({ stats, onAction }: Props) {
           </div>
 
           {/* Variance Breakdown Table */}
-          <div className="overflow-x-auto rounded-lg border border-surface-border bg-white shadow-sm">
-            <table className="w-full text-xs text-left">
+          <div className="overflow-x-auto">
+            <table className="w-full" style={{ borderCollapse: "collapse", fontSize: "0.75rem" }}>
               <thead>
-                <tr className="border-b border-surface-border bg-slate-50/80 font-semibold text-slate-500">
-                  <th className="px-3 py-2.5">Reconciliation Field</th>
-                  <th className="px-3 py-2.5 text-right">PO Benchmark</th>
-                  <th className="px-3 py-2.5 text-right">GRN Store Receipt</th>
-                  <th className="px-3 py-2.5 text-right">Vendor Invoice</th>
-                  <th className="px-3 py-2.5 text-right pr-6">
-                    Variance (MYR)
-                  </th>
+                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                  <Th align="left">Reconciliation Field</Th>
+                  <Th align="right">PO Benchmark</Th>
+                  <Th align="right">GRN Store Receipt</Th>
+                  <Th align="right">Vendor Invoice</Th>
+                  <Th align="right">Variance (MYR)</Th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-border">
-                <tr className="hover:bg-slate-50/50">
-                  <td className="px-3 py-2.5 font-semibold text-slate-800">
+              <tbody>
+                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                  <td className="px-3 py-2.5" style={{ fontWeight: 600, color: TEXT }}>
                     Total Billed vs Received Valuation
                   </td>
-                  <td className="px-3 py-2.5 text-right font-mono">
+                  <td className="px-3 py-2.5 text-right" style={{ fontFamily: "var(--font-display)", color: TEXT }}>
                     RM {activeMatch.po_amount.toLocaleString()}
                   </td>
-                  <td className="px-3 py-2.5 text-right font-mono">
+                  <td className="px-3 py-2.5 text-right" style={{ fontFamily: "var(--font-display)", color: TEXT }}>
                     RM {activeMatch.grn_received_amount.toLocaleString()}
                   </td>
-                  <td className="px-3 py-2.5 text-right font-mono font-bold">
+                  <td className="px-3 py-2.5 text-right" style={{ fontFamily: "var(--font-display)", fontWeight: 700, color: TEXT }}>
                     RM {activeMatch.invoice_amount.toLocaleString()}
                   </td>
-                  <td
-                    className={`px-3 py-2.5 text-right font-mono pr-6 font-bold ${activeMatch.variance_amount > 0 ? "text-rose-600" : "text-emerald-600"}`}
-                  >
+                  <td className="px-3 py-2.5 text-right" style={{ fontFamily: "var(--font-display)", fontWeight: 700, color: activeMatch.variance_amount > 0 ? "var(--samurai-danger)" : "var(--samurai-ok)" }}>
                     {activeMatch.variance_amount > 0
                       ? `+RM ${activeMatch.variance_amount.toLocaleString()}`
                       : "RM 0.00"}
@@ -253,16 +257,15 @@ export function ThreeWayMatchTab({ stats, onAction }: Props) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-2">
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", paddingTop: "0.5rem" }}>
             {activeMatch.ap_approval_status === "Approved for Payment" ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3.5 py-1 text-xs font-bold text-emerald-800">
-                ✓ Approved for Payment & Synced to AP
-              </span>
+              <span className="sd-chip ok">✓ Approved for Payment & Synced to AP</span>
             ) : activeMatch.variance_amount > 0 ? (
               <button
                 type="button"
                 onClick={() => onAction?.("flag_variance", activeMatch)}
-                className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700 transition-colors shadow-sm"
+                className="sd-btn sd-btn-secondary"
+                style={{ color: "var(--samurai-warning)" }}
               >
                 Flag Price Variance
               </button>
@@ -270,7 +273,7 @@ export function ThreeWayMatchTab({ stats, onAction }: Props) {
               <button
                 type="button"
                 onClick={() => onAction?.("approve_match_bill", activeMatch)}
-                className="rounded-md bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm"
+                className="sd-btn sd-btn-primary"
               >
                 Approve & Convert to AP Bill
               </button>
