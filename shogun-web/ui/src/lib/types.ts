@@ -624,11 +624,28 @@ export interface SkuItem {
   item_name: string;
   category: string;
   unit_cost: number;
-  selling_price: number;
   current_qty: number;
   safety_reorder_point: number;
   location_bin: string;
   status: 'In Stock' | 'Low Stock' | 'Out of Stock' | 'Overstocked';
+}
+
+export interface AbcParetoClass {
+  class_label: 'A' | 'B' | 'C';
+  sku_count: number;
+  sku_pct: number;
+  capital_value: number;
+  value_pct: number;
+}
+
+export interface ExecutiveApprovalRow {
+  po_number: string;
+  vendor: string;
+  order_date: string;
+  total_amount: number;
+  requester_dept: string;
+  threshold_myr: number;
+  approval_status: 'Pending Executive Approval' | 'Approved' | 'Rejected' | 'Clarification Requested';
 }
 
 export interface DeadSlowStockItem {
@@ -721,6 +738,80 @@ export interface GlValuationReconciliationRow {
   reconciliation_status: 'Reconciled' | 'Variance Flagged';
 }
 
+// Tab 6 — Purchase Requisitions (PR)
+export interface PurchaseRequisition {
+  pr_number: string;
+  requester: string;
+  department: string;
+  item_description: string;
+  category: string;
+  estimated_amount: number;
+  priority: 'Low' | 'Medium' | 'High' | 'Urgent';
+  status: 'Draft' | 'Pending Approval' | 'Approved' | 'Converted to RFQ/PO' | 'Rejected';
+  created_at: string;
+  justification?: string;
+}
+
+// Tab 7 — RFQ & Vendor Sourcing
+export interface RfqVendorQuote {
+  vendor: string;
+  unit_price: number;
+  total_amount: number;
+  lead_time_days: number;
+  payment_terms: string;
+  sla_status: string;
+  selected?: boolean;
+}
+
+export interface RfqComparison {
+  rfq_id: string;
+  pr_number: string;
+  item_description: string;
+  category: string;
+  target_qty: number;
+  budget_myr: number;
+  status: 'Open Sourcing' | 'Vendor Selected' | 'PO Issued';
+  quotes: RfqVendorQuote[];
+}
+
+// Tab 8 — Barcode Tagging & Scan Counter
+export interface BarcodeStockUnit {
+  barcode_id: string;
+  sku: string;
+  item_name: string;
+  serial_no: string;
+  location_bin: string;
+  status: 'In Store' | 'Issued' | 'Returned' | 'Quarantine';
+  assigned_to?: string;
+  last_scan_timestamp: string;
+}
+
+export interface BarcodeBatchLog {
+  batch_id: string;
+  action_type: 'GRN Receipt Tagging' | 'Stock Issuance (Scan OUT)' | 'Stock Return (Scan IN)';
+  reference_id: string;
+  actor: string;
+  timestamp: string;
+  total_items: number;
+  units: BarcodeStockUnit[];
+}
+
+// Tab 9 — 3-Way Match Verification
+export interface ThreeWayMatchItem {
+  match_id: string;
+  po_number: string;
+  grn_number: string;
+  invoice_number: string;
+  vendor: string;
+  po_amount: number;
+  grn_received_amount: number;
+  invoice_amount: number;
+  variance_amount: number;
+  variance_pct: number;
+  match_status: '100% Match' | 'Within Tolerance' | 'Variance Exceeded';
+  ap_approval_status: 'Pending AP Review' | 'Approved for Payment' | 'Flagged to Procurement';
+}
+
 export interface ProcurementDashboardStats {
   // Tab 1 — Executive Procurement & Reorder Pulse
   totalInventoryValuation: number;
@@ -745,10 +836,19 @@ export interface ProcurementDashboardStats {
   // Tab 4 — Purchase Orders & Vendor Scorecard
   poPipeline: PoPipelineStage[];
   activePurchaseOrders: PurchaseOrderRow[];
+  executiveApprovalQueue: ExecutiveApprovalRow[];
   vendorScorecard: VendorScorecardRow[];
   vendorSpendConcentration: VendorSpendShare[];
   // Tab 5 — Accounting Bridge & Valuation Reconciliation
   accountingBridge: AccountingBridgeStatus;
   poBillConversionQueue: PoBillConversionRow[];
   glValuationReconciliation: GlValuationReconciliationRow[];
+  // Tab 6 — Purchase Requisitions (PR)
+  purchaseRequisitions?: PurchaseRequisition[];
+  // Tab 7 — RFQ & Vendor Sourcing
+  rfqComparisons?: RfqComparison[];
+  // Tab 8 — Barcode Tagging & Scan Counter
+  barcodeBatches?: BarcodeBatchLog[];
+  // Tab 9 — 3-Way Match Verification
+  threeWayMatches?: ThreeWayMatchItem[];
 }

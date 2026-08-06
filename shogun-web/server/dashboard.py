@@ -780,6 +780,7 @@ def _run_procurement_aggregation(pages: List[dict]) -> dict:
         open_po_value = _safe_float(po_snap.get("open_po_value"))
         po_pipeline: List[dict] = po_snap.get("po_pipeline", [])
         active_purchase_orders: List[dict] = po_snap.get("active_purchase_orders", [])
+        executive_approval_queue: List[dict] = po_snap.get("executive_approval_queue", [])
 
         vendor_scorecard: List[dict] = vendor_snap.get("vendor_scorecard", [])
         vendor_spend_concentration: List[dict] = vendor_snap.get("vendor_spend_concentration", [])
@@ -828,6 +829,7 @@ def _run_procurement_aggregation(pages: List[dict]) -> dict:
 
         po_pipeline = mock_data.get("poPipeline", [])
         active_purchase_orders = mock_data.get("activePurchaseOrders", [])
+        executive_approval_queue = mock_data.get("executiveApprovalQueue", [])
         vendor_scorecard = mock_data.get("vendorScorecard", [])
         vendor_spend_concentration = mock_data.get("vendorSpendConcentration", [])
 
@@ -859,6 +861,7 @@ def _run_procurement_aggregation(pages: List[dict]) -> dict:
         # Tab 4 — Purchase Orders & Vendor Scorecard
         "poPipeline": po_pipeline,
         "activePurchaseOrders": active_purchase_orders,
+        "executiveApprovalQueue": executive_approval_queue,
         "vendorScorecard": vendor_scorecard,
         "vendorSpendConcentration": vendor_spend_concentration,
         # Tab 5 — Accounting Bridge & Valuation Reconciliation

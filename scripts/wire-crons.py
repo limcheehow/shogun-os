@@ -164,6 +164,19 @@ PROFILE_EXTRA_CRONS = {
             "skills": ["monthly-board-report"],
             "deliver": "local",
         },
+        {
+            "name": "{profile}-dashboard-snapshot",
+            "schedule": "0 7 * * *",
+            "prompt": (
+                "Run the dashboard-snapshot-writer skill to refresh the Finance dashboard with live system data. "
+                "Compute the 5-tab payload from acct_* MCP tools and write JSON snapshots to "
+                "finance/snapshots/*.json so the portal dashboard shows real data instead of mock. "
+                "Idempotent and empty-brain-safe."
+            ),
+            "skills": ["dashboard-snapshot-writer"],
+            "deliver": "local",
+            "slash_trigger": "refresh-finance-dashboard",
+        },
     ],
     "project-manager": [
         {
@@ -234,15 +247,39 @@ PROFILE_EXTRA_CRONS = {
     ],
     "procurement": [
         {
-            "name": "{profile}-po-reminder",
-            "schedule": "0 9 * * 1",
+            "name": "{profile}-reorder-watchdog",
+            "schedule": "0 8 * * 1-5",
             "prompt": (
-                "Run the weekly purchase order reminder. "
-                "Check pending POs, flagged overdue orders, "
-                "and post a summary to the procurement channel."
+                "Run proc_check_reorder_alerts to scan all inventory items. "
+                "Draft POs for items below reorder point grouped by preferred vendor. "
+                "Post a prioritised reorder alert summary to #procurement."
             ),
-            "skills": [],
+            "skills": ["reorder-alert-watchdog"],
             "deliver": "local",
+        },
+        {
+            "name": "{profile}-inventory-valuation",
+            "schedule": "0 17 * * 5",
+            "prompt": (
+                "Compute total stock valuation (sum of current_stock x unit_cost for all active SKUs). "
+                "If ENABLE_ACCOUNTING_SYNC is true, compare to the GL inventory asset balance "
+                "and write a discrepancy report to procurement/reports/."
+            ),
+            "skills": ["procurement-provider", "accounting-bridge-sync"],
+            "deliver": "local",
+        },
+        {
+            "name": "{profile}-dashboard-snapshot",
+            "schedule": "0 7 * * *",
+            "prompt": (
+                "Run the dashboard-snapshot-writer skill to refresh the Procurement dashboard with live system data. "
+                "Compute the 5-tab payload from proc_* MCP tools and write JSON snapshots to "
+                "procurement/snapshots/*.json so the portal dashboard shows real data instead of mock. "
+                "Idempotent and empty-brain-safe."
+            ),
+            "skills": ["dashboard-snapshot-writer"],
+            "deliver": "local",
+            "slash_trigger": "refresh-procurement-dashboard",
         },
     ],
     "product": [
