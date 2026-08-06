@@ -12,7 +12,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from config import DEFAULT_DEPARTMENTS, SHOGUN_HOME, get_config
-from models import Base, Department, OnboardingState, Tenant
+from models import Base, Department, OnboardingState, Tenant, User
 
 logger = logging.getLogger(__name__)
 
@@ -116,8 +116,11 @@ def _ensure_tenant(db: Session) -> Tenant:
     return tenant
 
 
+DEFAULT_ACTIVE_NAMES = {"crm", "finance", "procurement"}
+
+
 def _ensure_departments(db: Session, tenant: Tenant) -> None:
-    """Seed catalog departments as inactive if not present."""
+    """Seed catalog departments with CRM, Finance, Procurement active and others inactive."""
     cfg = get_config()
     existing = {
         d.name: d
@@ -127,19 +130,22 @@ def _ensure_departments(db: Session, tenant: Tenant) -> None:
     }
     for spec in DEFAULT_DEPARTMENTS:
         name = spec["name"]
+        default_status = "active" if name in DEFAULT_ACTIVE_NAMES else "inactive"
         if name in existing:
+            dept = existing[name]
+            dept.status = default_status
             continue
         port = cfg.gateway_port_base + int(spec.get("port_offset", 0))
         dept = Department(
             tenant_id=tenant.id,
             name=name,
             profile_name=spec["profile_name"],
-            status="inactive",
+            status=default_status,
             provider_config={},
             gateway_port=port,
         )
         db.add(dept)
-        logger.info("Seeded department %s (port %s)", name, port)
+        logger.info("Seeded department %s (status %s, port %s)", name, default_status, port)
 
 
 def _ensure_onboarding(db: Session, tenant: Tenant) -> None:
@@ -157,6 +163,28 @@ def _ensure_onboarding(db: Session, tenant: Tenant) -> None:
         )
 
 
+def _ensure_default_user(db: Session, tenant: Tenant) -> None:
+    """Seed default admin user if no users exist."""
+    existing_user = db.execute(
+        select(User).where(User.tenant_id == tenant.id)
+    ).scalars().first()
+    if existing_user is None:
+        try:
+            from auth import hash_password
+            admin_user = User(
+                tenant_id=tenant.id,
+                email="admin@localhost",
+                name="Admin User",
+                role="admin",
+                password_hash=hash_password("admin123456"),
+                first_login=False,
+            )
+            db.add(admin_user)
+            logger.info("Seeded default admin user: admin@localhost")
+        except Exception as exc:
+            logger.warning("Could not seed default admin user: %s", exc)
+
+
 def init_db() -> None:
     """Create tables and seed tenant / department catalog."""
     SHOGUN_HOME.mkdir(parents=True, exist_ok=True)
@@ -166,6 +194,7 @@ def init_db() -> None:
         tenant = _ensure_tenant(db)
         _ensure_departments(db, tenant)
         _ensure_onboarding(db, tenant)
+        _ensure_default_user(db, tenant)
     logger.info("Database initialized at %s", get_config().db_path)
 
 

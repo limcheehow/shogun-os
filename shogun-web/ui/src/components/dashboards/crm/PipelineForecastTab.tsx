@@ -7,34 +7,33 @@ interface Props { stats: CeoDashboardStats; color: string }
 export function PipelineForecastTab({ stats, color }: Props) {
   const multiColors = chartColors(color, 3);
 
+  const KPIs = [
+    { label: 'Total Pipeline', value: `RM ${(stats.totalPipelineValue / 1000).toFixed(0)}K` },
+    { label: 'Weighted', value: `RM ${(stats.weightedPipelineValue / 1000).toFixed(0)}K` },
+    { label: 'Coverage Ratio', value: `${stats.pipelineCoverage}x` },
+    { label: 'Cycle (avg)', value: `${stats.salesCycleDays}d` },
+  ];
+
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="card p-4">
-          <div className="text-xs font-medium uppercase tracking-wide text-slate-500">Total Pipeline</div>
-          <div className="mt-1 text-xl font-bold text-slate-900">RM {(stats.totalPipelineValue / 1000).toFixed(0)}K</div>
-        </div>
-        <div className="card p-4">
-          <div className="text-xs font-medium uppercase tracking-wide text-slate-500">Weighted</div>
-          <div className="mt-1 text-xl font-bold text-slate-900">RM {(stats.weightedPipelineValue / 1000).toFixed(0)}K</div>
-        </div>
-        <div className="card p-4">
-          <div className="text-xs font-medium uppercase tracking-wide text-slate-500">Coverage Ratio</div>
-          <div className="mt-1 text-xl font-bold text-slate-900">{stats.pipelineCoverage}x</div>
-        </div>
-        <div className="card p-4">
-          <div className="text-xs font-medium uppercase tracking-wide text-slate-500">Cycle (avg)</div>
-          <div className="mt-1 text-xl font-bold text-slate-900">{stats.salesCycleDays}d</div>
-        </div>
+    <div className="sd-stack">
+      <div className="sd-kpi-grid">
+        {KPIs.map((kpi) => (
+          <div key={kpi.label} className="sd-kpi-card">
+            <div className="sd-kpi-label">{kpi.label}</div>
+            <div className="sd-kpi-value">{kpi.value}</div>
+          </div>
+        ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="card p-4">
-          <h3 className="mb-3 text-sm font-semibold text-slate-700">Sales Funnel</h3>
+      <div className="sd-row">
+        <div className="sd-chart-card">
+          <h3 className="sd-chart-title">Sales Funnel</h3>
+          <p className="sd-chart-sub">Deal count and value by stage</p>
           <FunnelChart data={stats.byStage} color={color} unit="RM " height={300} />
         </div>
-        <div className="card p-4">
-          <h3 className="mb-3 text-sm font-semibold text-slate-700">Monthly Pipeline (Active + Won)</h3>
+        <div className="sd-chart-card">
+          <h3 className="sd-chart-title">Monthly Pipeline (Active + Won)</h3>
+          <p className="sd-chart-sub">Pipeline movement across months</p>
           <LineChart
             data={stats.byMonth}
             xKey="month"
@@ -46,8 +45,9 @@ export function PipelineForecastTab({ stats, color }: Props) {
         </div>
       </div>
 
-      <div className="card p-4">
-        <h3 className="mb-3 text-sm font-semibold text-slate-700">Manager Comparison</h3>
+      <div className="sd-chart-card">
+        <h3 className="sd-chart-title">Manager Comparison</h3>
+        <p className="sd-chart-sub">Pipeline value vs weighted pipeline by manager</p>
         <BarChart
           data={stats.byManager}
           xKey="owner"

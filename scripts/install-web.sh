@@ -69,6 +69,7 @@ PYTHON_DEPS=(
   python-multipart
   pyyaml
   aiosqlite
+  itsdangerous
 )
 
 # Department catalogue: name|profile|port

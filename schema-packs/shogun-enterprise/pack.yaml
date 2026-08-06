@@ -141,6 +141,42 @@ page_types:
     extractable: true
     expert_routing: false
 
+  - name: inventory-item
+    primitive: entity
+    path_prefixes:
+      - procurement/items/
+      - procurement/inventory/
+    aliases: []
+    extractable: true
+    expert_routing: true
+    frontmatter_links:
+      - source_field: preferred_vendor_id
+        target_type: vendor
+        relation: ordered_from
+      - source_field: location_id
+        target_type: location
+        relation: belongs_to
+
+  - name: stock-movement
+    primitive: temporal
+    path_prefixes:
+      - procurement/stock-movements/
+    aliases: []
+    extractable: true
+    expert_routing: false
+    frontmatter_links:
+      - source_field: reference_id
+        target_type: purchase-order
+        relation: references
+
+  - name: location
+    primitive: entity
+    path_prefixes:
+      - procurement/locations/
+    aliases: []
+    extractable: true
+    expert_routing: true
+
   # ── Products ────────────────────────────────────────────────────
   - name: prd
     primitive: concept

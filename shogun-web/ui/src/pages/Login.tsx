@@ -1,9 +1,9 @@
-import { FormEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
-import { authApi } from '../lib/api';
-import { PublicOnlyRoute, useAuth } from '../lib/auth';
-import { ApiError } from '../lib/api';
+import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { authApi, ApiError } from "../lib/api";
+import { PublicOnlyRoute, useAuth } from "../lib/auth";
+import logoBlue from "../assets/logos/samurai-logo-blue.png";
 
 function GoogleIcon() {
   return (
@@ -39,30 +39,115 @@ function MicrosoftIcon() {
   );
 }
 
+function MailIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden
+    >
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3 7 9 6 9-6" />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden
+    >
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  );
+}
+
+function EyeIcon({ open }: { open: boolean }) {
+  return open ? (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ) : (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden
+    >
+      <path d="M3 3l18 18" />
+      <path d="M10.6 5.2A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a17.7 17.7 0 0 1-3.2 4.1M6.6 6.6C4 8.3 2 12 2 12s3.5 7 10 7a9.8 9.8 0 0 0 3.4-.6" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+    </svg>
+  );
+}
+
 function LoginInner() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [keepSignedIn, setKeepSignedIn] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const fillDemoCredentials = () => {
+    setEmail("admin@localhost");
+    setPassword("admin123456");
+    toast.success("Admin demo credentials filled!");
+  };
+
+  const handleForgotPassword = () => {
+    toast(
+      "Please contact your Shogun OS administrator to reset your account password.",
+      {
+        icon: "ℹ️",
+        duration: 5000,
+      },
+    );
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      const user = await login({ email: email.trim(), password });
-      if (user.must_change_password) navigate('/change-password', { replace: true });
-      else if (user.first_login) navigate('/onboarding', { replace: true });
-      else navigate('/dashboard', { replace: true });
+      const user = await login({ email: email.trim(), password, keepSignedIn });
+      toast.success(`Welcome back, ${user.name || "Operator"}!`);
+      if (user.must_change_password)
+        navigate("/change-password", { replace: true });
+      else if (user.first_login) navigate("/onboarding", { replace: true });
+      else navigate("/dashboard", { replace: true });
     } catch (err) {
       const msg =
         err instanceof ApiError
           ? err.message
           : err instanceof Error
             ? err.message
-            : 'Login failed';
+            : "Login failed";
       setError(msg);
     } finally {
       setLoading(false);
@@ -70,83 +155,168 @@ function LoginInner() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50 px-4 py-10">
-      <div className="w-full max-w-md">
-        <div className="card p-8">
-          <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand text-2xl font-bold text-white shadow-sm">
-              S
+    <main className="sd-login-page" id="login-page">
+      <div className="sd-login-shell">
+        <section className="sd-hero-panel" aria-labelledby="sd-hero-title">
+          <div className="sd-hero-overlay" aria-hidden />
+          <div className="sd-hero-content">
+            <img
+              className="sd-hero-logo"
+              src={logoBlue}
+              alt="SamurAI"
+              width={230}
+              height={48}
+            />
+            <div className="sd-hero-copy">
+              <p className="sd-hero-kicker">Shogun OS · Command Portal</p>
+              <h1 id="sd-hero-title">
+                One company
+                <span className="block">Multiple AI-operated departments</span>
+              </h1>
+              <p className="sd-hero-lede">
+                Shogun OS deploys your organization as isolated agent profiles —
+                each with its own persona, knowledge source, and Slack bot —
+                coordinated through a single command portal.
+              </p>
             </div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Shogun OS</h1>
-            <p className="mt-1 text-sm text-slate-500">Sign in to your company portal</p>
+            <ul className="sd-hero-stats" aria-label="Key features">
+              <li>Hermes Agent profiles</li>
+              <li>GBrain federated memory</li>
+              <li>Per-department dashboards</li>
+              <li>Slack-native operations</li>
+            </ul>
           </div>
+        </section>
 
-          <div className="space-y-3">
-            <a href={authApi.oauthUrl('google')} className="btn-secondary w-full">
-              <GoogleIcon />
-              Continue with Google
-            </a>
-            <a href={authApi.oauthUrl('microsoft')} className="btn-secondary w-full">
-              <MicrosoftIcon />
-              Continue with Microsoft
-            </a>
-          </div>
+        <div className="sd-form-panel">
+          <div className="sd-form-card">
+            <div className="sd-form-header">
+              <h2>Welcome back</h2>
+              <p className="sd-form-subtext">Sign in to your company portal</p>
+            </div>
 
-          <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-surface-border" />
-            <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
-              or sign in with email
-            </span>
-            <div className="h-px flex-1 bg-surface-border" />
-          </div>
+            <div className="sd-sso-row">
+              <a href={authApi.oauthUrl("google")} className="sd-sso-btn">
+                <GoogleIcon />
+                Continue with Google
+              </a>
+              <a href={authApi.oauthUrl("microsoft")} className="sd-sso-btn">
+                <MicrosoftIcon />
+                Continue with Microsoft
+              </a>
+            </div>
 
-          <form className="space-y-4" onSubmit={onSubmit}>
-            {error && (
-              <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                {error}
+            <div className="sd-divider">or sign in with email</div>
+
+            {/* Local Demo Fill Helper */}
+            <div className="mb-4 flex items-center justify-between rounded-xl border border-indigo-500/20 bg-indigo-500/10 p-2.5 text-xs text-indigo-300">
+              <span className="truncate">
+                ⚡ Testing locally? Click to fill admin account.
+              </span>
+              <button
+                type="button"
+                onClick={fillDemoCredentials}
+                className="ml-2 shrink-0 rounded-lg bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-indigo-500 active:scale-95"
+              >
+                Fill Admin
+              </button>
+            </div>
+
+            <form onSubmit={onSubmit} noValidate>
+              {error && (
+                <p role="alert" aria-live="polite" className="sd-error-alert">
+                  {error}
+                </p>
+              )}
+
+              <div className="sd-field-group">
+                <label className="sd-label" htmlFor="sd-email">
+                  Email
+                </label>
+                <div className="sd-input-wrap">
+                  <span className="sd-input-icon">
+                    <MailIcon />
+                  </span>
+                  <input
+                    id="sd-email"
+                    className="sd-input"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@localhost"
+                  />
+                </div>
               </div>
-            )}
 
-            <div>
-              <label className="label" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
-              />
+              <div className="sd-field-group">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="sd-label mb-0" htmlFor="sd-password">
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <div className="sd-input-wrap">
+                  <span className="sd-input-icon">
+                    <LockIcon />
+                  </span>
+                  <input
+                    id="sd-password"
+                    className="sd-input has-toggle"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    className="sd-input-toggle"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    <EyeIcon open={showPassword} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="sd-form-row">
+                <label className="sd-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={keepSignedIn}
+                    onChange={(e) => setKeepSignedIn(e.target.checked)}
+                  />
+                  Keep me signed in
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                className="sd-submit-btn"
+                disabled={loading}
+              >
+                {loading ? "Signing in…" : "Sign in"}
+              </button>
+            </form>
+
+            <div className="sd-form-footer">
+              Shogun OS · Enterprise-grade multi-agent operations
             </div>
-
-            <div>
-              <label className="label" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-              />
-            </div>
-
-            <button type="submit" className="btn-primary w-full" disabled={loading}>
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Sign in
-            </button>
-          </form>
+          </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

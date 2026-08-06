@@ -75,3 +75,65 @@ All tools return `{"error": "string", "code": "MISSING_FIELD | AUTH_FAILED | RAT
 | `proc_create_vendor` | P0 |
 | `proc_list_contracts` | P1 |
 | `proc_list_rfqs` | P1 |
+| `proc_list_inventory` | P0 |
+| `proc_get_item` | P0 |
+| `proc_update_stock` | P0 |
+| `proc_check_reorder_alerts` | P0 |
+| `proc_record_stock_movement` | P1 |
+| `proc_list_stock_movements` | P1 |
+
+---
+
+## Inventory Tools (Extension)
+
+> **Inventory tool specs for the procurement inventory layer. Implemented in `recipes/procurement/plugins/brain_inventory.py`.**
+
+### proc_list_inventory
+
+List all inventory items with optional filters.
+
+**Input:** `{ "search": "string", "category": "string", "status": "string", "below_reorder": false, "limit": 50, "offset": 0 }`
+
+**Output:** `{ "items": [{ "sku": "string", "name": "string", "category": "string", "current_stock": 0, "unit_cost": 0.0, "reorder_point": 0, "preferred_vendor_id": "string", "location_id": "string", "status": "string" }], "total": 0 }`
+
+### proc_get_item
+
+Get a single inventory item by SKU.
+
+**Input:** `{ "sku": "string (required)" }`
+
+**Output:** `{ "sku": "string", "name": "string", "category": "string", "current_stock": 0, "unit_cost": 0.0, "reorder_point": 0, "safety_stock": 0, "preferred_vendor_id": "string", "location_id": "string", "last_movement_date": "YYYY-MM-DD", "status": "string" }`
+
+### proc_update_stock
+
+Update stock level for an inventory item (atomic delta or absolute set).
+
+**Input:** `{ "sku": "string (required)", "delta": 0, "absolute": 0, "note": "string" }` — supply either `delta` or `absolute`, not both.
+
+**Output:** `{ "sku": "string", "previous_stock": 0, "new_stock": 0, "unit_cost": 0.0, "total_value": 0.0 }`
+
+### proc_record_stock_movement
+
+Append an immutable stock movement log entry to `procurement/stock-movements/`.
+
+**Input:** `{ "sku": "string (required)", "movement_type": "receive | issue | adjustment | return | damage (required)", "quantity": 0, "reference_id": "string", "location_id": "string", "actor": "string", "note": "string" }`
+
+**Output:** `{ "movement_id": "string", "sku": "string", "movement_type": "string", "quantity": 0, "timestamp": "ISO8601", "reference_id": "string" }`
+
+### proc_list_stock_movements
+
+List stock movement log entries from `procurement/stock-movements/`. Closes the
+write/read asymmetry — the council can now *list* movements, not just *log*
+them via `proc_record_stock_movement`.
+
+**Input:** `{ "sku": "string (optional)", "date_from": "YYYY-MM-DD (optional)", "date_to": "YYYY-MM-DD (optional)", "movement_type": "receive | issue | adjustment | return | damage (optional)", "limit": 100, "offset": 0 }`
+
+**Output:** `{ "movements": [{ "movement_id": "string", "sku": "string", "movement_type": "string", "quantity": 0, "timestamp": "ISO8601", "reference_id": "string", "location_id": "string", "actor": "string", "note": "string" }], "total": 0 }`
+
+### proc_check_reorder_alerts
+
+Return all items whose current stock is at or below their reorder point, sorted by severity.
+
+**Input:** `{ "category": "string", "location_id": "string" }`
+
+**Output:** `{ "alerts": [{ "sku": "string", "name": "string", "current_stock": 0, "reorder_point": 0, "safety_stock": 0, "preferred_vendor_id": "string", "recommended_order_qty": 0, "severity": "critical | warning" }], "total": 0 }`

@@ -5,6 +5,7 @@ import { DashboardSubNav } from '../DashboardSubNav';
 import type { CeoDashboardStats, DashboardTab } from '../../../lib/types';
 import { SalesPulseTab } from './SalesPulseTab';
 import { PipelineForecastTab } from './PipelineForecastTab';
+import { OmnichannelChatTab } from './OmnichannelChatTab';
 import { PartnerPerformanceTab } from './PartnerPerformanceTab';
 import { ManagerPerformanceTab } from './ManagerPerformanceTab';
 import { DealsDeepDiveTab } from './DealsDeepDiveTab';
@@ -13,6 +14,7 @@ import { ManagerDrillDownModal } from './ManagerDrillDownModal';
 const TABS: DashboardTab[] = [
   { id: 'revenue', label: 'Sales Booking', icon: 'LayoutDashboard' },
   { id: 'pipeline', label: 'Pipeline & Forecast', icon: 'TrendingUp' },
+  { id: 'omnichannel', label: 'Omnichannel Chat', icon: 'MessageCircle' },
   { id: 'partner', label: 'Partner Performance', icon: 'Handshake' },
   { id: 'managers', label: 'Manager Performance', icon: 'Users' },
   { id: 'deals', label: 'Deals Deep-Dive', icon: 'Target' },
@@ -35,8 +37,9 @@ export function CrmDashboard({ department, color }: CrmDashboardProps) {
 
   if (statsQuery.isLoading) {
     return (
-      <div className="flex justify-center py-16 text-slate-400">
-        <div className="h-7 w-7 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+      <div className="sd-empty">
+        <div className="h-7 w-7 animate-spin rounded-full" style={{ border: `2px solid var(--samurai-lime)`, borderTopColor: 'transparent' }} />
+        <p>Loading CRM dashboard…</p>
       </div>
     );
   }
@@ -45,14 +48,15 @@ export function CrmDashboard({ department, color }: CrmDashboardProps) {
 
   if (!stats) {
     return (
-      <div className="flex min-h-[20rem] flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-center">
-        <p className="text-sm text-slate-500">Unable to load dashboard data.</p>
+      <div className="sd-empty">
+        <h2>Unable to load CRM dashboard data</h2>
+        <p>The CRM snapshot could not be retrieved. Try refreshing the page.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="sd-stack">
       <DashboardSubNav tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
       {drillDownOwner && (
@@ -66,6 +70,7 @@ export function CrmDashboard({ department, color }: CrmDashboardProps) {
 
       {activeTab === 'revenue' && <SalesPulseTab stats={stats} color={color} />}
       {activeTab === 'pipeline' && <PipelineForecastTab stats={stats} color={color} />}
+      {activeTab === 'omnichannel' && <OmnichannelChatTab stats={stats} color={color} />}
       {activeTab === 'partner' && <PartnerPerformanceTab stats={stats} color={color} />}
       {activeTab === 'managers' && (
         <ManagerPerformanceTab stats={stats} color={color} onDrillDown={setDrillDownOwner} />

@@ -4,6 +4,7 @@ import {
   Code2,
   Handshake,
   Kanban,
+  LayoutDashboard,
   LifeBuoy,
   Megaphone,
   MessageSquare,
@@ -12,7 +13,6 @@ import {
   Users,
   Wallet,
   Brain,
-  FileText,
   type LucideIcon,
 } from 'lucide-react';
 import StatusBadge from './StatusBadge';
@@ -41,6 +41,7 @@ export default function DepartmentCard({ department, onAdd }: DepartmentCardProp
   const meta = DEPARTMENT_CATALOG[department.key] || department;
   const Icon = ICONS[meta.icon] || Boxes;
   const color = meta.color || department.color || '#6366f1';
+  const displayName = DEPARTMENT_CATALOG[department.key]?.name || (department.name ? department.name.charAt(0).toUpperCase() + department.name.slice(1) : department.key);
 
   if (!department.active) {
     return (
@@ -53,7 +54,7 @@ export default function DepartmentCard({ department, onAdd }: DepartmentCardProp
             <Icon className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900">{meta.name}</h3>
+            <h3 className="font-semibold text-slate-900">{displayName}</h3>
             <p className="text-sm text-slate-500">{meta.persona}</p>
             <p className="mt-2 text-sm text-slate-600 line-clamp-2">{meta.description}</p>
           </div>
@@ -76,7 +77,7 @@ export default function DepartmentCard({ department, onAdd }: DepartmentCardProp
             <Icon className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900">{meta.name}</h3>
+            <h3 className="font-semibold text-slate-900">{displayName}</h3>
             <p className="text-sm text-slate-500">{meta.persona}</p>
           </div>
         </div>
@@ -86,6 +87,13 @@ export default function DepartmentCard({ department, onAdd }: DepartmentCardProp
       <p className="mt-3 flex-1 text-sm text-slate-600 line-clamp-2">{meta.description}</p>
 
       <div className="mt-4 grid grid-cols-3 gap-2">
+        <Link
+          to={`/department/${department.key}?tab=dashboard`}
+          className="btn-secondary !px-2 !py-1.5 text-xs"
+        >
+          <LayoutDashboard className="h-3.5 w-3.5" />
+          Dashboard
+        </Link>
         <Link
           to={`/department/${department.key}?tab=chat`}
           className="btn-secondary !px-2 !py-1.5 text-xs"
@@ -99,13 +107,6 @@ export default function DepartmentCard({ department, onAdd }: DepartmentCardProp
         >
           <Brain className="h-3.5 w-3.5" />
           Brain
-        </Link>
-        <Link
-          to={`/department/${department.key}?tab=docs`}
-          className="btn-secondary !px-2 !py-1.5 text-xs"
-        >
-          <FileText className="h-3.5 w-3.5" />
-          Docs
         </Link>
       </div>
     </div>

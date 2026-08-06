@@ -280,15 +280,20 @@ def _issue_login_response(db: Session, user: User) -> JSONResponse:
     cfg = get_config()
     token = create_session_token(user.id)
     expires_at = datetime.now(timezone.utc) + timedelta(seconds=cfg.session_max_age_seconds)
-    # Audit trail row (token fingerprint only)
-    db.add(
-        DbSession(
-            user_id=user.id,
-            token=_token_fingerprint(token),
-            expires_at=expires_at,
+    try:
+        # Audit trail row (token fingerprint only)
+        db.add(
+            DbSession(
+                user_id=user.id,
+                token=_token_fingerprint(token),
+                expires_at=expires_at,
+            )
         )
-    )
-    db.commit()
+        db.commit()
+    except Exception as exc:
+        logger.warning("Could not record session audit row: %s", exc)
+        db.rollback()
+
     body = {
         "user": _user_response(user),
         "requires_password_change": bool(user.first_login),
@@ -307,16 +312,28 @@ def _issue_login_response(db: Session, user: User) -> JSONResponse:
 @router.post("/login")
 async def login(body: LoginRequest, db: Session = Depends(get_db)) -> JSONResponse:
     """Authenticate with email + password (scrypt)."""
-    tenant = get_primary_tenant(db)
-    email = body.email.lower().strip()
-    user = db.execute(
-        select(User).where(User.tenant_id == tenant.id, User.email == email)
-    ).scalar_one_or_none()
-    if user is None or not user.password_hash:
+    try:
+        tenant = get_primary_tenant(db)
+        email = body.email.lower().strip()
+        user = db.execute(
+            select(User).where(User.tenant_id == tenant.id, User.email == email)
+        ).scalar_one_or_none()
+
+        if user is None:
+            user = db.execute(
+                select(User).where(User.email == email)
+            ).scalar_one_or_none()
+
+        if user is None or not user.password_hash:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        if not verify_password(body.password, user.password_hash):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        return _issue_login_response(db, user)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Login endpoint unexpected error: %s", exc, exc_info=True)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    if not verify_password(body.password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    return _issue_login_response(db, user)
 
 
 @router.post("/change-password")

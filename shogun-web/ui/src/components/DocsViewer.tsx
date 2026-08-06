@@ -84,9 +84,9 @@ export default function DocsViewer({ department }: DocsViewerProps) {
 
   return (
     <div className="flex h-full min-h-[28rem] flex-col overflow-hidden rounded-xl border border-surface-border bg-white">
-      <div className="border-b border-surface-border px-4 py-3">
-        <h3 className="text-sm font-semibold text-slate-800">Documents</h3>
-        <p className="text-xs text-slate-500">Department artifacts and exports</p>
+      <div className="flex items-center justify-between border-b border-surface-border px-4 py-3">
+        <h3 className="font-semibold text-slate-900">Department Documents</h3>
+        <span className="text-xs text-slate-500">{docs.length} items</span>
       </div>
 
       <div className="grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[1fr_1.1fr]">
@@ -107,11 +107,11 @@ export default function DocsViewer({ department }: DocsViewerProps) {
             </div>
           )}
           <ul className="divide-y divide-surface-border">
-            {docs.map((doc) => {
+            {docs.map((doc, idx) => {
               const Icon = fileIcon(doc.mime_type);
               const active = selected?.id === doc.id;
               return (
-                <li key={doc.id}>
+                <li key={doc.id || `${doc.name}-${idx}`}>
                   <button
                     type="button"
                     className={`flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-surface-muted ${

@@ -1,0 +1,185 @@
+{
+  "currency": "MYR",
+  "dashboard_mock": {
+    "totalInventoryValuation": 1850000.0,
+    "totalActiveSkus": 1248,
+    "lowStockAlerts": 5,
+    "deadSlowStockCapital": 185000.0,
+    "openPoCount": 8,
+    "openPoValue": 210000.0,
+    "procurementSpendMtd": 348000.0,
+    "procurementSpendBudgetMtd": 380000.0,
+    "riskAlerts": [
+      {
+        "type": "safety_breach",
+        "level": "critical",
+        "message": "High-velocity SKU APP-JKT-XL (Autumn Waterproof Jacket) fell below safety stock (15 vs reorder 50) — draft PO urgently"
+      },
+      {
+        "type": "dead_stock",
+        "level": "warning",
+        "message": "Capital locked in slow-moving stock (RM 185K) is 10.0% of total inventory valuation — within normal range"
+      },
+      {
+        "type": "lead_time_delay",
+        "level": "warning",
+        "message": "PO-2026-0812 (Vortex Textile Manufacturers) is 3 days past expected delivery — vendor lead time SLA breach"
+      }
+    ],
+    "valuationByCategory": [
+      {
+        "category": "Apparel & Fashion Stock",
+        "value": 850000.0
+      },
+      {
+        "category": "Consumer Electronics Stock",
+        "value": 520000.0
+      },
+      {
+        "category": "Lifestyle & Home Items",
+        "value": 310000.0
+      },
+      {
+        "category": "Packaging & Store POS",
+        "value": 170000.0
+      }
+    ],
+    "spendVsBudgetTrend": [
+      {
+        "month": "2025-09",
+        "spend": 312000.0,
+        "budget": 340000.0
+      },
+      {
+        "month": "2025-10",
+        "spend": 358000.0,
+        "budget": 360000.0
+      },
+      {
+        "month": "2025-11",
+        "spend": 395000.0,
+        "budget": 400000.0
+      },
+      {
+        "month": "2025-12",
+        "spend": 440000.0,
+        "budget": 450000.0
+      },
+      {
+        "month": "2026-01",
+        "spend": 320000.0,
+        "budget": 350000.0
+      },
+      {
+        "month": "2026-02",
+        "spend": 310000.0,
+        "budget": 340000.0
+      },
+      {
+        "month": "2026-03",
+        "spend": 365000.0,
+        "budget": 380000.0
+      },
+      {
+        "month": "2026-04",
+        "spend": 348000.0,
+        "budget": 380000.0
+      }
+    ],
+    "reorderSuggestions": [
+      {
+        "skuCode": "APP-JKT-XL",
+        "skuName": "Autumn Waterproof Jacket (XL - Navy)",
+        "category": "Apparel & Fashion Stock",
+        "onHand": 15,
+        "safetyStock": 50,
+        "avgDailyBurn": 4.5,
+        "runwayDays": 3.3,
+        "suggestedQty": 100,
+        "unitPrice": 120.0,
+        "extendedCost": 12000.0,
+        "preferredVendor": "Vortex Textile Manufacturers",
+        "leadTimeDays": 7,
+        "priority": "critical"
+      },
+      {
+        "skuCode": "ELE-AUD-BT",
+        "skuName": "Smart Home Wireless Audio Speaker",
+        "category": "Consumer Electronics Stock",
+        "onHand": 22,
+        "safetyStock": 40,
+        "avgDailyBurn": 3.8,
+        "runwayDays": 5.7,
+        "suggestedQty": 60,
+        "unitPrice": 210.0,
+        "extendedCost": 12600.0,
+        "preferredVendor": "SonicTech Electronics Supply",
+        "leadTimeDays": 5,
+        "priority": "urgent"
+      }
+    ],
+    "vendorScorecards": [
+      {
+        "vendorName": "Vortex Textile Manufacturers",
+        "category": "Apparel & Fashion",
+        "spendYtd": 640000.0,
+        "otdPct": 92.5,
+        "qualityPassPct": 98.4,
+        "activePos": 2,
+        "riskLevel": "low"
+      },
+      {
+        "vendorName": "SonicTech Electronics Supply",
+        "category": "Consumer Electronics",
+        "spendYtd": 520000.0,
+        "otdPct": 96.0,
+        "qualityPassPct": 99.1,
+        "activePos": 3,
+        "riskLevel": "low"
+      },
+      {
+        "vendorName": "PackPro Logistics & Packaging",
+        "category": "Packaging & Store POS",
+        "spendYtd": 210000.0,
+        "otdPct": 88.0,
+        "qualityPassPct": 95.0,
+        "activePos": 1,
+        "riskLevel": "medium"
+      }
+    ],
+    "openPurchaseOrders": [
+      {
+        "poNumber": "PO-2026-0812",
+        "vendorName": "Vortex Textile Manufacturers",
+        "totalAmount": 120000.0,
+        "status": "In Transit",
+        "expectedDelivery": "2026-08-10",
+        "overdueDays": 0
+      },
+      {
+        "poNumber": "PO-2026-0814",
+        "vendorName": "SonicTech Electronics Supply",
+        "totalAmount": 90000.0,
+        "status": "Pending Approval",
+        "expectedDelivery": "2026-08-18",
+        "overdueDays": 0
+      }
+    ],
+    "accountingBridge": {
+      "unbilledReceivedGoods": 45000.0,
+      "pendingApInvoices": 210000.0,
+      "poToInvoiceMatchRatePct": 97.5,
+      "unreconciledVariances": [
+        {
+          "poNumber": "PO-2026-0790",
+          "vendor": "PackPro Logistics & Packaging",
+          "poAmount": 15000.0,
+          "invoiceAmount": 15450.0,
+          "variance": 450.0,
+          "reason": "Freight Surcharge",
+          "status": "Pending Manager Sign-off"
+        }
+      ]
+    }
+  }
+}
